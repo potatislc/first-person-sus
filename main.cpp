@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <array>
@@ -7,17 +8,16 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include <algorithm>
 
 inline constexpr std::string windowName = "Game";
-
 
 static SDL_Window* createGlWindow(const std::string& name, unsigned int width, unsigned int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    int major, minor;
+    int major{};
+    int minor{};
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
     std::cout << "Requested OpenGL version: " << major << "." << minor << '\n';
@@ -54,76 +54,117 @@ static bool initializeGlLoader() {
     return true;
 }
 
-struct Shader {
+class Shader {
+public:
     Shader() = default;
-    // Shader(unsigned int type, std::string source) : source(std::move(source)), type(type) {}
-    bool hasValidSource() const {
+    Shader(unsigned int type, std::string source) : source{std::move(source)}, type{type} {}
+    Shader(const Shader&) = delete;
+    Shader& operator=(const Shader&) = delete;
+    Shader(Shader&& other) noexcept : source{std::move(other.source)}, type{other.type}, id{other.id} {}
+    Shader& operator=(Shader&& other)  noexcept {
+        source = std::move(other.source);
+        type = other.type;
+        id = other.id;
+        return *this;
+    }
+
+    void destroy() {
+        if (id == 0) {
+            return;
+        }
+
+        glDeleteShader(id);
+        id = 0;
+    }
+
+    ~Shader() {
+        destroy();
+    }
+
+    [[nodiscard]] bool hasValidSource() const {
         return !source.empty() && type != 0;
     }
 
     [[nodiscard]] bool isCompiled() const {
-        return hasValidSource() && id != 0;
+        return hasValidSource() && id != 0 && type != 0;
     }
 
-    operator bool() {
+    void compile() {
+        if (!hasValidSource()) {
+            std::cerr << "Shader compilation failed: " << "Invalid source\n";
+            return;
+        }
+
+        auto shaderId = glCreateShader(type);
+        const auto *const src = source.c_str();
+        glShaderSource(shaderId, 1, &src, nullptr);
+        glCompileShader(shaderId);
+
+        int success{};
+        glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
+        if (success == 0) {
+            std::array<char, 512> infoLog{};
+            glGetShaderInfoLog(shaderId, infoLog.size(), nullptr, infoLog.data());
+            std::cerr << "Shader compilation failed:\n" << infoLog.data() << "\n";
+            return;
+        }
+
+        id = shaderId;
+    }
+
+    [[nodiscard]] auto getId() const {
+        return id;
+    }
+
+    [[nodiscard]] auto getType() const {
+        return type;
+    }
+
+    [[nodiscard]] auto getSource() const {
+        return source;
+    }
+
+    explicit operator bool() const {
         return hasValidSource();
     }
 
+private:
     std::string source;
     unsigned int type{};
     unsigned int id{};
 };
 
-class ShaderProgram {
-public:
-    ShaderProgram() = delete;
-    ShaderProgram(const ShaderProgram&) = delete;
-    ShaderProgram& operator=(const ShaderProgram&) = delete;
-    ShaderProgram(ShaderProgram&& other) : id(other.id) {
-        other.id = 0;
-    }
-    ShaderProgram& operator=(ShaderProgram&& other) {
-        id = other.id;
-        other.id = 0;
-        return *this;
-    }
-    explicit ShaderProgram(unsigned int id) : id(id) {}
-
-    explicit operator unsigned int() const {
-        return id;
-    }
-
-    ~ShaderProgram() {
-        if (id != 0) {
-            glDeleteProgram(id);
-        }
-    }
-
-private:
-    unsigned int id{};
-};
-
 class ShaderSourceParser {
 public:
-    explicit ShaderSourceParser(const std::string& filePath) : m_stream(filePath) {
+    ShaderSourceParser() = delete;
+    ShaderSourceParser(const ShaderSourceParser&) = delete;
+    ShaderSourceParser& operator=(const ShaderSourceParser&) = delete;
+    ShaderSourceParser(ShaderSourceParser&&) = delete;
+    ShaderSourceParser& operator=(ShaderSourceParser&&) = delete;
+    ~ShaderSourceParser() = default;
+
+    explicit ShaderSourceParser(const std::string& filePath) : m_stream{filePath} {
+        if (m_stream.bad()) {
+            std::cerr << "Invalid shader source path" << filePath << '\n';
+        }
+
         assert(m_stream.good());
     }
 
     Shader operator()() {
         auto fail = [this](const std::string& description) {
             std::cerr << "Failed to parse shader source: " << description << " At line "
-            << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << std::endl;
+            << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << '\n';
             return Shader{};
         };
 
         std::stringstream ss;
-        Shader shader;
-        shader.type = m_nextShaderType;
+        unsigned int shaderType = m_nextShaderType;
 
         while(std::getline(m_stream, m_line)) {
             ++m_lineCount;
 
-            if (std::all_of(m_line.begin(), m_line.end(),
+            if (std::ranges::all_of(m_line,
                             [](unsigned char c){ return std::isspace(c); })) {
                 continue;
             }
@@ -139,11 +180,11 @@ public:
                     return fail("Could not deduce shader type.");
                 }
 
-                if (shader.type != 0) {
+                if (shaderType != 0) {
                     break;
                 }
 
-                shader.type = m_nextShaderType;
+                shaderType = m_nextShaderType;
 
                 continue;
             }
@@ -151,13 +192,11 @@ public:
             ss << m_line << '\n';
         }
 
-        if (shader.type == 0) {
+        if (shaderType == 0) {
             return fail("Shader type is not set.");
         }
 
-        shader.source = ss.str();
-
-        return shader;
+        return Shader{shaderType, ss.str()};
     }
 
     Shader next() {
@@ -171,55 +210,107 @@ private:
     unsigned int m_nextShaderType{};
 };
 
-static void compileShader(Shader& shader) {
-    auto id = glCreateShader(shader.type);
-    const auto *const src = shader.source.c_str();
-    glShaderSource(id, 1, &src, nullptr);
-    glCompileShader(id);
+class ShaderProgram {
+    const char* creationFailStr = "Failed to create shader program.";
 
-    int success{};
-    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-    if (success == 0) {
-        std::array<char, 512> infoLog{};
-        glGetShaderInfoLog(id, infoLog.size(), nullptr, infoLog.data());
-        std::cerr << "Shader compilation failed:\n" << infoLog.data() << "\n";
-        return;
+    auto createProgram() {
+        id = glCreateProgram();
+        if (id == 0) {
+            std::cerr << creationFailStr << '\n';
+        }
+
+        return static_cast<bool>(id);
     }
 
-    shader.id = id;
-}
+    [[nodiscard]] auto linkProgram() const {
+        glLinkProgram(id);
 
-template <typename ...Args>
-static auto createShaderProgram(Args&... shaders) {
-    static auto fail = []() {
-        std::cerr << "Failed to create shader program." << '\n';
-        return 0u;
-    };
+        int linkStatus = 0;
+        glGetProgramiv(id, GL_LINK_STATUS, &linkStatus);
+        if (linkStatus == 0) {
+            std::cerr << "Failed to link shader program." << '\n';
+        }
 
-    unsigned int program = glCreateProgram();
-    if (program == 0) {
-        return ShaderProgram(fail());
+        return static_cast<bool>(linkStatus);
     }
 
-    bool success = ((compileShader(shaders), shaders.isCompiled()) && ...);
-    if (!success) {
-        return ShaderProgram(fail());
+    void attachShader(unsigned int shaderId) const {
+        glAttachShader(id, shaderId);
     }
 
-    (glAttachShader(program, shaders.id), ...);
+public:
+    template <typename ...Args>
+    explicit ShaderProgram(Args&... shaders) {
+        if (!createProgram()) {
+            return;
+        }
 
-    glLinkProgram(program);
+        bool success = ((shaders.compile(), shaders.isCompiled()) && ...);
+        if (!success) {
+            std::cerr << creationFailStr << '\n';
+            return;
+        }
 
-    int linkStatus = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-    if (linkStatus == 0) {
-        return ShaderProgram(fail());
+        (attachShader(shaders.getId()), ...);
+
+        if(!linkProgram()) {
+            return;
+        }
     }
 
-    return ShaderProgram(program);
-}
+    explicit ShaderProgram(ShaderSourceParser sourceParser) {
+        if (!createProgram()) {
+            return;
+        }
 
-int main(int argc, char* argv[]) {
+        while(auto shader{sourceParser.next()}) {
+            shader.compile();
+            if (!shader.isCompiled()) {
+                std::cerr << creationFailStr << '\n';
+                return;
+            }
+
+            attachShader(shader.getId());
+        }
+
+        if(!linkProgram()) {
+            return;
+        }
+    }
+
+    ShaderProgram(const ShaderProgram&) = delete;
+    ShaderProgram& operator=(const ShaderProgram&) = delete;
+    ShaderProgram(ShaderProgram&& other)  noexcept : id{other.id} {
+        other.id = 0;
+    }
+    ShaderProgram& operator=(ShaderProgram&& other)  noexcept {
+        id = other.id;
+        other.id = 0;
+        return *this;
+    }
+    explicit ShaderProgram(unsigned int id) : id{id} {}
+
+    void use() const {
+        glUseProgram(id);
+    }
+
+    explicit operator unsigned int() const {
+        return id;
+    }
+
+    ~ShaderProgram() {
+        if (id == 0) {
+            return;
+        }
+
+        glDeleteProgram(id);
+    }
+
+private:
+    unsigned int id{};
+};
+
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #ifdef __linux__
     setenv("ASAN_OPTIONS", "detect_leaks=1", 1);
 #endif
@@ -267,15 +358,14 @@ int main(int argc, char* argv[]) {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr);
 
-
-    auto parser = ShaderSourceParser("../res/shader/Basic.shader");
+    /*auto parser = ShaderSourceParser("../res/shader/Basic.shader");
     auto shader1 = parser.next();
     auto shader2 = parser.next();
-    std::cout << "Vertex " << shader1.type << ": " << shader1.source
-        << "Fragment "  << shader2.type << ": " << shader2.source << std::endl;
+    std::cout << "Vertex " << shader1.getType() << ": " << shader1.getSource()
+        << "Fragment "  << shader2.getType() << ": " << shader2.getSource() << '\n';*/
 
-    auto shaderProgram = createShaderProgram(shader1, shader2);
-    glUseProgram(static_cast<unsigned int>(shaderProgram));
+    ShaderProgram shaderProgram{ShaderSourceParser{"../res/shader/Basic.shader"}};
+    shaderProgram.use();
 
     bool running = true;
     SDL_Event event;
