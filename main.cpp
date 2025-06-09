@@ -11,6 +11,48 @@
 
 inline constexpr std::string windowName = "Game";
 
+static void clearGlErrors() {
+    while(glGetError() != GL_NO_ERROR) {}
+}
+
+[[nodiscard]] static auto logGlErrors(const char* functionName = "", const char* fileName = "", size_t line = 0) {
+    auto emptyLog = true;
+    while(auto err = glGetError()) {
+        std::cerr << "OpenGL error: (0x" << std::hex << err << std::dec << ")" << " from function: "
+            << functionName << " inside file: " << fileName << "at line: " << line << '\n';
+        emptyLog = false;
+    }
+
+    return emptyLog;
+}
+
+#ifdef NDEBUG
+
+#define GL_CALL(x) (x)
+#define GL_CALL_RET(x) (x)
+
+#else
+
+template<typename Func>
+void callGl(Func&& func, const char* code, const char* file, size_t line) {
+    clearGlErrors();
+    std::forward<Func>(func)();
+    assert(logGlErrors(code, file, line));
+}
+
+template<typename Func>
+auto callGlRet(Func&& func, const char* code, const char* file, size_t line) -> decltype(func()) {
+    clearGlErrors();
+    auto result = std::forward<Func>(func)();
+    assert(logGlErrors(code, file, line));
+    return result;
+}
+
+#define GL_CALL(x) callGl([&] { x; }, #x, __FILE__, __LINE__)
+#define GL_CALL_RET(x) callGlRet([&] { return (x); }, #x, __FILE__, __LINE__)
+
+#endif
+
 static SDL_Window* createGlWindow(const std::string& name, unsigned int width, unsigned int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -48,8 +90,8 @@ static bool initializeGlLoader() {
         return false;
     }
 
-    std::cout << "GL Version: " << glGetString(GL_VERSION) << '\n';
-    std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
+    std::cout << "GL Version: " << GL_CALL_RET(glGetString(GL_VERSION)) << '\n';
+    std::cout << "GLSL Version: " << GL_CALL_RET(glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n';
 
     return true;
 }
@@ -73,7 +115,7 @@ public:
             return;
         }
 
-        glDeleteShader(id);
+        GL_CALL(glDeleteShader(id));
         id = 0;
     }
 
@@ -95,16 +137,16 @@ public:
             return;
         }
 
-        auto shaderId = glCreateShader(type);
+        auto shaderId = GL_CALL_RET(glCreateShader(type));
         const auto *const src = source.c_str();
-        glShaderSource(shaderId, 1, &src, nullptr);
-        glCompileShader(shaderId);
+        GL_CALL(glShaderSource(shaderId, 1, &src, nullptr));
+        GL_CALL(glCompileShader(shaderId));
 
         int success{};
-        glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
+        GL_CALL(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
         if (success == 0) {
             std::array<char, 512> infoLog{};
-            glGetShaderInfoLog(shaderId, infoLog.size(), nullptr, infoLog.data());
+            GL_CALL(glGetShaderInfoLog(shaderId, infoLog.size(), nullptr, infoLog.data()));
             std::cerr << "Shader compilation failed:\n" << infoLog.data() << "\n";
             return;
         }
@@ -214,7 +256,7 @@ class ShaderProgram {
     const char* creationFailStr = "Failed to create shader program.";
 
     auto createProgram() {
-        id = glCreateProgram();
+        id = GL_CALL_RET(glCreateProgram());
         if (id == 0) {
             std::cerr << creationFailStr << '\n';
         }
@@ -223,10 +265,10 @@ class ShaderProgram {
     }
 
     [[nodiscard]] auto linkProgram() const {
-        glLinkProgram(id);
+        GL_CALL(glLinkProgram(id));
 
         int linkStatus = 0;
-        glGetProgramiv(id, GL_LINK_STATUS, &linkStatus);
+        GL_CALL(glGetProgramiv(id, GL_LINK_STATUS, &linkStatus));
         if (linkStatus == 0) {
             std::cerr << "Failed to link shader program." << '\n';
         }
@@ -235,7 +277,7 @@ class ShaderProgram {
     }
 
     void attachShader(unsigned int shaderId) const {
-        glAttachShader(id, shaderId);
+        GL_CALL(glAttachShader(id, shaderId));
     }
 
 public:
@@ -291,7 +333,7 @@ public:
     explicit ShaderProgram(unsigned int id) : id{id} {}
 
     void use() const {
-        glUseProgram(id);
+        GL_CALL(glUseProgram(id));
     }
 
     explicit operator unsigned int() const {
@@ -303,7 +345,7 @@ public:
             return;
         }
 
-        glDeleteProgram(id);
+        GL_CALL(glDeleteProgram(id));
     }
 
 private:
@@ -341,8 +383,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     }
 
     unsigned int vao{};
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    GL_CALL(glGenVertexArrays(1, &vao));
+    GL_CALL(glBindVertexArray(vao));
 
     std::array<glm::vec2, 3> famousTriangle = {{
                                                        {-.5f, -.5f},
@@ -350,13 +392,30 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
                                                        {.5f, -.5f}
                                                }};
 
-    unsigned int buffer{};
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(famousTriangle), famousTriangle.data(), GL_DYNAMIC_DRAW);
+    std::array<glm::vec2, 4> famousSquare = {{
+                                                     {-.5f,  .5f},  // Top-left
+                                                     {.5f,   .5f},  // Top-right
+                                                     {.5f,  -.5f},  // Bottom-right
+                                                     {-.5f, -.5f}   // Bottom-left
+                                             }};
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr);
+    std::array<unsigned int, 6> indices = {
+            0, 1, 2,
+            2, 3, 0
+    };
+
+    unsigned int buffer{};
+    GL_CALL(glGenBuffers(1, &buffer));
+    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, buffer));
+    GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(famousSquare), famousSquare.data(), GL_STATIC_DRAW));
+
+    GL_CALL(glEnableVertexAttribArray(0));
+    GL_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr));
+
+    unsigned int ibo{};
+    GL_CALL(glGenBuffers(1, &ibo));
+    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW));
 
     /*auto parser = ShaderSourceParser("../res/shader/Basic.shader");
     auto shader1 = parser.next();
@@ -366,6 +425,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
     ShaderProgram shaderProgram{ShaderSourceParser{"../res/shader/Basic.shader"}};
     shaderProgram.use();
+    int location = GL_CALL_RET(glGetUniformLocation(static_cast<unsigned int>(shaderProgram), "u_Color"));
+    assert(location != -1);
 
     bool running = true;
     SDL_Event event;
@@ -385,10 +446,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         }
 
         float blue = static_cast<float>(frameCount % 256) / 255.0f;
-        glClearColor(0.1f, 0.2f, blue, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        GL_CALL(glClearColor(0.1f, 0.2f, blue, 1.0f));
+        GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, famousSquare.size());
+        GL_CALL(glUniform4f(location, blue, .3f, .8f, 1.f));
+        GL_CALL(glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr));
 
         SDL_GL_SwapWindow(window);
 

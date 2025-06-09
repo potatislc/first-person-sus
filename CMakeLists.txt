@@ -17,16 +17,13 @@ FetchContent_Declare(
         GIT_TAG        release-3.2.12
 )
 
-# Disable SDL extras BEFORE MakeAvailable
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON CACHE BOOL "" FORCE)
-set(SDL_TESTS OFF CACHE BOOL "" FORCE)        # Tests
-set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)     # Example programs
+set(SDL_TESTS OFF CACHE BOOL "" FORCE)
+set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(SDL_INSTALL_TESTS OFF CACHE BOOL "" FORCE)
-set(SDL_DOCS OFF CACHE BOOL "" FORCE)         # Doxygen stuff
-set(SDL_CMAKE_DEBUG_POSTFIX "" CACHE STRING "" FORCE) # Avoids "d" postfix
-
-# (optional) Don’t build libSDLmain if you don't need it
+set(SDL_DOCS OFF CACHE BOOL "" FORCE)
+set(SDL_CMAKE_DEBUG_POSTFIX "" CACHE STRING "" FORCE)
 set(SDL_MAIN_HANDLED ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SDL3)
@@ -56,10 +53,8 @@ set(WARNING_FLAGS
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
 )
-
 target_compile_options(${EXE_NAME} PRIVATE ${WARNING_FLAGS})
 
-# Turn off RTTI and exceptions
 if (MSVC)
     target_compile_options(${EXE_NAME} PRIVATE /GR- /EHs-c- /we4530 /we4577)
 else()
@@ -67,9 +62,8 @@ else()
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    # Add sanitizers
     target_compile_options(${EXE_NAME} PRIVATE -fsanitize=address,undefined -g)
-    target_link_options(${EXE_NAME} PRIVATE -fsanitize=address,undefined)
+    target_link_options(${EXE_NAME} PRIVATE -fsanitize=address,undefined /INCREMENTAL:NO)
 
     if (MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_link_libraries(${EXE_NAME} PRIVATE
@@ -80,6 +74,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebIn
                 /wholearchive:clang_rt.asan_dynamic_runtime_thunk-x86_64.lib
         )
     endif()
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${EXE_NAME} PRIVATE -O3 -DNDEBUG)
+endif()
+
+if (MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_target_properties(${EXE_NAME} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
