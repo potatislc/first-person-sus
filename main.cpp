@@ -12,14 +12,15 @@
 inline constexpr std::string windowName = "Game";
 
 static void clearGlErrors() {
-    while(glGetError() != GL_NO_ERROR) {}
+    while (glGetError() != GL_NO_ERROR) {
+    }
 }
 
-[[nodiscard]] static auto logGlErrors(const char* functionName = "", const char* fileName = "", size_t line = 0) {
+[[nodiscard]] static auto logGlErrors(const char* functionName = "", const char* fileName = "", const size_t line = 0) {
     auto emptyLog = true;
-    while(auto err = glGetError()) {
+    while (const auto err = glGetError()) {
         std::cerr << "OpenGL error: (0x" << std::hex << err << std::dec << ")" << " from function: "
-            << functionName << " inside file: " << fileName << "at line: " << line << '\n';
+                << functionName << " inside file: " << fileName << "at line: " << line << '\n';
         emptyLog = false;
     }
 
@@ -34,14 +35,14 @@ static void clearGlErrors() {
 #else
 
 template<typename Func>
-void callGl(Func&& func, const char* code, const char* file, size_t line) {
+void callGl(Func&& func, const char* code, const char* file, const size_t line) {
     clearGlErrors();
     std::forward<Func>(func)();
     assert(logGlErrors(code, file, line));
 }
 
 template<typename Func>
-auto callGlRet(Func&& func, const char* code, const char* file, size_t line) -> decltype(func()) {
+auto callGlRet(Func&& func, const char* code, const char* file, const size_t line) -> decltype(func()) {
     clearGlErrors();
     auto result = std::forward<Func>(func)();
     assert(logGlErrors(code, file, line));
@@ -53,7 +54,7 @@ auto callGlRet(Func&& func, const char* code, const char* file, size_t line) -> 
 
 #endif
 
-static SDL_Window* createGlWindow(const std::string& name, unsigned int width, unsigned int height) {
+static SDL_Window* createGlWindow(const std::string& name, const unsigned int width, const unsigned int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -75,7 +76,7 @@ static SDL_Window* createGlWindow(const std::string& name, unsigned int width, u
 }
 
 static SDL_GLContext createGlContext(SDL_Window* window) {
-    SDL_GLContext context = SDL_GL_CreateContext(window);
+    auto* context = SDL_GL_CreateContext(window);
     if (context == nullptr) {
         std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << '\n';
         return nullptr;
@@ -99,11 +100,18 @@ static bool initializeGlLoader() {
 class Shader {
 public:
     Shader() = default;
-    Shader(unsigned int type, std::string source) : source{std::move(source)}, type{type} {}
+
+    Shader(const unsigned int type, std::string source) : source{std::move(source)}, type{type} {
+    }
+
     Shader(const Shader&) = delete;
+
     Shader& operator=(const Shader&) = delete;
-    Shader(Shader&& other) noexcept : source{std::move(other.source)}, type{other.type}, id{other.id} {}
-    Shader& operator=(Shader&& other)  noexcept {
+
+    Shader(Shader&& other) noexcept : source{std::move(other.source)}, type{other.type}, id{other.id} {
+    }
+
+    Shader& operator=(Shader&& other) noexcept {
         source = std::move(other.source);
         type = other.type;
         id = other.id;
@@ -137,8 +145,8 @@ public:
             return;
         }
 
-        auto shaderId = GL_CALL_RET(glCreateShader(type));
-        const auto *const src = source.c_str();
+        const auto shaderId = GL_CALL_RET(glCreateShader(type));
+        const auto* const src = source.c_str();
         GL_CALL(glShaderSource(shaderId, 1, &src, nullptr));
         GL_CALL(glCompileShader(shaderId));
 
@@ -179,10 +187,15 @@ private:
 class ShaderSourceParser {
 public:
     ShaderSourceParser() = delete;
+
     ShaderSourceParser(const ShaderSourceParser&) = delete;
+
     ShaderSourceParser& operator=(const ShaderSourceParser&) = delete;
+
     ShaderSourceParser(ShaderSourceParser&&) = delete;
+
     ShaderSourceParser& operator=(ShaderSourceParser&&) = delete;
+
     ~ShaderSourceParser() = default;
 
     explicit ShaderSourceParser(const std::string& filePath) : m_stream{filePath} {
@@ -196,29 +209,27 @@ public:
     Shader operator()() {
         auto fail = [this](const std::string& description) {
             std::cerr << "Failed to parse shader source: " << description << " At line "
-            << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << '\n';
+                    << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << '\n';
             return Shader{};
         };
 
         std::stringstream ss;
         unsigned int shaderType = m_nextShaderType;
 
-        while(std::getline(m_stream, m_line)) {
+        while (std::getline(m_stream, m_line)) {
             ++m_lineCount;
 
             if (std::ranges::all_of(m_line,
-                            [](unsigned char c){ return std::isspace(c); })) {
+                                    [](const unsigned char c) { return std::isspace(c); })) {
                 continue;
             }
 
             if (m_line.contains("#shader")) {
                 if (m_line.contains("vertex")) {
                     m_nextShaderType = GL_VERTEX_SHADER;
-                }
-                else if (m_line.contains("fragment")) {
+                } else if (m_line.contains("fragment")) {
                     m_nextShaderType = GL_FRAGMENT_SHADER;
-                }
-                else {
+                } else {
                     return fail("Could not deduce shader type.");
                 }
 
@@ -276,26 +287,25 @@ class ShaderProgram {
         return static_cast<bool>(linkStatus);
     }
 
-    void attachShader(unsigned int shaderId) const {
+    void attachShader(const unsigned int shaderId) const {
         GL_CALL(glAttachShader(id, shaderId));
     }
 
 public:
-    template <typename ...Args>
+    template<typename... Args>
     explicit ShaderProgram(Args&... shaders) {
         if (!createProgram()) {
             return;
         }
 
-        bool success = ((shaders.compile(), shaders.isCompiled()) && ...);
-        if (!success) {
+        if (const bool success = ((shaders.compile(), shaders.isCompiled()) && ...); !success) {
             std::cerr << creationFailStr << '\n';
             return;
         }
 
         (attachShader(shaders.getId()), ...);
 
-        if(!linkProgram()) {
+        if (!linkProgram()) {
             return;
         }
     }
@@ -305,7 +315,7 @@ public:
             return;
         }
 
-        while(auto shader{sourceParser.next()}) {
+        while (auto shader{sourceParser.next()}) {
             shader.compile();
             if (!shader.isCompiled()) {
                 std::cerr << creationFailStr << '\n';
@@ -315,22 +325,27 @@ public:
             attachShader(shader.getId());
         }
 
-        if(!linkProgram()) {
+        if (!linkProgram()) {
             return;
         }
     }
 
     ShaderProgram(const ShaderProgram&) = delete;
+
     ShaderProgram& operator=(const ShaderProgram&) = delete;
-    ShaderProgram(ShaderProgram&& other)  noexcept : id{other.id} {
+
+    ShaderProgram(ShaderProgram&& other) noexcept : id{other.id} {
         other.id = 0;
     }
-    ShaderProgram& operator=(ShaderProgram&& other)  noexcept {
+
+    ShaderProgram& operator=(ShaderProgram&& other) noexcept {
         id = other.id;
         other.id = 0;
         return *this;
     }
-    explicit ShaderProgram(unsigned int id) : id{id} {}
+
+    explicit ShaderProgram(unsigned int id) : id{id} {
+    }
 
     void use() const {
         GL_CALL(glUseProgram(id));
@@ -368,7 +383,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         return 1;
     }
 
-    SDL_GLContext context = createGlContext(window);
+    auto* const context = createGlContext(window);
     if (context == nullptr) {
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -386,22 +401,26 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     GL_CALL(glGenVertexArrays(1, &vao));
     GL_CALL(glBindVertexArray(vao));
 
-    std::array<glm::vec2, 3> famousTriangle = {{
-                                                       {-.5f, -.5f},
-                                                       {0.f, .5f},
-                                                       {.5f, -.5f}
-                                               }};
+    [[maybe_unused]] constexpr std::array<glm::vec2, 3> famousTriangle = {
+        {
+            {-.5f, -.5f},
+            {0.f, .5f},
+            {.5f, -.5f}
+        }
+    };
 
-    std::array<glm::vec2, 4> famousSquare = {{
-                                                     {-.5f,  .5f},  // Top-left
-                                                     {.5f,   .5f},  // Top-right
-                                                     {.5f,  -.5f},  // Bottom-right
-                                                     {-.5f, -.5f}   // Bottom-left
-                                             }};
+    constexpr std::array<glm::vec2, 4> famousSquare = {
+        {
+            {-.5f, .5f}, // Top-left
+            {.5f, .5f}, // Top-right
+            {.5f, -.5f}, // Bottom-right
+            {-.5f, -.5f} // Bottom-left
+        }
+    };
 
-    std::array<unsigned int, 6> indices = {
-            0, 1, 2,
-            2, 3, 0
+    const std::array<unsigned int, 6> indices = {
+        0, 1, 2,
+        2, 3, 0
     };
 
     unsigned int buffer{};
@@ -423,17 +442,17 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     std::cout << "Vertex " << shader1.getType() << ": " << shader1.getSource()
         << "Fragment "  << shader2.getType() << ": " << shader2.getSource() << '\n';*/
 
-    ShaderProgram shaderProgram{ShaderSourceParser{"../res/shader/Basic.shader"}};
+    const ShaderProgram shaderProgram{ShaderSourceParser{"../res/shader/Basic.glsl"}};
     shaderProgram.use();
-    int location = GL_CALL_RET(glGetUniformLocation(static_cast<unsigned int>(shaderProgram), "u_Color"));
+    const int location = GL_CALL_RET(glGetUniformLocation(static_cast<unsigned int>(shaderProgram), "u_Color"));
     assert(location != -1);
 
     bool running = true;
     SDL_Event event;
 
     const uint64_t perfFreq = SDL_GetPerformanceFrequency();
-    const unsigned int FPS = 60;
-    const double targetFrameTime = 1.0 / FPS;
+    constexpr unsigned int FPS = 60;
+    constexpr double targetFrameTime = 1.0 / FPS;
     const auto targetTicks = static_cast<uint64_t>(targetFrameTime * static_cast<double>(perfFreq));
     uint64_t frameStart = SDL_GetPerformanceCounter();
     uint64_t frameCount{};
@@ -455,12 +474,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
         SDL_GL_SwapWindow(window);
 
-        uint64_t frameEnd = SDL_GetPerformanceCounter();
-        uint64_t elapsedTicks = frameEnd - frameStart;
+        uint64_t const frameEnd = SDL_GetPerformanceCounter();
 
-        if (elapsedTicks < targetTicks) {
-            uint64_t delayTicks = targetTicks - elapsedTicks;
-            auto delayMs = static_cast<uint32_t>((delayTicks * 1000) / perfFreq);
+        if (uint64_t const elapsedTicks = frameEnd - frameStart; elapsedTicks < targetTicks) {
+            uint64_t const delayTicks = targetTicks - elapsedTicks;
+            const auto delayMs = static_cast<uint32_t>((delayTicks * 1000) / perfFreq);
             SDL_Delay(delayMs);
         }
 
