@@ -7,7 +7,7 @@
 #include "../Window.h"
 
 namespace Renderer {
-    class GLRenderer;
+    class GlRenderer;
 
     class Renderer {
     public:

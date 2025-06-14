@@ -15,7 +15,7 @@ namespace Renderer::Shader {
         explicit Source(const Renderer& renderer) : m_Renderer{&renderer} {
         }
 
-        Source(const Renderer& renderer, const unsigned int type, std::string source) : m_Source{
+        Source(const Renderer& renderer, const uint32_t type, std::string source) : m_Source{
                 std::move(source)
             },
             m_Renderer{&renderer}, m_Type{type} {
@@ -72,8 +72,8 @@ namespace Renderer::Shader {
     private:
         std::string m_Source;
         const Renderer* m_Renderer{};
-        unsigned int m_Type{};
-        unsigned int m_Id{};
+        uint32_t m_Type{};
+        uint32_t m_Id{};
     };
 }
 

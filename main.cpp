@@ -8,16 +8,16 @@
 #include <fstream>
 #include <string>
 #include "./src/Window.h"
-#include "src/Renderer/GLRenderer.h"
-#include "src/Renderer/Shader/Parser.h"
-#include "src/Renderer/Shader/Program.h"
+#include "src/renderer/GlRenderer.h"
+#include "src/renderer/shader/Parser.h"
+#include "src/renderer/shader/Program.h"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #ifdef __linux__
     setenv("ASAN_OPTIONS", "detect_leaks=1", 1);
 #endif
-    const Window window = Renderer::GLRenderer::createWindow("Hej", 800, 600);
-    const Renderer::GLRenderer renderer = Renderer::GLRenderer::create(window);
+    const Window window = Renderer::GlRenderer::createWindow("Hej", 800, 600);
+    const Renderer::GlRenderer renderer = Renderer::GlRenderer::create(window);
 
     [[maybe_unused]] constexpr std::array<glm::vec2, 3> famousTriangle = {
         {

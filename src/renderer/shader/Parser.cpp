@@ -22,7 +22,7 @@ Renderer::Shader::Source Renderer::Shader::Parser::operator()(const Renderer& re
     };
 
     std::stringstream ss;
-    unsigned int shaderType = m_NextShaderType;
+    uint32_t shaderType = m_NextShaderType;
 
     while (std::getline(m_Stream, m_Line)) {
         ++m_LineCount;

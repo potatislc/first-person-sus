@@ -4,15 +4,15 @@
 #include "Renderer.h"
 
 namespace Renderer {
-    class GLRenderer final : public Renderer {
+    class GlRenderer final : public Renderer {
     public:
         static Window createWindow(const std::string& name, const int width, const int height);
 
-        static GLRenderer create(const Window& window);
+        static GlRenderer create(const Window& window);
 
-        explicit GLRenderer(const Window& window);
+        explicit GlRenderer(const Window& window);
 
-        ~GLRenderer() override {
+        ~GlRenderer() override {
             SDL_GL_DestroyContext(m_Context);
         }
 

@@ -1,10 +1,10 @@
-#include "GLRenderer.h"
+#include "GlRenderer.h"
 
 #include <ios>
 #include <iostream>
 #include <glad/glad.h>
 
-Window Renderer::GLRenderer::createWindow(const std::string& name, const int width, const int height) {
+Window Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
         SDL_Quit();
@@ -30,11 +30,11 @@ Window Renderer::GLRenderer::createWindow(const std::string& name, const int wid
     return Window{name, window};
 }
 
-Renderer::GLRenderer Renderer::GLRenderer::create(const Window& window) {
-    return GLRenderer{window};
+Renderer::GlRenderer Renderer::GlRenderer::create(const Window& window) {
+    return GlRenderer{window};
 }
 
-Renderer::GLRenderer::GLRenderer(const Window& window) : m_Context(SDL_GL_CreateContext(window.get())) {
+Renderer::GlRenderer::GlRenderer(const Window& window) : m_Context(SDL_GL_CreateContext(window.get())) {
     if (m_Context == nullptr) {
         std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << '\n';
         return;
@@ -50,12 +50,12 @@ Renderer::GLRenderer::GLRenderer(const Window& window) : m_Context(SDL_GL_Create
     std::cout << "GLSL Version: " << RENDERER_API_CALL_RETURN(*this, glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n';
 }
 
-void Renderer::GLRenderer::clearErrors() const {
+void Renderer::GlRenderer::clearErrors() const {
     while (glGetError() != GL_NO_ERROR) {
     }
 }
 
-bool Renderer::GLRenderer::logErrors(const char* functionName, const char* fileName,
+bool Renderer::GlRenderer::logErrors(const char* functionName, const char* fileName,
                                      const size_t line) const {
     auto emptyLog = true;
     while (const auto err = glGetError()) {
@@ -67,6 +67,6 @@ bool Renderer::GLRenderer::logErrors(const char* functionName, const char* fileN
     return emptyLog;
 }
 
-void Renderer::GLRenderer::swapWindow(const Window& window) const {
+void Renderer::GlRenderer::swapWindow(const Window& window) const {
     SDL_GL_SwapWindow(window.get());
 }

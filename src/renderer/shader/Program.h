@@ -5,13 +5,11 @@
 
 namespace Renderer {
     class Renderer;
-
-    namespace Shader {
-        class Parser;
-    }
 }
 
 namespace Renderer::Shader {
+    class Parser;
+
     class Program {
     public:
         template<typename... Args>
@@ -33,18 +31,18 @@ namespace Renderer::Shader {
             return *this;
         }
 
-        explicit Program(const unsigned int id) : m_Id{id} {
+        explicit Program(const uint32_t id) : m_Id{id} {
         }
 
         ~Program();
 
         void use() const;
 
-        explicit operator unsigned int() const {
+        explicit operator uint32_t() const {
             return m_Id;
         }
 
-        [[nodiscard]] unsigned int getId() const {
+        [[nodiscard]] uint32_t getId() const {
             return m_Id;
         }
 
@@ -55,10 +53,10 @@ namespace Renderer::Shader {
 
         [[nodiscard]] bool linkProgram() const;
 
-        void attachShader(unsigned int shaderId) const;
+        void attachShader(uint32_t shaderId) const;
 
         const Renderer* m_Renderer{};
-        unsigned int m_Id{};
+        uint32_t m_Id{};
     };
 
     template<typename... Args>

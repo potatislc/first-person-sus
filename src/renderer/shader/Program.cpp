@@ -27,7 +27,7 @@ bool Renderer::Shader::Program::linkProgram() const {
     return static_cast<bool>(linkStatus);
 }
 
-void Renderer::Shader::Program::attachShader(const unsigned int shaderId) const {
+void Renderer::Shader::Program::attachShader(const uint32_t shaderId) const {
     RENDERER_API_CALL(*m_Renderer, glAttachShader(m_Id, shaderId));
 }
 

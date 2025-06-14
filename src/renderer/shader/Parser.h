@@ -32,7 +32,7 @@ namespace Renderer::Shader {
         std::ifstream m_Stream;
         std::string m_Line;
         size_t m_LineCount{};
-        unsigned int m_NextShaderType{};
+        uint32_t m_NextShaderType{};
     };
 }
 

@@ -32,16 +32,20 @@ find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
 add_executable(${EXE_NAME} main.cpp
-        src/Renderer/Renderer.h
+        src/renderer/renderer.h
         src/Window.h
-        src/Renderer/GLRenderer.cpp
-        src/Renderer/Shader/Source.h
-        src/Renderer/Shader/Source.cpp
-        src/Renderer/Shader/Program.h
-        src/Renderer/Shader/Program.cpp
-        src/Renderer/GLRenderer.h
-        src/Renderer/Shader/Parser.h
-        src/Renderer/Shader/Parser.cpp)
+        src/renderer/GlRenderer.cpp
+        src/renderer/shader/Source.h
+        src/renderer/shader/Source.cpp
+        src/renderer/shader/Program.h
+        src/renderer/shader/Program.cpp
+        src/renderer/GlRenderer.h
+        src/renderer/shader/Parser.h
+        src/renderer/shader/Parser.cpp
+        src/renderer/buffer/Vertex.h
+        src/renderer/buffer/Vertex.cpp
+        src/renderer/buffer/Index.cpp
+        src/renderer/buffer/Index.h)
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm)
 
 get_target_property(SDL3_INCLUDE_DIRS SDL3::SDL3 INTERFACE_INCLUDE_DIRECTORIES)
