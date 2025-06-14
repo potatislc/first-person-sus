@@ -8,107 +8,26 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-
-inline constexpr std::string windowName = "Game";
-
-static void clearGlErrors() {
-    while (glGetError() != GL_NO_ERROR) {
-    }
-}
-
-[[nodiscard]] static auto logGlErrors(const char* functionName = "", const char* fileName = "", const size_t line = 0) {
-    auto emptyLog = true;
-    while (const auto err = glGetError()) {
-        std::cerr << "OpenGL error: (0x" << std::hex << err << std::dec << ")" << " from function: "
-                << functionName << " inside file: " << fileName << "at line: " << line << '\n';
-        emptyLog = false;
-    }
-
-    return emptyLog;
-}
-
-#ifdef NDEBUG
-
-#define GL_CALL(x) (x)
-#define GL_CALL_RET(x) (x)
-
-#else
-
-template<typename Func>
-void callGl(Func&& func, const char* code, const char* file, const size_t line) {
-    clearGlErrors();
-    std::forward<Func>(func)();
-    assert(logGlErrors(code, file, line));
-}
-
-template<typename Func>
-auto callGlRet(Func&& func, const char* code, const char* file, const size_t line) -> decltype(func()) {
-    clearGlErrors();
-    auto result = std::forward<Func>(func)();
-    assert(logGlErrors(code, file, line));
-    return result;
-}
-
-#define GL_CALL(x) callGl([&] { x; }, #x, __FILE__, __LINE__)
-#define GL_CALL_RET(x) callGlRet([&] { return (x); }, #x, __FILE__, __LINE__)
-
-#endif
-
-static SDL_Window* createGlWindow(const std::string& name, const unsigned int width, const unsigned int height) {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    int major{};
-    int minor{};
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-    std::cout << "Requested OpenGL version: " << major << "." << minor << '\n';
-
-    SDL_Window* window = SDL_CreateWindow(name.c_str(), static_cast<int>(width), static_cast<int>(height),
-                                          SDL_WINDOW_OPENGL);
-    if (window == nullptr) {
-        std::cerr << "Failed to create window: " << SDL_GetError() << '\n';
-        return nullptr;
-    }
-
-    return window;
-}
-
-static SDL_GLContext createGlContext(SDL_Window* window) {
-    auto* context = SDL_GL_CreateContext(window);
-    if (context == nullptr) {
-        std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << '\n';
-        return nullptr;
-    }
-
-    return context;
-}
-
-static bool initializeGlLoader() {
-    if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0) {
-        std::cerr << "Failed to initialize GLAD\n";
-        return false;
-    }
-
-    std::cout << "GL Version: " << GL_CALL_RET(glGetString(GL_VERSION)) << '\n';
-    std::cout << "GLSL Version: " << GL_CALL_RET(glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n';
-
-    return true;
-}
+#include "./src/Window.h"
+#include "./src/Renderer.h"
 
 class Shader {
 public:
-    Shader() = default;
+    Shader() = delete;
 
-    Shader(const unsigned int type, std::string source) : source{std::move(source)}, type{type} {
+    explicit Shader(const Renderer& renderer) : renderer{&renderer} {
+    }
+
+    Shader(const Renderer& renderer, const unsigned int type, std::string source) : source{std::move(source)},
+        renderer{&renderer}, type{type} {
     }
 
     Shader(const Shader&) = delete;
 
     Shader& operator=(const Shader&) = delete;
 
-    Shader(Shader&& other) noexcept : source{std::move(other.source)}, type{other.type}, id{other.id} {
+    Shader(Shader&& other) noexcept : source{std::move(other.source)}, renderer{renderer}, type{other.type},
+                                      id{other.id} {
     }
 
     Shader& operator=(Shader&& other) noexcept {
@@ -123,7 +42,7 @@ public:
             return;
         }
 
-        GL_CALL(glDeleteShader(id));
+        RENDERER_API_CALL(*renderer, glDeleteShader(id));
         id = 0;
     }
 
@@ -145,16 +64,17 @@ public:
             return;
         }
 
-        const auto shaderId = GL_CALL_RET(glCreateShader(type));
+        const auto shaderId = RENDERER_API_CALL_RETURN(*renderer, glCreateShader(type));
         const auto* const src = source.c_str();
-        GL_CALL(glShaderSource(shaderId, 1, &src, nullptr));
-        GL_CALL(glCompileShader(shaderId));
+        RENDERER_API_CALL(*renderer, glShaderSource(shaderId, 1, &src, nullptr));
+        RENDERER_API_CALL(*renderer, glCompileShader(shaderId));
 
         int success{};
-        GL_CALL(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
+        RENDERER_API_CALL(*renderer, glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
         if (success == 0) {
             std::array<char, 512> infoLog{};
-            GL_CALL(glGetShaderInfoLog(shaderId, infoLog.size(), nullptr, infoLog.data()));
+            RENDERER_API_CALL(*renderer,
+                              glGetShaderInfoLog(shaderId, infoLog.size(), nullptr, infoLog.data()));
             std::cerr << "Shader compilation failed:\n" << infoLog.data() << "\n";
             return;
         }
@@ -180,6 +100,7 @@ public:
 
 private:
     std::string source;
+    const Renderer* renderer{};
     unsigned int type{};
     unsigned int id{};
 };
@@ -206,11 +127,11 @@ public:
         assert(m_stream.good());
     }
 
-    Shader operator()() {
-        auto fail = [this](const std::string& description) {
+    Shader operator()(const Renderer& renderer) {
+        auto fail = [this, &renderer](const std::string& description) {
             std::cerr << "Failed to parse shader source: " << description << " At line "
                     << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << '\n';
-            return Shader{};
+            return Shader{renderer};
         };
 
         std::stringstream ss;
@@ -249,11 +170,11 @@ public:
             return fail("Shader type is not set.");
         }
 
-        return Shader{shaderType, ss.str()};
+        return Shader{renderer, shaderType, ss.str()};
     }
 
-    Shader next() {
-        return (*this)();
+    Shader next(const Renderer& renderer) {
+        return (*this)(renderer);
     }
 
 private:
@@ -267,7 +188,7 @@ class ShaderProgram {
     const char* creationFailStr = "Failed to create shader program.";
 
     auto createProgram() {
-        id = GL_CALL_RET(glCreateProgram());
+        id = RENDERER_API_CALL_RETURN(*renderer, glCreateProgram());
         if (id == 0) {
             std::cerr << creationFailStr << '\n';
         }
@@ -276,10 +197,10 @@ class ShaderProgram {
     }
 
     [[nodiscard]] auto linkProgram() const {
-        GL_CALL(glLinkProgram(id));
+        RENDERER_API_CALL(*renderer, glLinkProgram(id));
 
         int linkStatus = 0;
-        GL_CALL(glGetProgramiv(id, GL_LINK_STATUS, &linkStatus));
+        RENDERER_API_CALL(*renderer, glGetProgramiv(id, GL_LINK_STATUS, &linkStatus));
         if (linkStatus == 0) {
             std::cerr << "Failed to link shader program." << '\n';
         }
@@ -288,7 +209,7 @@ class ShaderProgram {
     }
 
     void attachShader(const unsigned int shaderId) const {
-        GL_CALL(glAttachShader(id, shaderId));
+        RENDERER_API_CALL(*renderer, glAttachShader(id, shaderId));
     }
 
 public:
@@ -310,12 +231,12 @@ public:
         }
     }
 
-    explicit ShaderProgram(ShaderSourceParser sourceParser) {
+    ShaderProgram(const Renderer& renderer, ShaderSourceParser sourceParser) : renderer(&renderer) {
         if (!createProgram()) {
             return;
         }
 
-        while (auto shader{sourceParser.next()}) {
+        while (auto shader{sourceParser.next(renderer)}) {
             shader.compile();
             if (!shader.isCompiled()) {
                 std::cerr << creationFailStr << '\n';
@@ -334,7 +255,7 @@ public:
 
     ShaderProgram& operator=(const ShaderProgram&) = delete;
 
-    ShaderProgram(ShaderProgram&& other) noexcept : id{other.id} {
+    ShaderProgram(ShaderProgram&& other) noexcept : renderer(other.renderer), id{other.id} {
         other.id = 0;
     }
 
@@ -344,14 +265,18 @@ public:
         return *this;
     }
 
-    explicit ShaderProgram(unsigned int id) : id{id} {
+    explicit ShaderProgram(const unsigned int id) : id{id} {
     }
 
     void use() const {
-        GL_CALL(glUseProgram(id));
+        RENDERER_API_CALL(*renderer, glUseProgram(id));
     }
 
     explicit operator unsigned int() const {
+        return id;
+    }
+
+    [[nodiscard]] unsigned int getId() const {
         return id;
     }
 
@@ -360,10 +285,11 @@ public:
             return;
         }
 
-        GL_CALL(glDeleteProgram(id));
+        RENDERER_API_CALL(*renderer, glDeleteProgram(id));
     }
 
 private:
+    const Renderer* renderer{};
     unsigned int id{};
 };
 
@@ -371,35 +297,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #ifdef __linux__
     setenv("ASAN_OPTIONS", "detect_leaks=1", 1);
 #endif
-
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
-        return 1;
-    }
-
-    SDL_Window* window = createGlWindow(windowName, 800, 600);
-    if (window == nullptr) {
-        SDL_Quit();
-        return 1;
-    }
-
-    auto* const context = createGlContext(window);
-    if (context == nullptr) {
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
-
-    if (!initializeGlLoader()) {
-        SDL_DestroyWindow(window);
-        SDL_GL_DestroyContext(context);
-        SDL_Quit();
-        return 1;
-    }
-
-    unsigned int vao{};
-    GL_CALL(glGenVertexArrays(1, &vao));
-    GL_CALL(glBindVertexArray(vao));
+    // Renderer::createGlRenderer(Window::createGlobalGlWindow("Hej", 800, 600));
+    Window const window = Window::createGlWindow("Hej", 800, 600);
+    GlRenderer const renderer = Renderer::createGlRenderer(window);
 
     [[maybe_unused]] constexpr std::array<glm::vec2, 3> famousTriangle = {
         {
@@ -423,29 +323,34 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         2, 3, 0
     };
 
-    unsigned int buffer{};
-    GL_CALL(glGenBuffers(1, &buffer));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-    GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(famousSquare), famousSquare.data(), GL_STATIC_DRAW));
+    unsigned int vao{};
+    RENDERER_API_CALL(renderer, glGenVertexArrays(1, &vao));
+    RENDERER_API_CALL(renderer, glBindVertexArray(vao));
 
-    GL_CALL(glEnableVertexAttribArray(0));
-    GL_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr));
+    unsigned int buffer{};
+    RENDERER_API_CALL(renderer, glGenBuffers(1, &buffer));
+    RENDERER_API_CALL(renderer, glBindBuffer(GL_ARRAY_BUFFER, buffer));
+    RENDERER_API_CALL(renderer,
+                      glBufferData(GL_ARRAY_BUFFER, sizeof(famousSquare), famousSquare.data(), GL_STATIC_DRAW));
+
+    RENDERER_API_CALL(renderer, glEnableVertexAttribArray(0));
+    RENDERER_API_CALL(renderer,
+                      glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr));
 
     unsigned int ibo{};
-    GL_CALL(glGenBuffers(1, &ibo));
-    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW));
+    RENDERER_API_CALL(renderer, glGenBuffers(1, &ibo));
+    RENDERER_API_CALL(renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+    RENDERER_API_CALL(renderer,
+                      glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW));
 
-    /*auto parser = ShaderSourceParser("../res/shader/Basic.shader");
-    auto shader1 = parser.next();
-    auto shader2 = parser.next();
-    std::cout << "Vertex " << shader1.getType() << ": " << shader1.getSource()
-        << "Fragment "  << shader2.getType() << ": " << shader2.getSource() << '\n';*/
-
-    const ShaderProgram shaderProgram{ShaderSourceParser{"../res/shader/Basic.glsl"}};
+    const ShaderProgram shaderProgram{renderer, ShaderSourceParser{"../res/shader/Basic.glsl"}};
     shaderProgram.use();
-    const int location = GL_CALL_RET(glGetUniformLocation(static_cast<unsigned int>(shaderProgram), "u_Color"));
+    const int location = RENDERER_API_CALL_RETURN(renderer,
+                                                  glGetUniformLocation(shaderProgram.getId(), "u_Color"));
     assert(location != -1);
+    RENDERER_API_CALL(renderer, glUseProgram(0));
+    RENDERER_API_CALL(renderer, glBindBuffer(GL_ARRAY_BUFFER, 0));
+    RENDERER_API_CALL(renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
     bool running = true;
     SDL_Event event;
@@ -465,14 +370,23 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         }
 
         float blue = static_cast<float>(frameCount % 256) / 255.0f;
-        GL_CALL(glClearColor(0.1f, 0.2f, blue, 1.0f));
-        GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+        RENDERER_API_CALL(renderer, glClearColor(0.1f, 0.2f, blue, 1.0f));
+        RENDERER_API_CALL(renderer, glClear(GL_COLOR_BUFFER_BIT));
+
+        RENDERER_API_CALL(renderer, glUseProgram(shaderProgram.getId()));
+        RENDERER_API_CALL(renderer, glUniform4f(location, blue, .3f, .8f, 1.f));
+
+        /*RENDERER_API_CALL(glBindBuffer(GL_ARRAY_BUFFER, buffer));
+        RENDERER_API_CALL(glEnableVertexAttribArray(0));
+        RENDERER_API_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr));*/
+        RENDERER_API_CALL(renderer, glBindVertexArray(vao));
+        RENDERER_API_CALL(renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
 
         // glDrawArrays(GL_TRIANGLES, 0, famousSquare.size());
-        GL_CALL(glUniform4f(location, blue, .3f, .8f, 1.f));
-        GL_CALL(glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr));
+        RENDERER_API_CALL(renderer,
+                          glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr));
 
-        SDL_GL_SwapWindow(window);
+        renderer.swapWindow(window);
 
         uint64_t const frameEnd = SDL_GetPerformanceCounter();
 
@@ -486,7 +400,5 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         frameStart = SDL_GetPerformanceCounter();
     }
 
-    SDL_DestroyWindow(window);
-    SDL_Quit();
     return 0;
 }

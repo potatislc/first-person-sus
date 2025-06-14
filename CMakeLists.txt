@@ -31,7 +31,11 @@ FetchContent_MakeAvailable(SDL3)
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
-add_executable(${EXE_NAME} main.cpp)
+add_executable(${EXE_NAME} main.cpp
+        src/Renderer.h
+        src/Window.h
+        src/GlRenderer.cpp
+        src/Window.cpp)
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm)
 
 get_target_property(SDL3_INCLUDE_DIRS SDL3::SDL3 INTERFACE_INCLUDE_DIRECTORIES)
