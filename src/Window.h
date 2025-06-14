@@ -1,12 +1,12 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 #include <string>
-#include <SDL3/SDL_video.h>
-
+#include <SDL3/SDL.h>
 
 class Window {
 public:
-    static Window createGlWindow(const std::string& name, int width, int height);
+    Window(std::string name, SDL_Window* window) : m_Name{std::move(name)}, m_Window{window} {
+    }
 
     Window() = default;
 
@@ -18,24 +18,22 @@ public:
 
     Window& operator=(Window&&) = delete;
 
-    ~Window();
-
-    [[nodiscard]] auto createGlContext() const {
-        return SDL_GL_CreateContext(m_Window);
+    ~Window() {
+        SDL_DestroyWindow(m_Window);
+        SDL_Quit();
     }
 
     [[nodiscard]] bool isValid() const {
         return m_Window != nullptr;
     }
 
-    SDL_Window* get() const;
+    [[nodiscard]] SDL_Window* get() const {
+        return m_Window;
+    }
 
 private:
-    explicit Window(std::string name, SDL_Window* window);
-
     std::string m_Name;
     SDL_Window* m_Window{};
 };
-
 
 #endif //WINDOW_H

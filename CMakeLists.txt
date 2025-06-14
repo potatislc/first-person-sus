@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-endif()
+endif ()
 
 set(EXE_NAME ${PROJECT_NAME})
 
@@ -14,7 +14,7 @@ include(FetchContent)
 FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG        release-3.2.12
+        GIT_TAG release-3.2.12
 )
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
@@ -32,16 +32,22 @@ find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
 add_executable(${EXE_NAME} main.cpp
-        src/Renderer.h
+        src/Renderer/Renderer.h
         src/Window.h
-        src/GlRenderer.cpp
-        src/Window.cpp)
+        src/Renderer/GLRenderer.cpp
+        src/Renderer/Shader/Source.h
+        src/Renderer/Shader/Source.cpp
+        src/Renderer/Shader/Program.h
+        src/Renderer/Shader/Program.cpp
+        src/Renderer/GLRenderer.h
+        src/Renderer/Shader/Parser.h
+        src/Renderer/Shader/Parser.cpp)
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm)
 
 get_target_property(SDL3_INCLUDE_DIRS SDL3::SDL3 INTERFACE_INCLUDE_DIRECTORIES)
 if (SDL3_INCLUDE_DIRS)
     target_include_directories(${EXE_NAME} SYSTEM PRIVATE ${SDL3_INCLUDE_DIRS})
-endif()
+endif ()
 
 set(WARNING_FLAGS
         -Wall
@@ -61,9 +67,9 @@ target_compile_options(${EXE_NAME} PRIVATE ${WARNING_FLAGS})
 
 if (MSVC)
     target_compile_options(${EXE_NAME} PRIVATE /GR- /EHs-c- /we4530 /we4577)
-else()
+else ()
     target_compile_options(${EXE_NAME} PRIVATE -fno-exceptions -fno-rtti -Werror=non-virtual-dtor -Werror=rtti -Werror=exceptions)
-endif()
+endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     target_compile_options(${EXE_NAME} PRIVATE -fsanitize=address,undefined -g)
@@ -77,13 +83,13 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebIn
         target_link_options(${EXE_NAME} PRIVATE
                 /wholearchive:clang_rt.asan_dynamic_runtime_thunk-x86_64.lib
         )
-    endif()
-endif()
+    endif ()
+endif ()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${EXE_NAME} PRIVATE -O3 -DNDEBUG)
-endif()
+endif ()
 
 if (MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_target_properties(${EXE_NAME} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-endif()
+endif ()
