@@ -1,5 +1,5 @@
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef RENDERER_SHADER_SOURCE_H
+#define RENDERER_SHADER_SOURCE_H
 
 #include <string>
 
@@ -10,22 +10,18 @@ namespace Renderer {
 namespace Renderer::Shader {
     class Source {
     public:
-        Source() = delete;
+        Source() = default;
 
-        explicit Source(const Renderer& renderer) : m_Renderer{&renderer} {
-        }
-
-        Source(const Renderer& renderer, const uint32_t type, std::string source) : m_Source{
-                std::move(source)
-            },
-            m_Renderer{&renderer}, m_Type{type} {
+        Source(const uint32_t type, std::string source) : m_Source{
+                                                              std::move(source)
+                                                          }, m_Type{type} {
         }
 
         Source(const Source&) = delete;
 
         Source& operator=(const Source&) = delete;
 
-        Source(Source&& other) noexcept : m_Source{std::move(other.m_Source)}, m_Renderer{m_Renderer},
+        Source(Source&& other) noexcept : m_Source{std::move(other.m_Source)},
                                           m_Type{other.m_Type},
                                           m_Id{other.m_Id} {
         }
@@ -71,7 +67,6 @@ namespace Renderer::Shader {
 
     private:
         std::string m_Source;
-        const Renderer* m_Renderer{};
         uint32_t m_Type{};
         uint32_t m_Id{};
     };

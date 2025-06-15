@@ -46,8 +46,10 @@ Renderer::GlRenderer::GlRenderer(const Window& window) : m_Context(SDL_GL_Create
         return;
     }
 
-    std::cout << "GL Version: " << RENDERER_API_CALL_RETURN(*this, glGetString(GL_VERSION)) << '\n';
-    std::cout << "GLSL Version: " << RENDERER_API_CALL_RETURN(*this, glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n';
+    s_ActiveRenderer = this;
+
+    std::cout << "GL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_VERSION)) << '\n';
+    std::cout << "GLSL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n';
 }
 
 void Renderer::GlRenderer::clearErrors() const {

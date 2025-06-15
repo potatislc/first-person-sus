@@ -1,5 +1,5 @@
-#ifndef SOURCEPARSER_H
-#define SOURCEPARSER_H
+#ifndef RENDERER_SHADER_PARSER_H
+#define RENDERER_SHADER_PARSER_H
 
 #include <fstream>
 #include <iostream>
@@ -22,10 +22,10 @@ namespace Renderer::Shader {
 
         explicit Parser(const std::string& filePath);
 
-        Source operator()(const Renderer& renderer);
+        Source operator()();
 
-        Source next(const Renderer& renderer) {
-            return (*this)(renderer);
+        Source next() {
+            return (*this)();
         }
 
     private:

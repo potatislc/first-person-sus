@@ -1,5 +1,5 @@
-#ifndef VERTEXBUFFER_H
-#define VERTEXBUFFER_H
+#ifndef RENDERER_BUFFER_INDEX_H
+#define RENDERER_BUFFER_INDEX_H
 #include <cstdint>
 
 namespace Renderer {
@@ -9,17 +9,17 @@ namespace Renderer {
 namespace Renderer::Buffer {
     class Index {
     public:
-        Index(const Renderer& renderer, const uint32_t* data, uint32_t count);
+        Index(const uint32_t* data, uint32_t count);
 
         ~Index();
 
         void bind() const;
 
-        void unbind() const;
+        static void unbind();
 
     private:
-        const Renderer* m_Renderer{};
-        uint32_t m_BufferId{};
+        uint32_t m_Id{};
+        uint32_t m_Count{};
     };
 }
 

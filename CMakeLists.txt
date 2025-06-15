@@ -45,7 +45,9 @@ add_executable(${EXE_NAME} main.cpp
         src/renderer/buffer/Vertex.h
         src/renderer/buffer/Vertex.cpp
         src/renderer/buffer/Index.cpp
-        src/renderer/buffer/Index.h)
+        src/renderer/buffer/Index.h
+        src/renderer/VertexArray.h
+        src/renderer/VertexArray.cpp)
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm)
 
 get_target_property(SDL3_INCLUDE_DIRS SDL3::SDL3 INTERFACE_INCLUDE_DIRECTORIES)

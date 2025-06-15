@@ -9,8 +9,11 @@
 #include <string>
 #include "./src/Window.h"
 #include "src/renderer/GlRenderer.h"
+#include "src/renderer/buffer/Index.h"
+#include "src/renderer/buffer/Vertex.h"
 #include "src/renderer/shader/Parser.h"
 #include "src/renderer/shader/Program.h"
+#include "src/renderer/VertexArray.h"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #ifdef __linux__
@@ -42,33 +45,22 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     };
 
     unsigned int vao{};
-    RENDERER_API_CALL(renderer, glGenVertexArrays(1, &vao));
-    RENDERER_API_CALL(renderer, glBindVertexArray(vao));
+    RENDERER_API_CALL(glGenVertexArrays(1, &vao));
+    RENDERER_API_CALL(glBindVertexArray(vao));
 
-    unsigned int buffer{};
-    RENDERER_API_CALL(renderer, glGenBuffers(1, &buffer));
-    RENDERER_API_CALL(renderer, glBindBuffer(GL_ARRAY_BUFFER, buffer));
-    RENDERER_API_CALL(renderer,
-                      glBufferData(GL_ARRAY_BUFFER, sizeof(famousSquare), famousSquare.data(), GL_STATIC_DRAW));
+    const Renderer::VertexArray vertexArray;
 
-    RENDERER_API_CALL(renderer, glEnableVertexAttribArray(0));
-    RENDERER_API_CALL(renderer,
-                      glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr));
+    const Renderer::Buffer::Vertex vertexBuffer{famousSquare.data(), sizeof(famousSquare)};
+    Renderer::Buffer::Vertex::Layout vertexLayout{};
+    vertexLayout.push<float>(glm::vec2::length());
+    vertexArray.addBuffer(vertexBuffer, vertexLayout);
 
-    unsigned int ibo{};
-    RENDERER_API_CALL(renderer, glGenBuffers(1, &ibo));
-    RENDERER_API_CALL(renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-    RENDERER_API_CALL(renderer,
-                      glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW));
+    const Renderer::Buffer::Index indexBuffer{indices.data(), sizeof(indices)};
 
-    const Renderer::Shader::Program shaderProgram{renderer, Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
+    const Renderer::Shader::Program shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
     shaderProgram.use();
-    const int location = RENDERER_API_CALL_RETURN(renderer,
-                                                  glGetUniformLocation(shaderProgram.getId(), "u_Color"));
+    const int location = RENDERER_API_CALL_RETURN(glGetUniformLocation(shaderProgram.getId(), "u_Color"));
     assert(location != -1);
-    RENDERER_API_CALL(renderer, glUseProgram(0));
-    RENDERER_API_CALL(renderer, glBindBuffer(GL_ARRAY_BUFFER, 0));
-    RENDERER_API_CALL(renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
     bool running = true;
     SDL_Event event;
@@ -88,21 +80,17 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         }
 
         float blue = static_cast<float>(frameCount % 256) / 255.0f;
-        RENDERER_API_CALL(renderer, glClearColor(0.1f, 0.2f, blue, 1.0f));
-        RENDERER_API_CALL(renderer, glClear(GL_COLOR_BUFFER_BIT));
+        RENDERER_API_CALL(glClearColor(0.1f, 0.2f, blue, 1.0f));
+        RENDERER_API_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
-        RENDERER_API_CALL(renderer, glUseProgram(shaderProgram.getId()));
-        RENDERER_API_CALL(renderer, glUniform4f(location, blue, .3f, .8f, 1.f));
+        RENDERER_API_CALL(glUseProgram(shaderProgram.getId()));
+        RENDERER_API_CALL(glUniform4f(location, blue, .3f, .8f, 1.f));
 
-        /*RENDERER_API_CALL(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-        RENDERER_API_CALL(glEnableVertexAttribArray(0));
-        RENDERER_API_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), nullptr));*/
-        RENDERER_API_CALL(renderer, glBindVertexArray(vao));
-        RENDERER_API_CALL(renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+        vertexArray.bind();
+        indexBuffer.bind();
 
-        // glDrawArrays(GL_TRIANGLES, 0, famousSquare.size());
-        RENDERER_API_CALL(renderer,
-                          glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr));
+        RENDERER_API_CALL(
+            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr));
 
         renderer.swapWindow(window);
 

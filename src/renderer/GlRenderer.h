@@ -1,5 +1,5 @@
-#ifndef GLRENDERER_H
-#define GLRENDERER_H
+#ifndef RENDERER_GLRENDERER_H
+#define RENDERER_GLRENDERER_H
 
 #include "Renderer.h"
 

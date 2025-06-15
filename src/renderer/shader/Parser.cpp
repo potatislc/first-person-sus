@@ -14,11 +14,11 @@ Renderer::Shader::Parser::Parser(const std::string& filePath) : m_Stream{filePat
     assert(m_Stream.good());
 }
 
-Renderer::Shader::Source Renderer::Shader::Parser::operator()(const Renderer& renderer) {
-    auto fail = [this, &renderer](const std::string& description) {
+Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
+    auto fail = [this](const std::string& description) {
         std::cerr << "Failed to parse shader source: " << description << " At line "
                 << m_LineCount << ". " << "[LINE SOURCE]: " << m_Line << '\n';
-        return Source{renderer};
+        return Source{};
     };
 
     std::stringstream ss;
@@ -57,5 +57,5 @@ Renderer::Shader::Source Renderer::Shader::Parser::operator()(const Renderer& re
         return fail("Shader type is not set.");
     }
 
-    return Source{renderer, shaderType, ss.str()};
+    return Source{shaderType, ss.str()};
 }

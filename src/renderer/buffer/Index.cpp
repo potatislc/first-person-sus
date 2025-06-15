@@ -4,24 +4,21 @@
 
 #include "../Renderer.h"
 
-Renderer::Buffer::Index::Index(const Renderer& renderer, const uint32_t* data, const uint32_t count) : m_Renderer{
-    &renderer
-} {
-    RENDERER_API_CALL(renderer, glGenBuffers(1, &m_BufferId));
+Renderer::Buffer::Index::Index(const uint32_t* data, const uint32_t count) : m_Count{count} {
+    RENDERER_API_CALL(glGenBuffers(1, &m_Id));
     bind();
-    RENDERER_API_CALL(renderer,
-                      glBufferData(GL_ELEMENT_ARRAY_BUFFER, count, data, GL_STATIC_DRAW));
+    RENDERER_API_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(decltype(count)), data, GL_STATIC_DRAW));
 }
 
 Renderer::Buffer::Index::~Index() {
     unbind();
-    RENDERER_API_CALL(*m_Renderer, glDeleteBuffers(1, &m_BufferId));
+    RENDERER_API_CALL(glDeleteBuffers(1, &m_Id));
 }
 
 void Renderer::Buffer::Index::bind() const {
-    RENDERER_API_CALL(*m_Renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferId));
+    RENDERER_API_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Id));
 }
 
-void Renderer::Buffer::Index::unbind() const {
-    RENDERER_API_CALL(*m_Renderer, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+void Renderer::Buffer::Index::unbind() {
+    RENDERER_API_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }

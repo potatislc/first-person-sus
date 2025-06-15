@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 #include <cassert>
+#include <iostream>
 #include <utility>
 #include <SDL3/SDL.h>
 
@@ -9,16 +10,53 @@
 namespace Renderer {
     class GlRenderer;
 
+    enum class Type : uint8_t {
+        NONE = 0,
+        OPEN_GL = 1,
+        SDL_GPU = 2
+    };
+
+    inline const char* toString(const Type e) {
+        switch (e) {
+            case Type::NONE: return "NONE";
+            case Type::OPEN_GL: return "OPEN_GL";
+            case Type::SDL_GPU: return "SDL_GPU";
+            default: return "unknown";
+        }
+    }
+
     class Renderer {
     public:
-#ifndef NDEBUG
-        template<typename Func>
-        void apiCall(Func&& func, const char* code, const char* file, size_t line) const;
+        static Renderer* getActiveRenderer() {
+            return s_ActiveRenderer;
+        }
 
         template<typename Func>
-        [[nodiscard]] auto apiCallReturn(Func&& func, const char* code, const char* file,
-                                         size_t line) const -> decltype(func());
-#endif
+        static void apiCall(const Renderer* renderer, Func&& func, const char* code, const char* file,
+                            const size_t line) {
+            if (renderer == nullptr) {
+                std::cerr << "In Renderer::Debug::apiCall: Renderer is not set.\n";
+                return;
+            }
+
+            renderer->clearErrors();
+            std::forward<Func>(func)();
+            assert(renderer->logErrors(code, file, line));
+        }
+
+        template<typename Func>
+        static auto apiCallReturn(const Renderer* renderer, Func&& func, const char* code, const char* file,
+                                  const size_t line) -> decltype(func()) {
+            if (renderer == nullptr) {
+                std::cerr << "In Renderer::Debug::apiCallReturn: Renderer is not set.\n";
+                return decltype(func()){};
+            }
+
+            renderer->clearErrors();
+            auto result = std::forward<Func>(func)();
+            assert(renderer->logErrors(code, file, line));
+            return result;
+        }
 
         Renderer() = default;
 
@@ -31,7 +69,9 @@ namespace Renderer {
 
         Renderer& operator=(Renderer&&) = delete;
 
-        virtual ~Renderer() = default;
+        virtual ~Renderer() {
+            s_ActiveRenderer = nullptr;
+        }
 
         virtual void clearErrors() const = 0;
 
@@ -40,7 +80,11 @@ namespace Renderer {
         virtual bool isValid() = 0;
 
         virtual void swapWindow(const Window& window) const = 0;
+
+    protected:
+        static inline Renderer* s_ActiveRenderer{};
     };
+}
 
 #ifdef NDEBUG
 
@@ -49,26 +93,9 @@ namespace Renderer {
 
 #else
 
-    template<typename Func>
-    void Renderer::apiCall(Func&& func, const char* code, const char* file, const size_t line) const {
-        clearErrors();
-        std::forward<Func>(func)();
-        assert(logErrors(code, file, line));
-    }
-
-    template<typename Func>
-    auto Renderer::apiCallReturn(Func&& func, const char* code, const char* file,
-                                 const size_t line) const -> decltype(func()) {
-        clearErrors();
-        auto result = std::forward<Func>(func)();
-        assert(logErrors(code, file, line));
-        return result;
-    }
-
-#define RENDERER_API_CALL(renderer, x) (renderer).apiCall([&] { x; }, #x, __FILE__, __LINE__)
-#define RENDERER_API_CALL_RETURN(renderer, x) (renderer).apiCallReturn([&] { return (x); }, #x, __FILE__, __LINE__)
+#define RENDERER_API_CALL(x) Renderer::Renderer::apiCall(Renderer::Renderer::getActiveRenderer(), [&] { x; }, #x, __FILE__, __LINE__)
+#define RENDERER_API_CALL_RETURN(x) Renderer::Renderer::apiCallReturn(Renderer::Renderer::getActiveRenderer(), [&] { return (x); }, #x, __FILE__, __LINE__)
 
 #endif
-}
 
 #endif //RENDERER_H

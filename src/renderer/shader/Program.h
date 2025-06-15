@@ -1,5 +1,5 @@
-#ifndef SHADERPROGRAM_H
-#define SHADERPROGRAM_H
+#ifndef RENDERER_SHADER_PROGRAM_H
+#define RENDERER_SHADER_PROGRAM_H
 
 #include <iostream>
 
@@ -15,13 +15,13 @@ namespace Renderer::Shader {
         template<typename... Args>
         explicit Program(Args&... shaders);
 
-        Program(const Renderer& renderer, Parser sourceParser);
+        explicit Program(Parser sourceParser);
 
         Program(const Program&) = delete;
 
         Program& operator=(const Program&) = delete;
 
-        Program(Program&& other) noexcept : m_Renderer(other.m_Renderer), m_Id{other.m_Id} {
+        Program(Program&& other) noexcept : m_Id{other.m_Id} {
             other.m_Id = 0;
         }
 
@@ -55,7 +55,6 @@ namespace Renderer::Shader {
 
         void attachShader(uint32_t shaderId) const;
 
-        const Renderer* m_Renderer{};
         uint32_t m_Id{};
     };
 
