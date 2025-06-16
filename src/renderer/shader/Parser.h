@@ -2,7 +2,6 @@
 #define RENDERER_SHADER_PARSER_H
 
 #include <fstream>
-#include <iostream>
 #include "Source.h"
 
 namespace Renderer::Shader {
@@ -36,4 +35,4 @@ namespace Renderer::Shader {
     };
 }
 
-#endif //SOURCEPARSER_H
+#endif

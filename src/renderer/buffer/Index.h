@@ -23,4 +23,4 @@ namespace Renderer::Buffer {
     };
 }
 
-#endif //VERTEXBUFFER_H
+#endif

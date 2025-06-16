@@ -6,6 +6,9 @@
 #include "Parser.h"
 #include "../Renderer.h"
 
+void Renderer::Shader::Program::getUniformLocation(const char* name) {
+}
+
 bool Renderer::Shader::Program::createProgram() {
     m_Id = RENDERER_API_CALL_RETURN(glCreateProgram());
     if (m_Id == 0) {
@@ -51,14 +54,23 @@ Renderer::Shader::Program::Program(Parser sourceParser) {
     }
 }
 
-void Renderer::Shader::Program::use() const {
+void Renderer::Shader::Program::bind() const {
     RENDERER_API_CALL(glUseProgram(m_Id));
 }
 
-Renderer::Shader::Program::~Program() {
+void Renderer::Shader::Program::unbind() {
+    RENDERER_API_CALL(glUseProgram(0));
+}
+
+void Renderer::Shader::Program::destroy() const {
     if (m_Id == 0) {
         return;
     }
 
+    unbind();
     RENDERER_API_CALL(glDeleteProgram(m_Id));
+}
+
+Renderer::Shader::Program::~Program() {
+    destroy();
 }

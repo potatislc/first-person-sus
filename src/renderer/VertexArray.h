@@ -25,4 +25,4 @@ namespace Renderer {
         uint32_t m_Id{};
     };
 }
-#endif //VERTEXARRAY_H
+#endif

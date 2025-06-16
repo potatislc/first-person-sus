@@ -56,4 +56,4 @@ namespace Renderer::Buffer {
     void Vertex::Layout::push<uint8_t>(uint32_t count);
 }
 
-#endif //VERTEXBUFFER_H
+#endif

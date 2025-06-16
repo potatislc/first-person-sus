@@ -98,4 +98,4 @@ namespace Renderer {
 
 #endif
 
-#endif //RENDERER_H
+#endif

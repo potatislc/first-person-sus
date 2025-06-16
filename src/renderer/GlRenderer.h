@@ -32,4 +32,4 @@ namespace Renderer {
     };
 }
 
-#endif //GLRENDERER_H
+#endif

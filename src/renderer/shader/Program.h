@@ -2,6 +2,7 @@
 #define RENDERER_SHADER_PROGRAM_H
 
 #include <iostream>
+#include <vector>
 
 namespace Renderer {
     class Renderer;
@@ -34,9 +35,13 @@ namespace Renderer::Shader {
         explicit Program(const uint32_t id) : m_Id{id} {
         }
 
+        void destroy() const;
+
         ~Program();
 
-        void use() const;
+        void bind() const;
+
+        static void unbind();
 
         explicit operator uint32_t() const {
             return m_Id;
@@ -45,6 +50,11 @@ namespace Renderer::Shader {
         [[nodiscard]] uint32_t getId() const {
             return m_Id;
         }
+
+        template<typename... T>
+        void setUniform(int32_t location, T... val);
+
+        void getUniformLocation(const char* name);
 
     private:
         const char* creationFailStr = "Failed to create shader program.";
@@ -56,6 +66,7 @@ namespace Renderer::Shader {
         void attachShader(uint32_t shaderId) const;
 
         uint32_t m_Id{};
+        std::vector<int32_t> m_UniformLocations;
     };
 
     template<typename... Args>
@@ -75,6 +86,10 @@ namespace Renderer::Shader {
             return;
         }
     }
+
+    template<typename... T>
+    void Program::setUniform(int32_t location, T... val) {
+    }
 }
 
-#endif //SHADERPROGRAM_H
+#endif

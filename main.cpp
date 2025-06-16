@@ -44,10 +44,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         2, 3, 0
     };
 
-    unsigned int vao{};
-    RENDERER_API_CALL(glGenVertexArrays(1, &vao));
-    RENDERER_API_CALL(glBindVertexArray(vao));
-
     const Renderer::VertexArray vertexArray;
 
     const Renderer::Buffer::Vertex vertexBuffer{famousSquare.data(), sizeof(famousSquare)};
@@ -58,9 +54,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     const Renderer::Buffer::Index indexBuffer{indices.data(), sizeof(indices)};
 
     const Renderer::Shader::Program shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
-    shaderProgram.use();
+    shaderProgram.bind();
     const int location = RENDERER_API_CALL_RETURN(glGetUniformLocation(shaderProgram.getId(), "u_Color"));
     assert(location != -1);
+    Renderer::Shader::Program::unbind();
 
     bool running = true;
     SDL_Event event;
@@ -83,7 +80,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         RENDERER_API_CALL(glClearColor(0.1f, 0.2f, blue, 1.0f));
         RENDERER_API_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
-        RENDERER_API_CALL(glUseProgram(shaderProgram.getId()));
+        shaderProgram.bind();
         RENDERER_API_CALL(glUniform4f(location, blue, .3f, .8f, 1.f));
 
         vertexArray.bind();

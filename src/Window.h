@@ -36,4 +36,4 @@ private:
     SDL_Window* m_Window{};
 };
 
-#endif //WINDOW_H
+#endif
