@@ -2,6 +2,9 @@
 #define RENDERER_SHADER_SOURCE_H
 
 #include <string>
+#include <vector>
+
+#include "Uniform.h"
 
 namespace Renderer {
     class Renderer;
@@ -12,16 +15,18 @@ namespace Renderer::Shader {
     public:
         Source() = default;
 
-        Source(const uint32_t type, std::string source) : m_Source{
-                                                              std::move(source)
-                                                          }, m_Type{type} {
+        Source(const uint32_t type, std::string source, std::vector<Uniform> uniforms = {}) : m_Source{
+                std::move(source)
+            }, m_Uniforms{
+                std::move(uniforms)
+            }, m_Type{type} {
         }
 
         Source(const Source&) = delete;
 
         Source& operator=(const Source&) = delete;
 
-        Source(Source&& other) noexcept : m_Source{std::move(other.m_Source)},
+        Source(Source&& other) noexcept : m_Source{std::move(other.m_Source)}, m_Uniforms{std::move(other.m_Uniforms)},
                                           m_Type{other.m_Type},
                                           m_Id{other.m_Id} {
         }
@@ -65,8 +70,11 @@ namespace Renderer::Shader {
             return hasValidSource();
         }
 
+        [[nodiscard]] const std::vector<Uniform>& getUniforms() const;
+
     private:
         std::string m_Source;
+        std::vector<Uniform> m_Uniforms;
         uint32_t m_Type{};
         uint32_t m_Id{};
     };

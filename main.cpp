@@ -54,10 +54,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     const Renderer::Buffer::Index indexBuffer{indices.data(), sizeof(indices)};
 
     const Renderer::Shader::Program shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
-    shaderProgram.bind();
-    const int location = RENDERER_API_CALL_RETURN(glGetUniformLocation(shaderProgram.getId(), "u_Color"));
-    assert(location != -1);
-    Renderer::Shader::Program::unbind();
 
     bool running = true;
     SDL_Event event;
@@ -81,7 +77,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         RENDERER_API_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
         shaderProgram.bind();
-        RENDERER_API_CALL(glUniform4f(location, blue, .3f, .8f, 1.f));
+        RENDERER_API_CALL(glUniform4f(shaderProgram.getUniformLocation("u_Color"), blue, .3f, .8f, 1.f));
+
 
         vertexArray.bind();
         indexBuffer.bind();

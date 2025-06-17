@@ -24,6 +24,7 @@ Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
 
     std::stringstream ss;
     uint32_t shaderType = m_NextShaderType;
+    std::vector<Uniform> uniforms;
 
     while (std::getline(m_Stream, m_Line)) {
         ++m_LineCount;
@@ -51,6 +52,15 @@ Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
             continue;
         }
 
+        if (m_Line.contains("uniform ")) {
+            auto uniformName = m_Line.substr(m_Line.find_last_of(' ') + 1);
+            if (const size_t end = uniformName.find_first_of(';'); end != std::string::npos) {
+                uniformName.erase(end);
+            }
+
+            uniforms.emplace_back(uniformName);
+        }
+
         ss << m_Line << '\n';
     }
 
@@ -58,5 +68,5 @@ Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
         return fail("Shader type is not set.");
     }
 
-    return Source{shaderType, ss.str()};
+    return Source{shaderType, ss.str(), uniforms};
 }

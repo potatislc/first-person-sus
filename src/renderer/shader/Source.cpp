@@ -37,3 +37,7 @@ void Renderer::Shader::Source::compile() {
 
     m_Id = shaderId;
 }
+
+const std::vector<Renderer::Shader::Uniform>& Renderer::Shader::Source::getUniforms() const {
+    return m_Uniforms;
+}

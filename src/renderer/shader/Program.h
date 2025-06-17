@@ -4,11 +4,14 @@
 #include <iostream>
 #include <vector>
 
+#include "Uniform.h"
+
 namespace Renderer {
     class Renderer;
 }
 
 namespace Renderer::Shader {
+    class Source;
     class Parser;
 
     class Program {
@@ -52,9 +55,9 @@ namespace Renderer::Shader {
         }
 
         template<typename... T>
-        void setUniform(int32_t location, T... val);
+        void setUniform(const char* name, T... val);
 
-        void getUniformLocation(const char* name);
+        [[nodiscard]] int32_t getUniformLocation(const std::string& name) const;
 
     private:
         const char* creationFailStr = "Failed to create shader program.";
@@ -63,10 +66,12 @@ namespace Renderer::Shader {
 
         [[nodiscard]] bool linkProgram() const;
 
-        void attachShader(uint32_t shaderId) const;
+        void attachShader(const Source& source);
+
+        bool locateUniforms();
 
         uint32_t m_Id{};
-        std::vector<int32_t> m_UniformLocations;
+        std::vector<Uniform> m_Uniforms;
     };
 
     template<typename... Args>
@@ -80,15 +85,19 @@ namespace Renderer::Shader {
             return;
         }
 
-        (attachShader(shaders.getId()), ...);
+        (attachShader(shaders), ...);
 
         if (!linkProgram()) {
+            return;
+        }
+
+        if (!locateUniforms()) {
             return;
         }
     }
 
     template<typename... T>
-    void Program::setUniform(int32_t location, T... val) {
+    void Program::setUniform(const char* name, T... val) {
     }
 }
 

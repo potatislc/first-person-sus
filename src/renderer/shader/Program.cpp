@@ -5,8 +5,15 @@
 
 #include "Parser.h"
 #include "../Renderer.h"
+#include "Source.h"
 
-void Renderer::Shader::Program::getUniformLocation(const char* name) {
+int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) const {
+    for (const auto& uniform: m_Uniforms) {
+        if (uniform.m_Name == name) {
+            return uniform.m_Location;
+        }
+    }
+    return Uniform::noLocation;
 }
 
 bool Renderer::Shader::Program::createProgram() {
@@ -30,8 +37,20 @@ bool Renderer::Shader::Program::linkProgram() const {
     return static_cast<bool>(linkStatus);
 }
 
-void Renderer::Shader::Program::attachShader(const uint32_t shaderId) const {
-    RENDERER_API_CALL(glAttachShader(m_Id, shaderId));
+void Renderer::Shader::Program::attachShader(const Source& source) {
+    auto appendUniforms = source.getUniforms();
+    m_Uniforms.insert(m_Uniforms.end(), appendUniforms.begin(), appendUniforms.end());
+    RENDERER_API_CALL(glAttachShader(m_Id, source.getId()));
+}
+
+bool Renderer::Shader::Program::locateUniforms() {
+    for (auto& uniform: m_Uniforms) {
+        if (!uniform.locate(m_Id)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 Renderer::Shader::Program::Program(Parser sourceParser) {
@@ -46,10 +65,14 @@ Renderer::Shader::Program::Program(Parser sourceParser) {
             return;
         }
 
-        attachShader(shader.getId());
+        attachShader(shader);
     }
 
     if (!linkProgram()) {
+        return;
+    }
+
+    if (!locateUniforms()) {
         return;
     }
 }
