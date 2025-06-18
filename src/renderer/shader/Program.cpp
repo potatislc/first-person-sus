@@ -8,7 +8,6 @@
 #include "Source.h"
 
 void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& vec4) const {
-    bind();
     RENDERER_API_CALL(glUniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w));
 }
 
