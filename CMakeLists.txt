@@ -31,30 +31,35 @@ FetchContent_MakeAvailable(SDL3)
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
-add_executable(${EXE_NAME} main.cpp
-        src/renderer/renderer.h
-        src/Window.h
+add_executable(${EXE_NAME} src/main.cpp
         src/renderer/GlRenderer.cpp
-        src/renderer/shader/Source.h
         src/renderer/shader/Source.cpp
-        src/renderer/shader/Program.h
         src/renderer/shader/Program.cpp
-        src/renderer/GlRenderer.h
-        src/renderer/shader/Parser.h
         src/renderer/shader/Parser.cpp
-        src/renderer/buffer/Vertex.h
         src/renderer/buffer/Vertex.cpp
         src/renderer/buffer/Index.cpp
-        src/renderer/buffer/Index.h
-        src/renderer/VertexArray.h
         src/renderer/VertexArray.cpp
-        src/renderer/shader/Uniform.cpp)
+        src/renderer/shader/Uniform.cpp
+        src/vendor/stb_image/stb_image.cpp
+        src/renderer/texture/Texture.cpp)
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm)
 
 get_target_property(SDL3_INCLUDE_DIRS SDL3::SDL3 INTERFACE_INCLUDE_DIRECTORIES)
 if (SDL3_INCLUDE_DIRS)
     target_include_directories(${EXE_NAME} SYSTEM PRIVATE ${SDL3_INCLUDE_DIRS})
 endif ()
+
+
+target_include_directories(${PROJECT_NAME}
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/stb_image
+)
+
+file(GLOB STB_IMAGE_SRC "src/vendor/stb_image/stb_image.cpp")
+
+set_source_files_properties(${STB_IMAGE_SRC}
+        PROPERTIES COMPILE_FLAGS "-w"
+)
 
 set(WARNING_FLAGS
         -Wall
@@ -72,6 +77,7 @@ set(WARNING_FLAGS
 )
 target_compile_options(${EXE_NAME} PRIVATE ${WARNING_FLAGS})
 
+
 if (MSVC)
     target_compile_options(${EXE_NAME} PRIVATE /GR- /EHs-c- /we4530 /we4577)
 else ()
@@ -79,7 +85,7 @@ else ()
 endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    target_compile_options(${EXE_NAME} PRIVATE -fsanitize=address,undefined -g)
+    target_compile_options(${EXE_NAME} PRIVATE -O0 -g -fsanitize=address,undefined)
     target_link_options(${EXE_NAME} PRIVATE -fsanitize=address,undefined /INCREMENTAL:NO)
 
     if (MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")

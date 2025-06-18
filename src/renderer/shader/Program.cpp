@@ -1,5 +1,6 @@
 #include "Program.h"
 
+#include <array>
 #include <iostream>
 #include <glad/glad.h>
 
@@ -7,8 +8,16 @@
 #include "../Renderer.h"
 #include "Source.h"
 
-void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& vec4) const {
-    RENDERER_API_CALL(glUniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w));
+void Renderer::Shader::Program::setUniform(const int32_t location, const int val) const {
+    RENDERER_API_CALL(glUniform1i(location, val));
+}
+
+void Renderer::Shader::Program::setUniform(const int32_t location, const float val) const {
+    RENDERER_API_CALL(glUniform1f(location, val));
+}
+
+void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& val) const {
+    RENDERER_API_CALL(glUniform4f(location, val.x, val.y, val.z, val.w));
 }
 
 int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) const {
@@ -39,6 +48,9 @@ bool Renderer::Shader::Program::linkProgram() const {
     RENDERER_API_CALL(glGetProgramiv(m_Id, GL_LINK_STATUS, &linkStatus));
     if (linkStatus == 0) {
         std::cerr << "Failed to link shader program." << '\n';
+        std::array<char, 512> log{};
+        glGetProgramInfoLog(m_Id, 512, nullptr, log.data());
+        std::cerr << "Link error: " << log.data() << '\n';
     }
 
     return static_cast<bool>(linkStatus);
@@ -47,6 +59,7 @@ bool Renderer::Shader::Program::linkProgram() const {
 void Renderer::Shader::Program::attachShader(const Source& source) {
     auto appendUniforms = source.getUniforms();
     m_Uniforms.insert(m_Uniforms.end(), appendUniforms.begin(), appendUniforms.end());
+
     RENDERER_API_CALL(glAttachShader(m_Id, source.getId()));
 }
 
@@ -78,6 +91,8 @@ Renderer::Shader::Program::Program(Parser sourceParser) {
     if (!linkProgram()) {
         return;
     }
+
+    bind();
 
     if (!locateUniforms()) {
         return;

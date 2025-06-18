@@ -57,7 +57,11 @@ namespace Renderer::Shader {
 
         [[nodiscard]] int32_t getUniformLocation(const std::string& name) const;
 
-        void setUniform(int32_t location, const glm::vec4& vec4) const;
+        void setUniform(int32_t location, int val) const;
+
+        void setUniform(int32_t location, float val) const;
+
+        void setUniform(int32_t location, const glm::vec4& val) const;
 
         template<typename... T>
         void setUniform(const std::string& name, T... val) const {
@@ -95,6 +99,8 @@ namespace Renderer::Shader {
         if (!linkProgram()) {
             return;
         }
+
+        bind();
 
         if (!locateUniforms()) {
             return;

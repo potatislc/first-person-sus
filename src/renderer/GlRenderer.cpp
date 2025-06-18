@@ -65,7 +65,7 @@ bool Renderer::GlRenderer::logErrors(const char* functionName, const char* fileN
                                      const size_t line) const {
     auto emptyLog = true;
     while (const auto err = glGetError()) {
-        std::cerr << "OpenGL error: (0x" << std::hex << err << std::dec << ")" << " from function: "
+        std::cerr << "OpenGL error: " << err << ")" << " from function: "
                 << functionName << " inside file: " << fileName << "at line: " << line << '\n';
         emptyLog = false;
     }

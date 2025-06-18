@@ -3,13 +3,16 @@
 #include <iostream>
 #include <array>
 #include <string>
-#include "./src/Window.h"
-#include "src/renderer/GlRenderer.h"
-#include "src/renderer/buffer/Index.h"
-#include "src/renderer/buffer/Vertex.h"
-#include "src/renderer/shader/Parser.h"
-#include "src/renderer/shader/Program.h"
-#include "src/renderer/VertexArray.h"
+#include <glad/glad.h>
+
+#include "Window.h"
+#include "renderer/GlRenderer.h"
+#include "renderer/buffer/Index.h"
+#include "renderer/buffer/Vertex.h"
+#include "renderer/shader/Parser.h"
+#include "renderer/shader/Program.h"
+#include "renderer/VertexArray.h"
+#include "renderer/texture/Texture.h"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #ifdef __linux__
@@ -26,12 +29,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         }
     };
 
-    constexpr std::array<glm::vec2, 4> famousSquare = {
+    constexpr std::array<glm::vec2, 8> square = {
         {
-            {-.5f, .5f}, // Top-left
-            {.5f, .5f}, // Top-right
-            {.5f, -.5f}, // Bottom-right
-            {-.5f, -.5f} // Bottom-left
+            {-.5f, -.5f}, {.0f, 0.f}, // Top-left
+            {.5f, -.5f}, {1.f, 0.f}, // Top-right
+            {.5f, .5f}, {1.f, 1.f}, // Bottom-right
+            {-.5f, .5f}, {0.f, 1.f} // Bottom-left
         }
     };
 
@@ -40,16 +43,24 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         2, 3, 0
     };
 
+    RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    RENDERER_API_CALL(glEnable(GL_BLEND));
+
     const Renderer::VertexArray vertexArray;
 
-    const Renderer::Buffer::Vertex vertexBuffer{famousSquare.data(), sizeof(famousSquare)};
+    const Renderer::Buffer::Vertex vertexBuffer{square.data(), sizeof(square)};
     Renderer::Buffer::Vertex::Layout vertexLayout{};
+    vertexLayout.push<float>(glm::vec2::length());
     vertexLayout.push<float>(glm::vec2::length());
     vertexArray.addBuffer(vertexBuffer, vertexLayout);
 
     const Renderer::Buffer::Index indexBuffer{indices.data(), sizeof(indices)};
 
     const Renderer::Shader::Program shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
+
+    const Renderer::Texture texture{"../res/texture/Melon.png"};
+    texture.bind(0);
+    shaderProgram.setUniform("u_Texture", 0);
 
     bool running = true;
     SDL_Event event;
