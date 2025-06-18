@@ -1,6 +1,8 @@
 #ifndef RENDERER_GLRENDERER_H
 #define RENDERER_GLRENDERER_H
 
+#include <glm/vec4.hpp>
+
 #include "Renderer.h"
 
 namespace Renderer {
@@ -25,6 +27,11 @@ namespace Renderer {
         }
 
         void swapWindow(const Window& window) const override;
+
+        void clear(glm::vec4 color) const override;
+
+        void draw(const VertexArray& vertexArray, const Buffer::Index& indexBuffer,
+                  const Shader::Program& shaderProgram) const override;
 
     private:
         SDL_GLContext m_Context{};

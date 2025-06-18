@@ -3,12 +3,22 @@
 #include <cassert>
 #include <iostream>
 #include <utility>
+#include <glm/vec4.hpp>
 #include <SDL3/SDL.h>
 
 #include "../Window.h"
 
 namespace Renderer {
     class GlRenderer;
+    class VertexArray;
+
+    namespace Buffer {
+        class Index;
+    }
+
+    namespace Shader {
+        class Program;
+    }
 
     enum class Type : uint8_t {
         NONE = 0,
@@ -80,6 +90,11 @@ namespace Renderer {
         virtual bool isValid() = 0;
 
         virtual void swapWindow(const Window& window) const = 0;
+
+        virtual void clear(glm::vec4 color) const = 0;
+
+        virtual void draw(const VertexArray& vertexArray, const Buffer::Index& indexBuffer,
+                          const Shader::Program& shaderProgram) const = 0;
 
     protected:
         static inline Renderer* s_ActiveRenderer{};

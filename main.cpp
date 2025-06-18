@@ -1,11 +1,7 @@
 #include <SDL3/SDL.h>
-#include <glad/glad.h>
-#include <algorithm>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <array>
-#include <utility>
-#include <fstream>
 #include <string>
 #include "./src/Window.h"
 #include "src/renderer/GlRenderer.h"
@@ -72,19 +68,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
             }
         }
 
-        float blue = static_cast<float>(frameCount % 256) / 255.0f;
-        RENDERER_API_CALL(glClearColor(0.1f, 0.2f, blue, 1.0f));
-        RENDERER_API_CALL(glClear(GL_COLOR_BUFFER_BIT));
+        const auto blue = static_cast<float>(frameCount % 256) / 255.0f;
+
+        renderer.clear({0.1f, 0.2f, blue, 1.0f});
 
         shaderProgram.bind();
-        RENDERER_API_CALL(glUniform4f(shaderProgram.getUniformLocation("u_Color"), blue, .3f, .8f, 1.f));
+        shaderProgram.setUniform("u_Color", glm::vec4{blue, .3f, .8f, 1.f});
 
-
-        vertexArray.bind();
-        indexBuffer.bind();
-
-        RENDERER_API_CALL(
-            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr));
+        renderer.draw(vertexArray, indexBuffer, shaderProgram);
 
         renderer.swapWindow(window);
 

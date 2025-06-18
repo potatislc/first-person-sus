@@ -7,12 +7,20 @@
 #include "../Renderer.h"
 #include "Source.h"
 
+void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& vec4) const {
+    bind();
+    RENDERER_API_CALL(glUniform4f(location, vec4.x, vec4.y, vec4.z, vec4.w));
+}
+
 int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) const {
     for (const auto& uniform: m_Uniforms) {
         if (uniform.m_Name == name) {
             return uniform.m_Location;
         }
     }
+
+    std::cerr << "Uniform with name: " << name << "not found.\n";
+
     return Uniform::noLocation;
 }
 

@@ -1,6 +1,6 @@
 #ifndef RENDERER_BUFFER_VERTEX_H
 #define RENDERER_BUFFER_VERTEX_H
-#include <cstdint>
+
 #include <vector>
 
 namespace Renderer {

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <glm/vec4.hpp>
 
 #include "Uniform.h"
 
@@ -54,10 +55,14 @@ namespace Renderer::Shader {
             return m_Id;
         }
 
-        template<typename... T>
-        void setUniform(const char* name, T... val);
-
         [[nodiscard]] int32_t getUniformLocation(const std::string& name) const;
+
+        void setUniform(int32_t location, const glm::vec4& vec4) const;
+
+        template<typename... T>
+        void setUniform(const std::string& name, T... val) const {
+            setUniform(getUniformLocation(name), val...);
+        }
 
     private:
         const char* creationFailStr = "Failed to create shader program.";
@@ -94,10 +99,6 @@ namespace Renderer::Shader {
         if (!locateUniforms()) {
             return;
         }
-    }
-
-    template<typename... T>
-    void Program::setUniform(const char* name, T... val) {
     }
 }
 

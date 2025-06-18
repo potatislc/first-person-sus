@@ -4,6 +4,10 @@
 #include <iostream>
 #include <glad/glad.h>
 
+#include "VertexArray.h"
+#include "buffer/Index.h"
+#include "shader/Program.h"
+
 Window Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
@@ -71,4 +75,17 @@ bool Renderer::GlRenderer::logErrors(const char* functionName, const char* fileN
 
 void Renderer::GlRenderer::swapWindow(const Window& window) const {
     SDL_GL_SwapWindow(window.get());
+}
+
+void Renderer::GlRenderer::clear(const glm::vec4 color) const {
+    RENDERER_API_CALL(glClearColor(color.r, color.g, color.b, color.a));
+    RENDERER_API_CALL(glClear(GL_COLOR_BUFFER_BIT));
+}
+
+void Renderer::GlRenderer::draw(const VertexArray& vertexArray, const Buffer::Index& indexBuffer,
+                                const Shader::Program& shaderProgram) const {
+    vertexArray.bind();
+    indexBuffer.bind();
+    shaderProgram.bind();
+    RENDERER_API_CALL(glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, nullptr));
 }

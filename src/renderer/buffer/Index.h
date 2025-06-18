@@ -17,6 +17,10 @@ namespace Renderer::Buffer {
 
         static void unbind();
 
+        [[nodiscard]] auto getCount() const {
+            return m_Count;
+        }
+
     private:
         uint32_t m_Id{};
         uint32_t m_Count{};
