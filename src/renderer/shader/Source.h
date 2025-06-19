@@ -27,14 +27,22 @@ namespace Renderer::Shader {
         Source& operator=(const Source&) = delete;
 
         Source(Source&& other) noexcept : m_Source{std::move(other.m_Source)}, m_Uniforms{std::move(other.m_Uniforms)},
-                                          m_Type{other.m_Type},
-                                          m_Id{other.m_Id} {
+                                          m_Id{other.m_Id},
+                                          m_Type{other.m_Type} {
+            other.m_Id = {};
         }
 
         Source& operator=(Source&& other) noexcept {
+            if (&other == this) {
+                return *this;
+            }
+
             m_Source = std::move(other.m_Source);
+            m_Uniforms = std::move(other.m_Uniforms);
             m_Type = other.m_Type;
             m_Id = other.m_Id;
+            other.m_Id = {};
+            other.m_Type = {};
             return *this;
         }
 
@@ -75,8 +83,8 @@ namespace Renderer::Shader {
     private:
         std::string m_Source;
         std::vector<Uniform> m_Uniforms;
-        uint32_t m_Type{};
         uint32_t m_Id{};
+        uint32_t m_Type{};
     };
 }
 

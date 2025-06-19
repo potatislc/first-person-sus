@@ -8,11 +8,27 @@
 namespace Renderer {
     class GlRenderer final : public Renderer {
     public:
-        static Window createWindow(const std::string& name, const int width, const int height);
-
-        static GlRenderer create(const Window& window);
+        static Window createWindow(const std::string& name, int width, int height);
 
         explicit GlRenderer(const Window& window);
+
+        GlRenderer(const GlRenderer&) = delete;
+
+        GlRenderer& operator=(const GlRenderer&) = delete;
+
+        GlRenderer(GlRenderer&& other) noexcept : m_Context(other.m_Context) {
+            other.m_Context = {};
+        }
+
+        GlRenderer& operator=(GlRenderer&& other) noexcept {
+            if (&other == this) {
+                return *this;
+            }
+
+            m_Context = other.m_Context;
+            other.m_Context = {};
+            return *this;
+        }
 
         ~GlRenderer() override {
             SDL_GL_DestroyContext(m_Context);

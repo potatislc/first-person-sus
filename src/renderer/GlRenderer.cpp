@@ -34,10 +34,6 @@ Window Renderer::GlRenderer::createWindow(const std::string& name, const int wid
     return Window{name, window};
 }
 
-Renderer::GlRenderer Renderer::GlRenderer::create(const Window& window) {
-    return GlRenderer{window};
-}
-
 Renderer::GlRenderer::GlRenderer(const Window& window) : m_Context(SDL_GL_CreateContext(window.get())) {
     if (m_Context == nullptr) {
         std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << '\n';

@@ -1,6 +1,5 @@
 #ifndef RENDERER_VERTEXARRAY_H
 #define RENDERER_VERTEXARRAY_H
-#include "buffer/Index.h"
 #include "buffer/Vertex.h"
 
 namespace Buffer {
@@ -12,6 +11,24 @@ namespace Renderer {
     class VertexArray {
     public:
         VertexArray();
+
+        VertexArray(const VertexArray&) = delete;
+
+        VertexArray& operator=(const VertexArray&) = delete;
+
+        VertexArray(VertexArray&& other) noexcept : m_Id{other.m_Id} {
+            other.m_Id = {};
+        }
+
+        VertexArray& operator=(VertexArray&& other) noexcept {
+            if (&other == this) {
+                return *this;
+            }
+
+            m_Id = other.m_Id;
+            other.m_Id = {};
+            return *this;
+        }
 
         ~VertexArray();
 

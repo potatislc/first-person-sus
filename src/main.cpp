@@ -19,9 +19,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     setenv("ASAN_OPTIONS", "detect_leaks=1", 1);
 #endif
     const Window window = Renderer::GlRenderer::createWindow("Hej", 800, 600);
-    const Renderer::GlRenderer renderer = Renderer::GlRenderer::create(window);
+    const auto renderer = Renderer::GlRenderer{window};
 
-    [[maybe_unused]] constexpr std::array<glm::vec2, 3> famousTriangle = {
+    [[maybe_unused]] constexpr std::array<glm::vec2, 3> famousTriangle{
         {
             {-.5f, -.5f},
             {0.f, .5f},
@@ -29,7 +29,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         }
     };
 
-    constexpr std::array<glm::vec2, 8> square = {
+    constexpr std::array<glm::vec2, 8> square{
         {
             {-.5f, -.5f}, {.0f, 0.f}, // Top-left
             {.5f, -.5f}, {1.f, 0.f}, // Top-right

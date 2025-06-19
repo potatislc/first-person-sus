@@ -38,7 +38,6 @@ Renderer::Buffer::Vertex::Vertex(const void* data, const uint32_t size) {
 }
 
 Renderer::Buffer::Vertex::~Vertex() {
-    unbind();
     RENDERER_API_CALL(glDeleteBuffers(1, &m_Id));
 }
 

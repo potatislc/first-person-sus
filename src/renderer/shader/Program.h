@@ -26,13 +26,18 @@ namespace Renderer::Shader {
 
         Program& operator=(const Program&) = delete;
 
-        Program(Program&& other) noexcept : m_Id{other.m_Id} {
-            other.m_Id = 0;
+        Program(Program&& other) noexcept : m_Uniforms{std::move(other.m_Uniforms)}, m_Id{other.m_Id} {
+            other.m_Id = {};
         }
 
         Program& operator=(Program&& other) noexcept {
+            if (&other == this) {
+                return *this;
+            }
+
+            m_Uniforms = std::move(other.m_Uniforms);
             m_Id = other.m_Id;
-            other.m_Id = 0;
+            other.m_Id = {};
             return *this;
         }
 
@@ -79,8 +84,8 @@ namespace Renderer::Shader {
 
         bool locateUniforms();
 
-        uint32_t m_Id{};
         std::vector<Uniform> m_Uniforms;
+        uint32_t m_Id{};
     };
 
     template<typename... Args>

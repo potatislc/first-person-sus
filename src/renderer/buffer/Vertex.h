@@ -36,6 +36,24 @@ namespace Renderer::Buffer {
 
         Vertex(const void* data, uint32_t size);
 
+        Vertex(const Vertex&) = delete;
+
+        Vertex& operator=(const Vertex&) = delete;
+
+        Vertex(Vertex&& other) noexcept : m_Id{other.m_Id} {
+            other.m_Id = {};
+        }
+
+        Vertex& operator=(Vertex&& other) noexcept {
+            if (&other == this) {
+                return *this;
+            }
+
+            m_Id = other.m_Id;
+            other.m_Id = {};
+            return *this;
+        }
+
         ~Vertex();
 
         void bind() const;

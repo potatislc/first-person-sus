@@ -11,7 +11,6 @@ Renderer::Buffer::Index::Index(const uint32_t* data, const uint32_t count) : m_C
 }
 
 Renderer::Buffer::Index::~Index() {
-    unbind();
     RENDERER_API_CALL(glDeleteBuffers(1, &m_Id));
 }
 
