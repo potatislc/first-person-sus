@@ -3,21 +3,26 @@
 #include <array>
 #include <iostream>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 #include "Parser.h"
 #include "../Renderer.h"
 #include "Source.h"
 
-void Renderer::Shader::Program::setUniform(const int32_t location, const int val) const {
+void Renderer::Shader::Program::setUniform(const int32_t location, const int val) {
     RENDERER_API_CALL(glUniform1i(location, val));
 }
 
-void Renderer::Shader::Program::setUniform(const int32_t location, const float val) const {
+void Renderer::Shader::Program::setUniform(const int32_t location, const float val) {
     RENDERER_API_CALL(glUniform1f(location, val));
 }
 
-void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& val) const {
-    RENDERER_API_CALL(glUniform4f(location, val.x, val.y, val.z, val.w));
+void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& val) {
+    RENDERER_API_CALL(glUniform4fv(location, 1, &val[0]));
+}
+
+void Renderer::Shader::Program::setUniform(const int32_t location, const glm::mat4& val) {
+    RENDERER_API_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &val[0][0]));
 }
 
 int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) const {

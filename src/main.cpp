@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <array>
 #include <string>
@@ -56,11 +57,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
     const Renderer::Buffer::Index indexBuffer{indices.data(), sizeof(indices)};
 
+    auto projection = glm::ortho(-2.f, 2.f, -1.5f, 1.5f, 1.f, -1.f);
+
     const Renderer::Shader::Program shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
 
     const Renderer::Texture texture{"../res/texture/Melon.png"};
     texture.bind(0);
     shaderProgram.setUniform("u_Texture", 0);
+    shaderProgram.setUniform("u_Mvp", projection);
 
     bool running = true;
     SDL_Event event;

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
 
 #include "Uniform.h"
@@ -62,15 +63,17 @@ namespace Renderer::Shader {
 
         [[nodiscard]] int32_t getUniformLocation(const std::string& name) const;
 
-        void setUniform(int32_t location, int val) const;
+        static void setUniform(int32_t location, int val);
 
-        void setUniform(int32_t location, float val) const;
+        static void setUniform(int32_t location, float val);
 
-        void setUniform(int32_t location, const glm::vec4& val) const;
+        static void setUniform(int32_t location, const glm::vec4& val);
+
+        static void setUniform(int32_t location, const glm::mat4& val);
 
         template<typename... T>
         void setUniform(const std::string& name, T... val) const {
-            setUniform(getUniformLocation(name), val...);
+            Program::setUniform(getUniformLocation(name), val...);
         }
 
     private:
