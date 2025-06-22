@@ -22,30 +22,22 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     const Window window = Renderer::GlRenderer::createWindow("Hej", 800, 600);
     const auto renderer = Renderer::GlRenderer{window};
 
-    [[maybe_unused]] constexpr std::array<glm::vec2, 3> famousTriangle{
-        {
-            {-.5f, -.5f},
-            {0.f, .5f},
-            {.5f, -.5f}
-        }
-    };
-
     constexpr std::array<glm::vec2, 8> square{
         {
-            {-.5f, -.5f}, {.0f, 0.f}, // Top-left
+            {-.5f, -.5f}, {0.f, 0.f}, // Top-left
             {.5f, -.5f}, {1.f, 0.f}, // Top-right
             {.5f, .5f}, {1.f, 1.f}, // Bottom-right
             {-.5f, .5f}, {0.f, 1.f} // Bottom-left
         }
     };
 
-    const std::array<unsigned int, 6> indices = {
+    const std::array<uint32_t, 6> indices = {
         0, 1, 2,
         2, 3, 0
     };
 
-    RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     RENDERER_API_CALL(glEnable(GL_BLEND));
+    RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     const Renderer::VertexArray vertexArray;
 
@@ -55,9 +47,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     vertexLayout.push<float>(glm::vec2::length());
     vertexArray.addBuffer(vertexBuffer, vertexLayout);
 
-    const Renderer::Buffer::Index indexBuffer{indices.data(), sizeof(indices)};
+    const Renderer::Buffer::Index indexBuffer{indices.data(), indices.size()};
 
-    auto projection = glm::ortho(-2.f, 2.f, -1.5f, 1.5f, 1.f, -1.f);
+    const auto projection = glm::ortho(-2.f, 2.f, -1.5f, 1.5f, 1.f, -1.f);
 
     const Renderer::Shader::Program shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
 
