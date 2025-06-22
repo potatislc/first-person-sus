@@ -1,18 +1,19 @@
 #include "Parser.h"
 
 #include <algorithm>
-#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <glad/glad.h>
+
+#include  "../../Assert.h"
 
 Renderer::Shader::Parser::Parser(const std::string& filePath) : m_Stream{filePath} {
     if (m_Stream.bad()) {
         std::cerr << "Invalid shader source path" << filePath << '\n';
     }
 
-    assert(m_Stream.good());
+    ASSERT(m_Stream.good());
 }
 
 Renderer::Shader::Source Renderer::Shader::Parser::operator()() {

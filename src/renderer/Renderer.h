@@ -1,12 +1,13 @@
 #ifndef RENDERER_H
 #define RENDERER_H
-#include <cassert>
+
 #include <iostream>
 #include <utility>
 #include <glm/vec4.hpp>
 #include <SDL3/SDL.h>
 
 #include "../Window.h"
+#include "../Assert.h"
 
 namespace Renderer {
     class GlRenderer;
@@ -51,7 +52,7 @@ namespace Renderer {
 
             renderer->clearErrors();
             std::forward<Func>(func)();
-            assert(renderer->logErrors(code, file, line));
+            ASSERT(renderer->logErrors(code, file, line));
         }
 
         template<typename Func>
@@ -64,7 +65,7 @@ namespace Renderer {
 
             renderer->clearErrors();
             auto result = std::forward<Func>(func)();
-            assert(renderer->logErrors(code, file, line));
+            ASSERT(renderer->logErrors(code, file, line));
             return result;
         }
 
@@ -103,8 +104,8 @@ namespace Renderer {
 
 #ifdef NDEBUG
 
-#define RENDERER_API_CALL(renderer, x) (x)
-#define RENDERER_API_CALL_RETURN(renderer, x) (x)
+#define RENDERER_API_CALL(x) (x)
+#define RENDERER_API_CALL_RETURN(x) (x)
 
 #else
 
