@@ -49,6 +49,10 @@ Renderer::GlRenderer::GlRenderer(const Window& window) : m_Context(SDL_GL_Create
 
     std::cout << "GL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_VERSION)) << '\n';
     std::cout << "GLSL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n';
+
+    // Temporary blend mode set
+    RENDERER_API_CALL(glEnable(GL_BLEND));
+    RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void Renderer::GlRenderer::clearErrors() const {

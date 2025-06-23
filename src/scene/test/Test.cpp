@@ -1,6 +1,9 @@
 #include "Test.h"
 
-void Scene::Test::onUpdate() {
+Scene::Test::Test() {
+}
+
+void Scene::Test::onUpdate(const float deltaTime) {
 }
 
 void Scene::Test::onRender() {

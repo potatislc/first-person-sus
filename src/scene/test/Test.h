@@ -5,9 +5,11 @@
 #include "../Scene.h"
 
 namespace Scene {
-    class Test final : Scene {
+    class Test final : public Scene {
     public:
-        void onUpdate() override;
+        Test();
+
+        void onUpdate(float deltaTime) override;
 
         void onRender() override;
 

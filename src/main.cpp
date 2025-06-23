@@ -4,7 +4,6 @@
 #include <iostream>
 #include <array>
 #include <string>
-#include <glad/glad.h>
 #include <imgui.h>
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
@@ -38,9 +37,6 @@ int main(int /*unused*/, char** /*unused*/) {
         0, 1, 2,
         2, 3, 0
     };
-
-    RENDERER_API_CALL(glEnable(GL_BLEND));
-    RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     const Renderer::VertexArray vertexArray;
 

@@ -14,9 +14,21 @@ public:
 
     Window& operator=(const Window&) = delete;
 
-    Window(Window&&) = delete;
+    Window(Window&& other) noexcept : m_Name{std::move(other.m_Name)}, m_Window{other.m_Window} {
+        other.m_Window = {};
+    }
 
-    Window& operator=(Window&&) = delete;
+    Window& operator=(Window&& other) noexcept {
+        if (&other == this) {
+            return *this;
+        }
+
+        m_Name = std::move(other.m_Name);
+        m_Window = other.m_Window;
+        other.m_Window = {};
+
+        return *this;
+    }
 
     ~Window() {
         SDL_DestroyWindow(m_Window);

@@ -8,7 +8,7 @@ namespace Scene {
 
         Scene(const Scene&) = delete;
 
-        Scene& operator =(const Scene&) = delete;
+        Scene& operator=(const Scene&) = delete;
 
         Scene(Scene&&) = default;
 
@@ -16,12 +16,16 @@ namespace Scene {
 
         virtual ~Scene() = default;
 
-        virtual void onUpdate() = 0;
+        virtual void onUpdate(float deltaTime) {
+        }
 
-        virtual void onRender() = 0;
+        virtual void onRender() {
+        }
 
         virtual void onImGuiRender() {
         }
+
+        // virtual Scene* copy() const = 0;
     };
 }
 
