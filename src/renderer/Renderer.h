@@ -90,6 +90,8 @@ namespace Renderer {
 
         virtual bool isValid() = 0;
 
+        [[nodiscard]] virtual void* getContext() const = 0;
+
         virtual void swapWindow(const Window& window) const = 0;
 
         virtual void clear(glm::vec4 color) const = 0;

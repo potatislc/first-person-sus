@@ -28,6 +28,30 @@ set(SDL_MAIN_HANDLED ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SDL3)
 
+FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG docking  # Use latest docking branch with SDL3 support
+)
+FetchContent_MakeAvailable(imgui)
+
+add_library(imgui_backend STATIC
+        ${imgui_SOURCE_DIR}/imgui.cpp
+        ${imgui_SOURCE_DIR}/imgui_draw.cpp
+        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+        ${imgui_SOURCE_DIR}/imgui_demo.cpp
+)
+
+target_include_directories(imgui_backend PUBLIC
+        ${imgui_SOURCE_DIR}
+        ${imgui_SOURCE_DIR}/backends
+)
+
+target_link_libraries(imgui_backend PRIVATE SDL3::SDL3)
+
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
@@ -42,13 +66,8 @@ add_executable(${EXE_NAME} src/main.cpp
         src/renderer/shader/Uniform.cpp
         src/vendor/stb_image/stb_image.cpp
         src/renderer/texture/Texture.cpp)
-target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm)
 
-get_target_property(SDL3_INCLUDE_DIRS SDL3::SDL3 INTERFACE_INCLUDE_DIRECTORIES)
-if (SDL3_INCLUDE_DIRS)
-    target_include_directories(${EXE_NAME} SYSTEM PRIVATE ${SDL3_INCLUDE_DIRS})
-endif ()
-
+target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend)
 
 target_include_directories(${PROJECT_NAME}
         PRIVATE

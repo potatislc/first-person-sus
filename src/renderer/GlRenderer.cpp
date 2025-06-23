@@ -68,6 +68,10 @@ bool Renderer::GlRenderer::logErrors(const char* functionName, const char* fileN
     return emptyLog;
 }
 
+void* Renderer::GlRenderer::getContext() const {
+    return m_Context;
+}
+
 void Renderer::GlRenderer::swapWindow(const Window& window) const {
     SDL_GL_SwapWindow(window.get());
 }

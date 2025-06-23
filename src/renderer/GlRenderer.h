@@ -42,6 +42,8 @@ namespace Renderer {
             return m_Context != nullptr && m_GlLoaderInitialized;
         }
 
+        void* getContext() const override;
+
         void swapWindow(const Window& window) const override;
 
         void clear(glm::vec4 color) const override;
