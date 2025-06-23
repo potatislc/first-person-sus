@@ -1,6 +1,10 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+namespace Renderer {
+    class Renderer;
+}
+
 namespace Scene {
     class Scene {
     public:
@@ -16,13 +20,13 @@ namespace Scene {
 
         virtual ~Scene() = default;
 
-        virtual void onUpdate(float deltaTime) {
+        virtual void update(float deltaTime) {
         }
 
-        virtual void onRender() {
+        virtual void render(const Renderer::Renderer& renderer) {
         }
 
-        virtual void onImGuiRender() {
+        virtual void renderImGui() {
         }
 
         // virtual Scene* copy() const = 0;

@@ -32,7 +32,7 @@ int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) c
         }
     }
 
-    std::cerr << "Uniform with name: " << name << "not found.\n";
+    std::cerr << "Uniform with name: " << name << ". not found.\n";
 
     return Uniform::noLocation;
 }

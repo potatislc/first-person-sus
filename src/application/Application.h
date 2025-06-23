@@ -11,7 +11,8 @@ namespace Scene {
 
 class Application {
 public:
-    Application(std::string name, unsigned int width, unsigned int height, auto rendererType = Renderer::Type::OPEN_GL);
+    Application(const std::string& name, unsigned int width, unsigned int height,
+                Renderer::Type rendererType = Renderer::Type::OPEN_GL);
 
     Application(const Application&) = delete;
 
@@ -24,6 +25,18 @@ public:
     ~Application();
 
     void run();
+
+    uint64_t getFrameCount() const {
+        return m_FrameCount;
+    }
+
+    const Window& getWindow() const {
+        return m_Window;
+    }
+
+    const Renderer::Renderer& getRenderer() const {
+        return *m_Renderer;
+    }
 
 private:
     Window m_Window{};

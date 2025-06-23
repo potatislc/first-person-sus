@@ -9,7 +9,9 @@
 namespace Renderer {
     class Texture {
     public:
-        explicit Texture(const std::string& path);
+        static Texture createGlTexture(const std::string& path);
+
+        Texture() = default;
 
         Texture(const Texture&) = delete;
 

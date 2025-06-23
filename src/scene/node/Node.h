@@ -6,7 +6,7 @@
 #include "../Scene.h"
 
 namespace Scene {
-    class Node final : public Scene {
+    [[maybe_unused]] class Node final : public Scene {
     public:
         explicit Node(Scene& scene) : m_Scene{&scene} {
         }
@@ -18,11 +18,11 @@ namespace Scene {
             delete m_Scene;
         }
 
-        void onUpdate(const float deltaTime) override {
-            m_Scene->onUpdate(deltaTime);
+        void update(const float deltaTime) override {
+            m_Scene->update(deltaTime);
 
             for (const auto& scene: m_SubScenes) {
-                scene->onUpdate(deltaTime);
+                scene->update(deltaTime);
             }
         }
 

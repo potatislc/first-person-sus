@@ -7,8 +7,8 @@
 #include "../renderer/GlRenderer.h"
 #include "../scene/test/Test.h"
 
-Application::Application(const std::string name, const unsigned int width, const unsigned int height,
-                         auto rendererType) {
+Application::Application(const std::string& name, const unsigned int width, const unsigned int height,
+                         const Renderer::Type rendererType) {
     switch (rendererType) {
         case Renderer::Type::OPEN_GL:
             m_Window = Renderer::GlRenderer::createWindow(name, width, height);
@@ -20,7 +20,7 @@ Application::Application(const std::string name, const unsigned int width, const
             return;
     }
 
-    m_BaseScene = new Scene::Test{};
+    m_BaseScene = new Scene::Test{*this};
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -31,7 +31,15 @@ Application::Application(const std::string name, const unsigned int width, const
 
 Application::~Application() {
     delete m_BaseScene;
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
+
     delete m_Renderer;
+    m_Window.destroy();
+
+    SDL_Quit();
 }
 
 void Application::run() {
@@ -53,9 +61,18 @@ void Application::run() {
             }
         }
 
+        if (m_BaseScene != nullptr) {
+            m_BaseScene->update(0.f);
+            m_BaseScene->render(*m_Renderer);
+        }
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
+
+        if (m_BaseScene != nullptr) {
+            m_BaseScene->renderImGui();
+        }
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

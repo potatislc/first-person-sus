@@ -30,9 +30,15 @@ public:
         return *this;
     }
 
+    void destroy() {
+        if (m_Window != nullptr) {
+            SDL_DestroyWindow(m_Window);
+            m_Window = {};
+        }
+    }
+
     ~Window() {
-        SDL_DestroyWindow(m_Window);
-        SDL_Quit();
+        destroy();
     }
 
     [[nodiscard]] bool isValid() const {
