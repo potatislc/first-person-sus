@@ -22,15 +22,15 @@ int main(int /*unused*/, char** /*unused*/) {
 #ifdef __linux__
     setenv("ASAN_OPTIONS", "detect_leaks=1", 1);
 #endif
-    const Window window = Renderer::GlRenderer::createWindow("Hej", 800, 600);
+    const Window window = Renderer::GlRenderer::createWindow("Hej", 960, 540);
     const auto renderer = Renderer::GlRenderer{window};
 
-    constexpr std::array<glm::vec2, 8> square{
+    std::array<glm::vec2, 8> square{
         {
-            {-.5f, -.5f}, {0.f, 0.f}, // Top-left
-            {.5f, -.5f}, {1.f, 0.f}, // Top-right
-            {.5f, .5f}, {1.f, 1.f}, // Bottom-right
-            {-.5f, .5f}, {0.f, 1.f} // Bottom-left
+            {-50.f, -50.f}, {0.f, 0.f}, // Top-left
+            {50.f, -50.f}, {1.f, 0.f}, // Top-right
+            {50.f, 50.f}, {1.f, 1.f}, // Bottom-right
+            {-50.f, 50.f}, {0.f, 1.f} // Bottom-left
         }
     };
 
@@ -52,14 +52,16 @@ int main(int /*unused*/, char** /*unused*/) {
 
     const Renderer::Buffer::Index indexBuffer{indices.data(), indices.size()};
 
-    const auto projection = glm::ortho(-2.f, 2.f, -1.5f, 1.5f, 1.f, -1.f);
+    const auto projection = glm::ortho(0.f, 960.f, 0.f, 540.f, -1.f, 1.f);
+    const auto view = glm::translate(glm::mat4{1.f}, glm::vec3{0, 0, 0});
 
     const Renderer::Shader::Program shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}};
 
     const Renderer::Texture texture{"../res/texture/Melon.png"};
     texture.bind(0);
     shaderProgram.setUniform("u_Texture", 0);
-    shaderProgram.setUniform("u_Mvp", projection);
+
+    glm::vec3 translation{200, 200, 0};
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -68,9 +70,6 @@ int main(int /*unused*/, char** /*unused*/) {
     ImGui::StyleColorsDark();
     ImGui_ImplSDL3_InitForOpenGL(window.get(), renderer.getContext());
     ImGui_ImplOpenGL3_Init("#version 330");
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     bool running = true;
     SDL_Event event;
@@ -101,41 +100,15 @@ int main(int /*unused*/, char** /*unused*/) {
 
         shaderProgram.bind();
         shaderProgram.setUniform("u_Color", glm::vec4{blue, .3f, .8f, 1.f});
-
+        const auto model = glm::translate(glm::mat4{1.f}, translation);
+        const auto mvp = projection * view * model;
+        shaderProgram.setUniform("u_Mvp", mvp);
         renderer.draw(vertexArray, indexBuffer, shaderProgram);
-        if (show_demo_window) {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        } {
-            static float f = 0.0f;
-            static int counter = 0;
 
-            ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text."); // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*) &clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))
-                // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window) {
-            ImGui::Begin("Another Window", &show_another_window);
-            // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
+        // Debug Window
+        {
+            ImGui::SliderFloat3("float", &translation[0], 0.0f, 960.0f);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.f / io.Framerate, io.Framerate);
         }
 
         ImGui::Render();
