@@ -65,7 +65,8 @@ add_executable(${EXE_NAME} src/main.cpp
         src/renderer/VertexArray.cpp
         src/renderer/shader/Uniform.cpp
         src/vendor/stb_image/stb_image.cpp
-        src/renderer/texture/Texture.cpp)
+        src/renderer/texture/Texture.cpp
+        src/scene/test/TestScene.cpp)
 
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend)
 

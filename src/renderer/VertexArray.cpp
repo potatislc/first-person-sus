@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 
 #include "Renderer.h"
-#include "buffer/Index.h"
 #include "buffer/Vertex.h"
 
 Renderer::VertexArray::VertexArray() {
