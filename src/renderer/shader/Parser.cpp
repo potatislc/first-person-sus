@@ -8,38 +8,38 @@
 
 #include  "../../core/Assert.h"
 
-Renderer::Shader::Parser::Parser(const std::string& filePath) : m_Stream{filePath} {
-    if (m_Stream.bad()) {
+Renderer::Shader::Parser::Parser(const std::string& filePath) : m_stream{filePath} {
+    if (m_stream.bad()) {
         std::cerr << "Invalid shader source path: " << filePath << '\n';
     }
 
-    ASSERT(m_Stream.good());
+    ASSERT(m_stream.good());
 }
 
 Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
     auto fail = [this](const std::string& description) {
         std::cerr << "Failed to parse shader source: " << description << " At line "
-                << m_LineCount << ". " << "[LINE SOURCE]: " << m_Line << '\n';
+                << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << '\n';
         return Source{};
     };
 
     std::stringstream ss;
-    uint32_t shaderType = m_NextShaderType;
+    uint32_t shaderType = m_nextShaderType;
     std::vector<Uniform> uniforms;
 
-    while (std::getline(m_Stream, m_Line)) {
-        ++m_LineCount;
+    while (std::getline(m_stream, m_line)) {
+        ++m_lineCount;
 
-        if (std::ranges::all_of(m_Line,
+        if (std::ranges::all_of(m_line,
                                 [](const unsigned char c) { return std::isspace(c); })) {
             continue;
         }
 
-        if (m_Line.contains("#shader")) {
-            if (m_Line.contains("vertex")) {
-                m_NextShaderType = GL_VERTEX_SHADER;
-            } else if (m_Line.contains("fragment")) {
-                m_NextShaderType = GL_FRAGMENT_SHADER;
+        if (m_line.contains("#shader")) {
+            if (m_line.contains("vertex")) {
+                m_nextShaderType = GL_VERTEX_SHADER;
+            } else if (m_line.contains("fragment")) {
+                m_nextShaderType = GL_FRAGMENT_SHADER;
             } else {
                 return fail("Could not deduce shader type.");
             }
@@ -48,13 +48,13 @@ Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
                 break;
             }
 
-            shaderType = m_NextShaderType;
+            shaderType = m_nextShaderType;
 
             continue;
         }
 
-        if (m_Line.contains("uniform ")) {
-            auto uniformName = m_Line.substr(m_Line.find_last_of(' ') + 1);
+        if (m_line.contains("uniform ")) {
+            auto uniformName = m_line.substr(m_line.find_last_of(' ') + 1);
             if (const size_t end = uniformName.find_first_of(';'); end != std::string::npos) {
                 uniformName.erase(end);
             }
@@ -62,7 +62,7 @@ Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
             uniforms.emplace_back(uniformName);
         }
 
-        ss << m_Line << '\n';
+        ss << m_line << '\n';
     }
 
     if (shaderType == 0) {

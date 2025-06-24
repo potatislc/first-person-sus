@@ -15,9 +15,9 @@ namespace Renderer::Buffer {
 
         Index& operator=(const Index&) = delete;
 
-        Index(Index&& other) noexcept : m_Id{other.m_Id}, m_Count{other.m_Count} {
-            other.m_Id = {};
-            other.m_Count = {};
+        Index(Index&& other) noexcept : m_id{other.m_id}, m_count{other.m_count} {
+            other.m_id = {};
+            other.m_count = {};
         }
 
         Index& operator=(Index&& other) noexcept {
@@ -25,10 +25,10 @@ namespace Renderer::Buffer {
                 return *this;
             }
 
-            m_Id = other.m_Id;
-            other.m_Id = {};
-            m_Count = other.m_Count;
-            other.m_Count = {};
+            m_id = other.m_id;
+            other.m_id = {};
+            m_count = other.m_count;
+            other.m_count = {};
             return *this;
         }
 
@@ -39,11 +39,11 @@ namespace Renderer::Buffer {
         static void unbind();
 
         [[nodiscard]] auto getCount() const {
-            return m_Count;
+            return m_count;
         }
 
     private:
-        uint32_t m_Id{};
-        uint32_t m_Count{};
+        uint32_t m_id{};
+        uint32_t m_count{};
     };
 }

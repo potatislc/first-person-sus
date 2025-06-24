@@ -24,13 +24,13 @@ namespace Renderer::Buffer {
                 static_assert(false);
             }
 
-            [[nodiscard]] auto getElements() const { return m_Elements; }
+            [[nodiscard]] auto getElements() const { return m_elements; }
 
-            [[nodiscard]] auto getStride() const { return m_Stride; }
+            [[nodiscard]] auto getStride() const { return m_stride; }
 
         private:
-            std::vector<Element> m_Elements;
-            size_t m_Stride{};
+            std::vector<Element> m_elements;
+            size_t m_stride{};
         };
 
         Vertex(const void* data, uint32_t size);
@@ -39,8 +39,8 @@ namespace Renderer::Buffer {
 
         Vertex& operator=(const Vertex&) = delete;
 
-        Vertex(Vertex&& other) noexcept : m_Id{other.m_Id} {
-            other.m_Id = {};
+        Vertex(Vertex&& other) noexcept : m_id{other.m_id} {
+            other.m_id = {};
         }
 
         Vertex& operator=(Vertex&& other) noexcept {
@@ -48,8 +48,8 @@ namespace Renderer::Buffer {
                 return *this;
             }
 
-            m_Id = other.m_Id;
-            other.m_Id = {};
+            m_id = other.m_id;
+            other.m_id = {};
             return *this;
         }
 
@@ -60,7 +60,7 @@ namespace Renderer::Buffer {
         static void unbind();
 
     private:
-        uint32_t m_Id{};
+        uint32_t m_id{};
     };
 
     template<>

@@ -35,15 +35,15 @@ Window Renderer::GlRenderer::createWindow(const std::string& name, const int wid
     return Window{name, window};
 }
 
-Renderer::GlRenderer::GlRenderer(const Window& window) : m_Context(SDL_GL_CreateContext(window.get())) {
-    if (m_Context == nullptr) {
+Renderer::GlRenderer::GlRenderer(const Window& window) : m_context(SDL_GL_CreateContext(window.get())) {
+    if (m_context == nullptr) {
         std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << '\n';
         return;
     }
 
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0) {
         std::cerr << "Failed to initialize GLAD\n";
-        m_GlLoaderInitialized = false;
+        m_glLoaderInitialized = false;
         return;
     }
 
@@ -75,7 +75,7 @@ bool Renderer::GlRenderer::logErrors(const char* functionName, const char* fileN
 }
 
 void* Renderer::GlRenderer::getContext() const {
-    return m_Context;
+    return m_context;
 }
 
 void Renderer::GlRenderer::swapWindow(const Window& window) const {

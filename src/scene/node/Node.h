@@ -9,11 +9,11 @@ namespace Scene {
     public:
         Node() = delete;
 
-        explicit Node(Scene& scene, const Scene& parent) : m_Scene{&scene}, m_Parent{&parent} {
+        explicit Node(Scene& scene, const Scene& parent) : m_scene{&scene}, m_parent{&parent} {
         }
 
-        Node(const Node& other) : m_Children{other.copyChildren()}, m_Scene{other.m_Scene->copy()},
-                                  m_Parent{other.m_Parent}, m_Active{other.m_Active} {
+        Node(const Node& other) : m_children{other.copyChildren()}, m_scene{other.m_scene->copy()},
+                                  m_parent{other.m_parent}, m_active{other.m_active} {
         }
 
         Node& operator=(const Node& other) {
@@ -21,20 +21,20 @@ namespace Scene {
                 return *this;
             }
 
-            m_Children = other.copyChildren();
-            m_Scene = other.m_Scene->copy();
-            m_Parent = other.m_Parent;
-            m_Active = other.m_Active;
+            m_children = other.copyChildren();
+            m_scene = other.m_scene->copy();
+            m_parent = other.m_parent;
+            m_active = other.m_active;
 
             return *this;
         }
 
-        Node(Node&& other) noexcept : m_Children{std::move(other.m_Children)}, m_Scene{other.m_Scene},
-                                      m_Parent{other.m_Parent},
-                                      m_Active{other.m_Active} {
-            other.m_Scene = {};
-            other.m_Parent = {};
-            other.m_Active = {};
+        Node(Node&& other) noexcept : m_children{std::move(other.m_children)}, m_scene{other.m_scene},
+                                      m_parent{other.m_parent},
+                                      m_active{other.m_active} {
+            other.m_scene = {};
+            other.m_parent = {};
+            other.m_active = {};
         }
 
         Node& operator=(Node&& other) noexcept {
@@ -42,12 +42,12 @@ namespace Scene {
                 return *this;
             }
 
-            m_Children = std::move(other.m_Children);
-            m_Scene = other.m_Scene;
-            m_Parent = other.m_Parent;
+            m_children = std::move(other.m_children);
+            m_scene = other.m_scene;
+            m_parent = other.m_parent;
 
-            other.m_Scene = {};
-            other.m_Parent = {};
+            other.m_scene = {};
+            other.m_parent = {};
 
             return *this;
         }
@@ -67,11 +67,11 @@ namespace Scene {
         void addChildCopy(const Scene& scene);
 
         void activate() {
-            m_Active = true;
+            m_active = true;
         }
 
         void deactivate() {
-            m_Active = false;
+            m_active = false;
         }
 
     private:
@@ -79,9 +79,9 @@ namespace Scene {
 
         void deleteChildren() const;
 
-        std::vector<Scene*> m_Children{};
-        Scene* m_Scene{};
-        const Scene* m_Parent{};
-        bool m_Active = true;
+        std::vector<Scene*> m_children{};
+        Scene* m_scene{};
+        const Scene* m_parent{};
+        bool m_active = true;
     };
 }

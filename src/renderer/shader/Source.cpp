@@ -6,12 +6,12 @@
 #include "../Renderer.h"
 
 void Renderer::Shader::Source::destroy() {
-    if (m_Id == 0) {
+    if (m_id == 0) {
         return;
     }
 
-    RENDERER_API_CALL(glDeleteShader(m_Id));
-    m_Id = 0;
+    RENDERER_API_CALL(glDeleteShader(m_id));
+    m_id = 0;
 }
 
 void Renderer::Shader::Source::compile() {
@@ -20,8 +20,8 @@ void Renderer::Shader::Source::compile() {
         return;
     }
 
-    const auto shaderId = RENDERER_API_CALL_RETURN(glCreateShader(m_Type));
-    const auto* const src = m_Source.c_str();
+    const auto shaderId = RENDERER_API_CALL_RETURN(glCreateShader(m_type));
+    const auto* const src = m_source.c_str();
     RENDERER_API_CALL(glShaderSource(shaderId, 1, &src, nullptr));
     RENDERER_API_CALL(glCompileShader(shaderId));
 
@@ -35,9 +35,9 @@ void Renderer::Shader::Source::compile() {
         return;
     }
 
-    m_Id = shaderId;
+    m_id = shaderId;
 }
 
 const std::vector<Renderer::Shader::Uniform>& Renderer::Shader::Source::getUniforms() const {
-    return m_Uniforms;
+    return m_uniforms;
 }

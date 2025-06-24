@@ -27,28 +27,28 @@ public:
     void run();
 
     uint64_t getFrameCount() const {
-        return m_FrameCount;
+        return m_frameCount;
     }
 
-    static const Application& getGlobalInstance() {
-        ASSERT_MSG(s_GlobalInstance != nullptr, "Global application instance is null. \n");
-        return *s_GlobalInstance;
+    static const Application& getUniqueInstance() {
+        ASSERT_MSG(s_uniqueInstance != nullptr, "Unique application instance is null. \n");
+        return *s_uniqueInstance;
     }
 
 
     const Window& getWindow() const {
-        return m_Window;
+        return m_window;
     }
 
     const Renderer::Renderer& getRenderer() const {
-        return *m_Renderer;
+        return *m_renderer;
     }
 
 private:
-    static Application* s_GlobalInstance;
+    static Application* s_uniqueInstance;
 
-    Window m_Window{};
-    Renderer::Renderer* m_Renderer{};
-    uint64_t m_FrameCount{};
-    Scene::Scene* m_BaseScene{};
+    Window m_window{};
+    Renderer::Renderer* m_renderer{};
+    uint64_t m_frameCount{};
+    Scene::Scene* m_baseScene{};
 };

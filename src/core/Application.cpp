@@ -7,40 +7,40 @@
 #include "../renderer/GlRenderer.h"
 #include "../scene/test/Test.h"
 
-Application* Application::s_GlobalInstance{};
+Application* Application::s_uniqueInstance{};
 
 Application::Application(const std::string& name, const unsigned int width, const unsigned int height,
                          const Renderer::Type rendererType) {
     switch (rendererType) {
         case Renderer::Type::OPEN_GL:
-            m_Window = Renderer::GlRenderer::createWindow(name, width, height);
-            m_Renderer = new Renderer::GlRenderer{m_Window};
+            m_window = Renderer::GlRenderer::createWindow(name, width, height);
+            m_renderer = new Renderer::GlRenderer{m_window};
             break;
         default:
             std::cerr << "Application could not start. No RendererType selected. \n";
             return;
     }
 
-    m_BaseScene = new Scene::Test{};
+    m_baseScene = new Scene::Test{};
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplSDL3_InitForOpenGL(m_Window.get(), m_Renderer->getContext());
+    ImGui_ImplSDL3_InitForOpenGL(m_window.get(), m_renderer->getContext());
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    s_GlobalInstance = this;
+    s_uniqueInstance = this;
 }
 
 Application::~Application() {
-    delete m_BaseScene;
+    delete m_baseScene;
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
-    delete m_Renderer;
-    m_Window.destroy();
+    delete m_renderer;
+    m_window.destroy();
 
     SDL_Quit();
 }
@@ -64,23 +64,23 @@ void Application::run() {
             }
         }
 
-        if (m_BaseScene != nullptr) {
-            m_BaseScene->update(0.f);
-            m_BaseScene->render(*m_Renderer);
+        if (m_baseScene != nullptr) {
+            m_baseScene->update(0.f);
+            m_baseScene->render(*m_renderer);
         }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        if (m_BaseScene != nullptr) {
-            m_BaseScene->renderImGui();
+        if (m_baseScene != nullptr) {
+            m_baseScene->renderImGui();
         }
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        m_Renderer->swapWindow(m_Window);
+        m_renderer->swapWindow(m_window);
 
         uint64_t const frameEnd = SDL_GetPerformanceCounter();
 
@@ -90,7 +90,7 @@ void Application::run() {
             SDL_Delay(delayMs);
         }
 
-        m_FrameCount++;
+        m_frameCount++;
         frameStart = SDL_GetPerformanceCounter();
     }
 }

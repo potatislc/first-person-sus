@@ -2,55 +2,55 @@
 
 Scene::Node::~Node() {
     deleteChildren();
-    delete m_Scene;
+    delete m_scene;
 }
 
 void Scene::Node::update(const float deltaTime) {
-    if (!m_Active) {
+    if (!m_active) {
         return;
     }
 
-    m_Scene->update(deltaTime);
+    m_scene->update(deltaTime);
 
-    for (const auto& scene: m_Children) {
+    for (const auto& scene: m_children) {
         scene->update(deltaTime);
     }
 }
 
 void Scene::Node::render(const Renderer::Renderer& renderer) {
-    if (!m_Active) {
+    if (!m_active) {
         return;
     }
 
-    m_Scene->render(renderer);
+    m_scene->render(renderer);
 
-    for (const auto& scene: m_Children) {
+    for (const auto& scene: m_children) {
         scene->render(renderer);
     }
 }
 
 void Scene::Node::renderImGui() {
-    if (!m_Active) {
+    if (!m_active) {
         return;
     }
 
-    m_Scene->renderImGui();
+    m_scene->renderImGui();
 
-    for (const auto& scene: m_Children) {
+    for (const auto& scene: m_children) {
         scene->renderImGui();
     }
 }
 
 void Scene::Node::addChildCopy(const Scene& scene) {
     if (const auto childCopy = scene.copy(); childCopy != nullptr) {
-        m_Children.push_back(childCopy);
+        m_children.push_back(childCopy);
     }
 }
 
 std::vector<Scene::Scene*> Scene::Node::copyChildren() const {
     std::vector<Scene*> children;
 
-    for (const auto& child: m_Children) {
+    for (const auto& child: m_children) {
         children.push_back(child->copy());
     }
 
@@ -58,7 +58,7 @@ std::vector<Scene::Scene*> Scene::Node::copyChildren() const {
 }
 
 void Scene::Node::deleteChildren() const {
-    for (const auto& child: m_Children) {
+    for (const auto& child: m_children) {
         delete &child;
     }
 }

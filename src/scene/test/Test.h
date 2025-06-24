@@ -39,14 +39,14 @@ namespace Scene {
             2, 3, 0
         };
 
-        const Renderer::Buffer::Vertex m_VertexBuffer{s_Square.data(), sizeof(s_Square)};
-        Renderer::Buffer::Index m_IndexBuffer{s_Indices.data(), s_Indices.size()};
-        Renderer::VertexArray m_VertexArray{};
-        Renderer::Buffer::Vertex::Layout m_VertexLayout{};
-        Renderer::Shader::Program shaderProgram{};
-        Renderer::Texture texture{};
-        glm::mat4 m_Projection = glm::ortho(0.f, 960.f, 0.f, 540.f, -1.f, 1.f);
-        glm::mat4 m_View = glm::translate(glm::mat4{1.f}, glm::vec3{0, 0, 0});
-        glm::vec3 translation{200, 200, 0};
+        const Renderer::Buffer::Vertex m_vertexBuffer{s_Square.data(), sizeof(s_Square)};
+        Renderer::Buffer::Index m_indexBuffer{s_Indices.data(), s_Indices.size()};
+        Renderer::VertexArray m_vertexArray{};
+        Renderer::Buffer::Vertex::Layout m_vertexLayout{};
+        Renderer::Shader::Program m_shaderProgram{};
+        Renderer::Texture m_texture{};
+        glm::mat4 m_projection = glm::ortho(0.f, 960.f, 0.f, 540.f, -1.f, 1.f);
+        glm::mat4 m_view = glm::translate(glm::mat4{1.f}, glm::vec3{0, 0, 0});
+        glm::vec3 m_translation{200, 200, 0};
     };
 }

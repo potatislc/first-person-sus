@@ -26,9 +26,9 @@ void Renderer::Shader::Program::setUniform(const int32_t location, const glm::ma
 }
 
 int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) const {
-    for (const auto& uniform: m_Uniforms) {
-        if (uniform.m_Name == name) {
-            return uniform.m_Location;
+    for (const auto& uniform: m_uniforms) {
+        if (uniform.m_name == name) {
+            return uniform.m_location;
         }
     }
 
@@ -38,23 +38,23 @@ int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) c
 }
 
 bool Renderer::Shader::Program::createProgram() {
-    m_Id = RENDERER_API_CALL_RETURN(glCreateProgram());
-    if (m_Id == 0) {
+    m_id = RENDERER_API_CALL_RETURN(glCreateProgram());
+    if (m_id == 0) {
         std::cerr << s_CreationFailStr << '\n';
     }
 
-    return static_cast<bool>(m_Id);
+    return static_cast<bool>(m_id);
 }
 
 bool Renderer::Shader::Program::linkProgram() const {
-    RENDERER_API_CALL(glLinkProgram(m_Id));
+    RENDERER_API_CALL(glLinkProgram(m_id));
 
     int linkStatus = 0;
-    RENDERER_API_CALL(glGetProgramiv(m_Id, GL_LINK_STATUS, &linkStatus));
+    RENDERER_API_CALL(glGetProgramiv(m_id, GL_LINK_STATUS, &linkStatus));
     if (linkStatus == 0) {
         std::cerr << "Failed to link shader program." << '\n';
         std::array<char, 512> log{};
-        glGetProgramInfoLog(m_Id, 512, nullptr, log.data());
+        glGetProgramInfoLog(m_id, 512, nullptr, log.data());
         std::cerr << "Link error: " << log.data() << '\n';
     }
 
@@ -63,14 +63,14 @@ bool Renderer::Shader::Program::linkProgram() const {
 
 void Renderer::Shader::Program::attachShader(const Source& source) {
     auto appendUniforms = source.getUniforms();
-    m_Uniforms.insert(m_Uniforms.end(), appendUniforms.begin(), appendUniforms.end());
+    m_uniforms.insert(m_uniforms.end(), appendUniforms.begin(), appendUniforms.end());
 
-    RENDERER_API_CALL(glAttachShader(m_Id, source.getId()));
+    RENDERER_API_CALL(glAttachShader(m_id, source.getId()));
 }
 
 bool Renderer::Shader::Program::locateUniforms() {
-    for (auto& uniform: m_Uniforms) {
-        if (!uniform.locate(m_Id)) {
+    for (auto& uniform: m_uniforms) {
+        if (!uniform.locate(m_id)) {
             return false;
         }
     }
@@ -105,7 +105,7 @@ Renderer::Shader::Program::Program(Parser sourceParser) {
 }
 
 void Renderer::Shader::Program::bind() const {
-    RENDERER_API_CALL(glUseProgram(m_Id));
+    RENDERER_API_CALL(glUseProgram(m_id));
 }
 
 void Renderer::Shader::Program::unbind() {
@@ -113,12 +113,12 @@ void Renderer::Shader::Program::unbind() {
 }
 
 void Renderer::Shader::Program::destroy() const {
-    if (m_Id == 0) {
+    if (m_id == 0) {
         return;
     }
 
     unbind();
-    RENDERER_API_CALL(glDeleteProgram(m_Id));
+    RENDERER_API_CALL(glDeleteProgram(m_id));
 }
 
 Renderer::Shader::Program::~Program() {

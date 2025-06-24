@@ -27,9 +27,9 @@ namespace Renderer::Shader {
         }
 
     private:
-        std::ifstream m_Stream;
-        std::string m_Line;
-        size_t m_LineCount{};
-        uint32_t m_NextShaderType{};
+        std::ifstream m_stream;
+        std::string m_line;
+        size_t m_lineCount{};
+        uint32_t m_nextShaderType{};
     };
 }

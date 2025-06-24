@@ -16,8 +16,8 @@ namespace Renderer {
 
         VertexArray& operator=(const VertexArray&) = delete;
 
-        VertexArray(VertexArray&& other) noexcept : m_Id{other.m_Id} {
-            other.m_Id = {};
+        VertexArray(VertexArray&& other) noexcept : m_id{other.m_id} {
+            other.m_id = {};
         }
 
         VertexArray& operator=(VertexArray&& other) noexcept {
@@ -25,8 +25,8 @@ namespace Renderer {
                 return *this;
             }
 
-            m_Id = other.m_Id;
-            other.m_Id = {};
+            m_id = other.m_id;
+            other.m_id = {};
             return *this;
         }
 
@@ -39,6 +39,6 @@ namespace Renderer {
         static void unbind();
 
     private:
-        Id m_Id{};
+        Id m_id{};
     };
 }

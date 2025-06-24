@@ -17,10 +17,10 @@ namespace Renderer {
 
         Texture& operator=(const Texture&) = delete;
 
-        Texture(Texture&& other) noexcept : m_Path{std::move(other.m_Path)}, m_Buffer{other.m_Buffer}, m_Id{other.m_Id},
-                                            m_Size{other.m_Size}, m_Bpp{other.m_Bpp} {
-            other.m_Id = {};
-            other.m_Buffer = {};
+        Texture(Texture&& other) noexcept : m_path{std::move(other.m_path)}, m_buffer{other.m_buffer}, m_id{other.m_id},
+                                            m_size{other.m_size}, m_bpp{other.m_bpp} {
+            other.m_id = {};
+            other.m_buffer = {};
         }
 
         Texture& operator=(Texture&& other) noexcept {
@@ -28,11 +28,11 @@ namespace Renderer {
                 return *this;
             }
 
-            m_Path = std::move(other.m_Path);
-            m_Buffer = other.m_Buffer;
-            other.m_Buffer = {};
-            m_Id = other.m_Id;
-            other.m_Id = {};
+            m_path = std::move(other.m_path);
+            m_buffer = other.m_buffer;
+            other.m_buffer = {};
+            m_id = other.m_id;
+            other.m_id = {};
             return *this;
         }
 
@@ -43,14 +43,14 @@ namespace Renderer {
         static void unbind();
 
         [[nodiscard]] auto getSize() const {
-            return m_Size;
+            return m_size;
         }
 
     private:
-        std::string m_Path;
-        uint8_t* m_Buffer{};
-        Id m_Id{};
-        glm::ivec2 m_Size{};
-        int m_Bpp{};
+        std::string m_path;
+        uint8_t* m_buffer{};
+        Id m_id{};
+        glm::ivec2 m_size{};
+        int m_bpp{};
     };
 }

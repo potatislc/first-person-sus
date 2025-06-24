@@ -6,11 +6,11 @@
 #include "buffer/Vertex.h"
 
 Renderer::VertexArray::VertexArray() {
-    RENDERER_API_CALL(glGenVertexArrays(1, &m_Id));
+    RENDERER_API_CALL(glGenVertexArrays(1, &m_id));
 }
 
 Renderer::VertexArray::~VertexArray() {
-    RENDERER_API_CALL(glDeleteVertexArrays(1, &m_Id));
+    RENDERER_API_CALL(glDeleteVertexArrays(1, &m_id));
 }
 
 void Renderer::VertexArray::addBuffer(const Buffer::Vertex& vertexBuffer,
@@ -32,7 +32,7 @@ void Renderer::VertexArray::addBuffer(const Buffer::Vertex& vertexBuffer,
 }
 
 void Renderer::VertexArray::bind() const {
-    RENDERER_API_CALL(glBindVertexArray(m_Id));
+    RENDERER_API_CALL(glBindVertexArray(m_id));
 }
 
 void Renderer::VertexArray::unbind() {

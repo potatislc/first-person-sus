@@ -27,8 +27,8 @@ namespace Renderer::Shader {
 
         Program& operator=(const Program&) = delete;
 
-        Program(Program&& other) noexcept : m_Uniforms{std::move(other.m_Uniforms)}, m_Id{other.m_Id} {
-            other.m_Id = {};
+        Program(Program&& other) noexcept : m_uniforms{std::move(other.m_uniforms)}, m_id{other.m_id} {
+            other.m_id = {};
         }
 
         Program& operator=(Program&& other) noexcept {
@@ -36,13 +36,13 @@ namespace Renderer::Shader {
                 return *this;
             }
 
-            m_Uniforms = std::move(other.m_Uniforms);
-            m_Id = other.m_Id;
-            other.m_Id = {};
+            m_uniforms = std::move(other.m_uniforms);
+            m_id = other.m_id;
+            other.m_id = {};
             return *this;
         }
 
-        explicit Program(const uint32_t id) : m_Id{id} {
+        explicit Program(const uint32_t id) : m_id{id} {
         }
 
         void destroy() const;
@@ -54,11 +54,11 @@ namespace Renderer::Shader {
         static void unbind();
 
         explicit operator uint32_t() const {
-            return m_Id;
+            return m_id;
         }
 
         [[nodiscard]] uint32_t getId() const {
-            return m_Id;
+            return m_id;
         }
 
         [[nodiscard]] int32_t getUniformLocation(const std::string& name) const;
@@ -87,8 +87,8 @@ namespace Renderer::Shader {
 
         bool locateUniforms();
 
-        std::vector<Uniform> m_Uniforms;
-        Id m_Id{};
+        std::vector<Uniform> m_uniforms;
+        Id m_id{};
     };
 
     template<typename... Args>

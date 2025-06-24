@@ -16,8 +16,8 @@ namespace Renderer {
 
         GlRenderer& operator=(const GlRenderer&) = delete;
 
-        GlRenderer(GlRenderer&& other) noexcept : m_Context(other.m_Context) {
-            other.m_Context = {};
+        GlRenderer(GlRenderer&& other) noexcept : m_context(other.m_context) {
+            other.m_context = {};
         }
 
         GlRenderer& operator=(GlRenderer&& other) noexcept {
@@ -25,13 +25,13 @@ namespace Renderer {
                 return *this;
             }
 
-            m_Context = other.m_Context;
-            other.m_Context = {};
+            m_context = other.m_context;
+            other.m_context = {};
             return *this;
         }
 
         ~GlRenderer() override {
-            SDL_GL_DestroyContext(m_Context);
+            SDL_GL_DestroyContext(m_context);
         }
 
         void clearErrors() const override;
@@ -39,7 +39,7 @@ namespace Renderer {
         bool logErrors(const char* functionName, const char* fileName, size_t line) const override;
 
         bool isValid() override {
-            return m_Context != nullptr && m_GlLoaderInitialized;
+            return m_context != nullptr && m_glLoaderInitialized;
         }
 
         void* getContext() const override;
@@ -52,7 +52,7 @@ namespace Renderer {
                   const Shader::Program& shaderProgram) const override;
 
     private:
-        SDL_GLContext m_Context{};
-        bool m_GlLoaderInitialized{};
+        SDL_GLContext m_context{};
+        bool m_glLoaderInitialized{};
     };
 }
