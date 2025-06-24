@@ -40,7 +40,7 @@ int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) c
 bool Renderer::Shader::Program::createProgram() {
     m_Id = RENDERER_API_CALL_RETURN(glCreateProgram());
     if (m_Id == 0) {
-        std::cerr << creationFailStr << '\n';
+        std::cerr << s_CreationFailStr << '\n';
     }
 
     return static_cast<bool>(m_Id);
@@ -86,7 +86,7 @@ Renderer::Shader::Program::Program(Parser sourceParser) {
     while (auto shader{sourceParser.next()}) {
         shader.compile();
         if (!shader.isCompiled()) {
-            std::cerr << creationFailStr << '\n';
+            std::cerr << s_CreationFailStr << '\n';
             return;
         }
 

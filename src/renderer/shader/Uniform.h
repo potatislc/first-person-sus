@@ -1,5 +1,5 @@
-#ifndef UNIFORM_H
-#define UNIFORM_H
+#pragma once
+
 #include <string>
 
 namespace Renderer::Shader {
@@ -17,5 +17,3 @@ namespace Renderer::Shader {
         // uint32_t m_Size{1}; // For Arrays
     };
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef RENDERER_SHADER_PARSER_H
-#define RENDERER_SHADER_PARSER_H
+#pragma once
 
 #include <fstream>
 #include "Source.h"
@@ -34,5 +33,3 @@ namespace Renderer::Shader {
         uint32_t m_NextShaderType{};
     };
 }
-
-#endif

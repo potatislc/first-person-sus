@@ -1,6 +1,7 @@
-#ifndef RENDERER_VERTEXARRAY_H
-#define RENDERER_VERTEXARRAY_H
+#pragma once
+
 #include "buffer/Vertex.h"
+#include "../core/Typedef.h"
 
 namespace Buffer {
     class Vertex;
@@ -38,7 +39,6 @@ namespace Renderer {
         static void unbind();
 
     private:
-        uint32_t m_Id{};
+        Id m_Id{};
     };
 }
-#endif

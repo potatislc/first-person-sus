@@ -1,5 +1,4 @@
-#ifndef RENDERER_SHADER_PROGRAM_H
-#define RENDERER_SHADER_PROGRAM_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -7,6 +6,7 @@
 #include <glm/vec4.hpp>
 
 #include "Uniform.h"
+#include "../../core/Typedef.h"
 
 namespace Renderer {
     class Renderer;
@@ -77,7 +77,7 @@ namespace Renderer::Shader {
         }
 
     private:
-        const char* creationFailStr = "Failed to create shader program.";
+        static constexpr char s_CreationFailStr[] = "Failed to create shader program.";
 
         [[nodiscard]] bool createProgram();
 
@@ -88,7 +88,7 @@ namespace Renderer::Shader {
         bool locateUniforms();
 
         std::vector<Uniform> m_Uniforms;
-        uint32_t m_Id{};
+        Id m_Id{};
     };
 
     template<typename... Args>
@@ -98,7 +98,7 @@ namespace Renderer::Shader {
         }
 
         if (const bool success = ((shaders.compile(), shaders.isCompiled()) && ...); !success) {
-            std::cerr << creationFailStr << '\n';
+            std::cerr << s_CreationFailStr << '\n';
             return;
         }
 
@@ -115,5 +115,3 @@ namespace Renderer::Shader {
         }
     }
 }
-
-#endif

@@ -1,10 +1,10 @@
+#pragma once
 
-#ifndef RENDERER_TEXTURE_H
-#define RENDERER_TEXTURE_H
 #include <cstdint>
 #include <string>
 #include <glm/vec2.hpp>
 
+#include "../../core/Typedef.h"
 
 namespace Renderer {
     class Texture {
@@ -49,11 +49,8 @@ namespace Renderer {
     private:
         std::string m_Path;
         uint8_t* m_Buffer{};
-        uint32_t m_Id{};
+        Id m_Id{};
         glm::ivec2 m_Size{};
         int m_Bpp{};
     };
 }
-
-
-#endif

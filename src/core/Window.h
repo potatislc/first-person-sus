@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#pragma once
+
 #include <string>
 #include <SDL3/SDL.h>
 
@@ -53,5 +53,3 @@ private:
     std::string m_Name;
     SDL_Window* m_Window{};
 };
-
-#endif

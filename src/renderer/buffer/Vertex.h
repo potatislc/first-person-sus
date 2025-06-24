@@ -1,5 +1,4 @@
-#ifndef RENDERER_BUFFER_VERTEX_H
-#define RENDERER_BUFFER_VERTEX_H
+#pragma once
 
 #include <vector>
 
@@ -73,5 +72,3 @@ namespace Renderer::Buffer {
     template<>
     void Vertex::Layout::push<uint8_t>(uint32_t count);
 }
-
-#endif

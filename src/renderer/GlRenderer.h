@@ -1,7 +1,7 @@
-#ifndef RENDERER_GLRENDERER_H
-#define RENDERER_GLRENDERER_H
+#pragma once
 
 #include <glm/vec4.hpp>
+#include <SDL3/SDL_video.h>
 
 #include "Renderer.h"
 
@@ -56,5 +56,3 @@ namespace Renderer {
         bool m_GlLoaderInitialized{};
     };
 }
-
-#endif

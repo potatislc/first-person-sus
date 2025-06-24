@@ -1,10 +1,10 @@
-#ifndef RENDERER_SHADER_SOURCE_H
-#define RENDERER_SHADER_SOURCE_H
+#pragma once
 
 #include <string>
 #include <vector>
 
 #include "Uniform.h"
+#include "../../core/Typedef.h"
 
 namespace Renderer {
     class Renderer;
@@ -83,9 +83,7 @@ namespace Renderer::Shader {
     private:
         std::string m_Source;
         std::vector<Uniform> m_Uniforms;
-        uint32_t m_Id{};
+        Id m_Id{};
         uint32_t m_Type{};
     };
 }
-
-#endif

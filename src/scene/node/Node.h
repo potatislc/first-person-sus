@@ -1,5 +1,4 @@
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include <vector>
 
@@ -86,5 +85,3 @@ namespace Scene {
         bool m_Active = true;
     };
 }
-
-#endif

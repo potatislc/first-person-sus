@@ -1,9 +1,9 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#pragma once
 
 #include <string>
 
 #include "../renderer/Renderer.h"
+#include "Window.h"
 
 namespace Scene {
     class Scene;
@@ -52,5 +52,3 @@ private:
     uint64_t m_FrameCount{};
     Scene::Scene* m_BaseScene{};
 };
-
-#endif

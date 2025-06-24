@@ -1,6 +1,4 @@
-
-#ifndef TESTSCENE_H
-#define TESTSCENE_H
+#pragma once
 
 #include <array>
 #include <glm/vec2.hpp>
@@ -52,6 +50,3 @@ namespace Scene {
         glm::vec3 translation{200, 200, 0};
     };
 }
-
-
-#endif

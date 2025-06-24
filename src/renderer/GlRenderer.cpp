@@ -2,10 +2,12 @@
 
 #include <iostream>
 #include <glad/glad.h>
+#include <SDL3/SDL_init.h>
 
 #include "VertexArray.h"
 #include "buffer/Index.h"
 #include "shader/Program.h"
+#include "../core/Window.h"
 
 Window Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {

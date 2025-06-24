@@ -1,5 +1,5 @@
-#ifndef RENDERER_BUFFER_INDEX_H
-#define RENDERER_BUFFER_INDEX_H
+#pragma once
+
 #include <cstdint>
 
 namespace Renderer {
@@ -47,5 +47,3 @@ namespace Renderer::Buffer {
         uint32_t m_Count{};
     };
 }
-
-#endif

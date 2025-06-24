@@ -1,5 +1,4 @@
-#ifndef ASSERT_H
-#define ASSERT_H
+#pragma once
 
 #if defined(_MSC_VER)
 #define debugBreak() (__debugbreak())
@@ -8,6 +7,8 @@
 #else
 #define debugBreak() (assert(false))
 #endif
+
+#include <iostream>
 
 inline bool debugAssert(const bool condition, const std::string& message = {}) {
     if (!condition) {
@@ -24,6 +25,4 @@ inline bool debugAssert(const bool condition, const std::string& message = {}) {
 #else
 #define ASSERT(condition) debugAssert(condition)
 #define ASSERT_MSG(condition, message) debugAssert(condition, message)
-#endif
-
 #endif

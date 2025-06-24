@@ -1,5 +1,5 @@
-#ifndef SCENE_H
-#define SCENE_H
+#pragma once
+
 #include <iostream>
 
 namespace Renderer {
@@ -36,5 +36,3 @@ namespace Scene {
         }
     };
 }
-
-#endif
