@@ -9,8 +9,9 @@
 #define debugBreak() (assert(false))
 #endif
 
-inline bool debugAssert(const bool condition) {
+inline bool debugAssert(const bool condition, const std::string& message = {}) {
     if (!condition) {
+        std::cerr << message;
         debugBreak();
     }
 
@@ -19,8 +20,10 @@ inline bool debugAssert(const bool condition) {
 
 #ifdef NDEBUG
 #define ASSERT(condition) ()
+#define ASSERT_MSG(condition, message) ()
 #else
 #define ASSERT(condition) debugAssert(condition)
+#define ASSERT_MSG(condition, message) debugAssert(condition, message)
 #endif
 
 #endif

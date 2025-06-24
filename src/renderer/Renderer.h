@@ -33,6 +33,8 @@ namespace Renderer {
             case Type::OPEN_GL: return "OPEN_GL";
             case Type::SDL_GPU: return "SDL_GPU";
         }
+
+        std::unreachable();
     }
 
     class Renderer {
@@ -44,8 +46,7 @@ namespace Renderer {
         template<typename Func>
         static void apiCall(const Renderer* renderer, Func&& func, const char* code, const char* file,
                             const size_t line) {
-            if (renderer == nullptr) {
-                std::cerr << "In Renderer::Debug::apiCall: Renderer is not set.\n";
+            if (!ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCall: Renderer is not set.\n")) {
                 return;
             }
 
@@ -57,8 +58,7 @@ namespace Renderer {
         template<typename Func>
         static auto apiCallReturn(const Renderer* renderer, Func&& func, const char* code, const char* file,
                                   const size_t line) -> decltype(func()) {
-            if (renderer == nullptr) {
-                std::cerr << "In Renderer::Debug::apiCallReturn: Renderer is not set.\n";
+            if (!ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCallReturn: Renderer is not set.\n")) {
                 return decltype(func()){};
             }
 

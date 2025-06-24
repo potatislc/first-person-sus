@@ -7,6 +7,8 @@
 #include "../renderer/GlRenderer.h"
 #include "../scene/test/Test.h"
 
+Application* Application::s_GlobalInstance{};
+
 Application::Application(const std::string& name, const unsigned int width, const unsigned int height,
                          const Renderer::Type rendererType) {
     switch (rendererType) {
@@ -16,17 +18,18 @@ Application::Application(const std::string& name, const unsigned int width, cons
             break;
         default:
             std::cerr << "Application could not start. No RendererType selected. \n";
-            ASSERT(false);
             return;
     }
 
-    m_BaseScene = new Scene::Test{*this};
+    m_BaseScene = new Scene::Test{};
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplSDL3_InitForOpenGL(m_Window.get(), m_Renderer->getContext());
     ImGui_ImplOpenGL3_Init("#version 330");
+
+    s_GlobalInstance = this;
 }
 
 Application::~Application() {

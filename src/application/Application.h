@@ -30,6 +30,12 @@ public:
         return m_FrameCount;
     }
 
+    static const Application& getGlobalInstance() {
+        ASSERT_MSG(s_GlobalInstance != nullptr, "Global application instance is null. \n");
+        return *s_GlobalInstance;
+    }
+
+
     const Window& getWindow() const {
         return m_Window;
     }
@@ -39,11 +45,12 @@ public:
     }
 
 private:
+    static Application* s_GlobalInstance;
+
     Window m_Window{};
     Renderer::Renderer* m_Renderer{};
     uint64_t m_FrameCount{};
     Scene::Scene* m_BaseScene{};
 };
-
 
 #endif

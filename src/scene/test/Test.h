@@ -18,7 +18,7 @@ class Application;
 namespace Scene {
     class Test final : public Scene {
     public:
-        explicit Test(const Application& application);
+        explicit Test();
 
         void update(float deltaTime) override;
 
@@ -27,7 +27,7 @@ namespace Scene {
         void renderImGui() override;
 
     private:
-        static constexpr std::array<glm::vec2, 8> m_Square{
+        static constexpr std::array<glm::vec2, 8> s_Square{
             {
                 {-50.f, -50.f}, {0.f, 0.f}, // Top-left
                 {50.f, -50.f}, {1.f, 0.f}, // Top-right
@@ -36,14 +36,13 @@ namespace Scene {
             }
         };
 
-        static constexpr std::array<uint32_t, 6> m_Indices = {
+        static constexpr std::array<uint32_t, 6> s_Indices = {
             0, 1, 2,
             2, 3, 0
         };
 
-        const Application* m_Application{};
-        const Renderer::Buffer::Vertex m_VertexBuffer{m_Square.data(), sizeof(m_Square)};
-        Renderer::Buffer::Index m_IndexBuffer{m_Indices.data(), m_Indices.size()};
+        const Renderer::Buffer::Vertex m_VertexBuffer{s_Square.data(), sizeof(s_Square)};
+        Renderer::Buffer::Index m_IndexBuffer{s_Indices.data(), s_Indices.size()};
         Renderer::VertexArray m_VertexArray{};
         Renderer::Buffer::Vertex::Layout m_VertexLayout{};
         Renderer::Shader::Program shaderProgram{};

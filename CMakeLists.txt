@@ -68,7 +68,6 @@ add_executable(${EXE_NAME} src/main.cpp
         src/renderer/texture/Texture.cpp
         src/scene/test/Test.cpp
         src/application/Application.cpp
-        src/application/Application.cpp
         src/scene/node/Node.h
         src/scene/node/Node.cpp)
 
@@ -98,6 +97,7 @@ set(WARNING_FLAGS
         -Wno-unused-parameter
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
+        -Wno-switch-default
 )
 target_compile_options(${EXE_NAME} PRIVATE ${WARNING_FLAGS})
 
