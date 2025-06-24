@@ -32,7 +32,6 @@ namespace Renderer {
             case Type::NONE: return "NONE";
             case Type::OPEN_GL: return "OPEN_GL";
             case Type::SDL_GPU: return "SDL_GPU";
-            default: return "unknown";
         }
     }
 

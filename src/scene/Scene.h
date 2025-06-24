@@ -1,5 +1,6 @@
 #ifndef SCENE_H
 #define SCENE_H
+#include <iostream>
 
 namespace Renderer {
     class Renderer;
@@ -29,7 +30,10 @@ namespace Scene {
         virtual void renderImGui() {
         }
 
-        // virtual Scene* copy() const = 0;
+        virtual Scene* copy() const {
+            std::cerr << "Scene instance is not copyable with Scene::Scene::copy().\n";
+            return nullptr;
+        }
     };
 }
 

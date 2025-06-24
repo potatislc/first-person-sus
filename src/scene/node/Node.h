@@ -6,53 +6,84 @@
 #include "../Scene.h"
 
 namespace Scene {
-    [[maybe_unused]] class Node final : public Scene {
+    class Node final : public Scene {
     public:
-        explicit Node(Scene& scene) : m_Scene{&scene} {
+        Node() = delete;
+
+        explicit Node(Scene& scene, const Scene& parent) : m_Scene{&scene}, m_Parent{&parent} {
         }
 
-        Node(const Node& other) : m_Scene{other.m_Scene}, m_SubScenes{other.m_SubScenes} {
+        Node(const Node& other) : m_Children{other.copyChildren()}, m_Scene{other.m_Scene->copy()},
+                                  m_Parent{other.m_Parent}, m_Active{other.m_Active} {
         }
 
-        ~Node() override {
-            delete m_Scene;
-        }
-
-        void update(const float deltaTime) override {
-            m_Scene->update(deltaTime);
-
-            for (const auto& scene: m_SubScenes) {
-                scene->update(deltaTime);
+        Node& operator=(const Node& other) {
+            if (&other == this) {
+                return *this;
             }
+
+            m_Children = other.copyChildren();
+            m_Scene = other.m_Scene->copy();
+            m_Parent = other.m_Parent;
+            m_Active = other.m_Active;
+
+            return *this;
         }
 
-        void onRender() override {
-            m_Scene->onRender();
+        Node(Node&& other) noexcept : m_Children{std::move(other.m_Children)}, m_Scene{other.m_Scene},
+                                      m_Parent{other.m_Parent},
+                                      m_Active{other.m_Active} {
+            other.m_Scene = {};
+            other.m_Parent = {};
+            other.m_Active = {};
+        }
 
-            for (const auto& scene: m_SubScenes) {
-                scene->onRender();
+        Node& operator=(Node&& other) noexcept {
+            if (&other == this) {
+                return *this;
             }
+
+            m_Children = std::move(other.m_Children);
+            m_Scene = other.m_Scene;
+            m_Parent = other.m_Parent;
+
+            other.m_Scene = {};
+            other.m_Parent = {};
+
+            return *this;
         }
 
-        void onImGuiRender() override {
-            m_Scene->onImGuiRender();
+        ~Node() override;
 
-            for (const auto& scene: m_SubScenes) {
-                scene->onImGuiRender();
-            }
-        }
+        void update(float deltaTime) override;
 
-        /*Scene* copy() const override {
+        void render(const Renderer::Renderer& renderer) override;
+
+        void renderImGui() override;
+
+        Scene* copy() const override {
             return new Node{*this};
-        }*/
+        }
 
-        void addSubSceneCopy(const Scene& scene) {
-            // m_SubScenes.push_back(scene.copy());
+        void addChildCopy(const Scene& scene);
+
+        void activate() {
+            m_Active = true;
+        }
+
+        void deactivate() {
+            m_Active = false;
         }
 
     private:
+        [[nodiscard]] std::vector<Scene*> copyChildren() const;
+
+        void deleteChildren() const;
+
+        std::vector<Scene*> m_Children{};
         Scene* m_Scene{};
-        std::vector<Scene*> m_SubScenes{};
+        const Scene* m_Parent{};
+        bool m_Active = true;
     };
 }
 
