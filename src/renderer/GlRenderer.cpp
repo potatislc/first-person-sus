@@ -9,7 +9,7 @@
 #include "shader/Program.h"
 #include "../core/Window.h"
 
-Window Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
+Core::Window Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
         SDL_Quit();
@@ -32,10 +32,10 @@ Window Renderer::GlRenderer::createWindow(const std::string& name, const int wid
         SDL_Quit();
     }
 
-    return Window{name, window};
+    return Core::Window{name, window};
 }
 
-Renderer::GlRenderer::GlRenderer(const Window& window) : m_context(SDL_GL_CreateContext(window.get())) {
+Renderer::GlRenderer::GlRenderer(const Core::Window& window) : m_context(SDL_GL_CreateContext(window.get())) {
     if (m_context == nullptr) {
         std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << '\n';
         return;
@@ -78,7 +78,7 @@ void* Renderer::GlRenderer::getContext() const {
     return m_context;
 }
 
-void Renderer::GlRenderer::swapWindow(const Window& window) const {
+void Renderer::GlRenderer::swapWindow(const Core::Window& window) const {
     SDL_GL_SwapWindow(window.get());
 }
 

@@ -7,10 +7,10 @@
 #include "../renderer/GlRenderer.h"
 #include "../scene/test/Test.h"
 
-Application* Application::s_uniqueInstance{};
+Core::Application* Core::Application::s_uniqueInstance{};
 
-Application::Application(const std::string& name, const unsigned int width, const unsigned int height,
-                         const Renderer::Type rendererType) {
+Core::Application::Application(const std::string& name, const unsigned int width, const unsigned int height,
+                               const Renderer::Type rendererType) {
     switch (rendererType) {
         case Renderer::Type::OPEN_GL:
             m_window = Renderer::GlRenderer::createWindow(name, width, height);
@@ -32,7 +32,7 @@ Application::Application(const std::string& name, const unsigned int width, cons
     s_uniqueInstance = this;
 }
 
-Application::~Application() {
+Core::Application::~Application() {
     delete m_baseScene;
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -43,9 +43,11 @@ Application::~Application() {
     m_window.destroy();
 
     SDL_Quit();
+
+    s_uniqueInstance = {};
 }
 
-void Application::run() {
+void Core::Application::run() {
     auto running = true;
     SDL_Event event{};
 

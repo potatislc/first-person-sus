@@ -13,7 +13,7 @@ Renderer::Shader::Parser::Parser(const std::string& filePath) : m_stream{filePat
         std::cerr << "Invalid shader source path: " << filePath << '\n';
     }
 
-    ASSERT(m_stream.good());
+    CORE_ASSERT(m_stream.good());
 }
 
 Renderer::Shader::Source Renderer::Shader::Parser::operator()() {

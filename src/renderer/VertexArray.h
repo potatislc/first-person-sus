@@ -2,6 +2,7 @@
 
 #include "buffer/Vertex.h"
 #include "../core/Typedef.h"
+#include "buffer/Index.h"
 
 namespace Buffer {
     class Vertex;
@@ -40,5 +41,7 @@ namespace Renderer {
 
     private:
         Id m_id{};
+        std::vector<Buffer::Vertex> m_vertexBuffers;
+        // Buffer::Index m_indexBuffer;
     };
 }

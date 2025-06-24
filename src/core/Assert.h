@@ -10,19 +10,21 @@
 
 #include <iostream>
 
-inline bool debugAssert(const bool condition, const std::string& message = {}) {
-    if (!condition) {
-        std::cerr << message;
-        debugBreak();
-    }
+namespace Core {
+    inline bool debugAssert(const bool condition, const std::string& message = {}) {
+        if (!condition) {
+            std::cerr << message;
+            debugBreak();
+        }
 
-    return condition;
+        return condition;
+    }
 }
 
 #ifdef NDEBUG
-#define ASSERT(condition) ()
-#define ASSERT_MSG(condition, message) ()
+#define CORE_ASSERT(condition) ()
+#define CORE_ASSERT_MSG(condition, message) ()
 #else
-#define ASSERT(condition) debugAssert(condition)
-#define ASSERT_MSG(condition, message) debugAssert(condition, message)
+#define CORE_ASSERT(condition) Core::debugAssert(condition)
+#define CORE_ASSERT_MSG(condition, message) Core::debugAssert(condition, message)
 #endif

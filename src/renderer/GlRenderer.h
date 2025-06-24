@@ -8,9 +8,9 @@
 namespace Renderer {
     class GlRenderer final : public Renderer {
     public:
-        static Window createWindow(const std::string& name, int width, int height);
+        static Core::Window createWindow(const std::string& name, int width, int height);
 
-        explicit GlRenderer(const Window& window);
+        explicit GlRenderer(const Core::Window& window);
 
         GlRenderer(const GlRenderer&) = delete;
 
@@ -44,7 +44,7 @@ namespace Renderer {
 
         void* getContext() const override;
 
-        void swapWindow(const Window& window) const override;
+        void swapWindow(const Core::Window& window) const override;
 
         void clear(glm::vec4 color) const override;
 

@@ -20,7 +20,7 @@ void Scene::Test::update(const float deltaTime) {
 }
 
 void Scene::Test::render(const Renderer::Renderer& renderer) {
-    const auto blue = static_cast<float>(Application::getUniqueInstance().getFrameCount() % 256) / 255.0f;
+    const auto blue = static_cast<float>(Core::Application::getUniqueInstance().getFrameCount() % 256) / 255.0f;
 
     renderer.clear({0.1f, 0.2f, blue, 1.0f});
 
