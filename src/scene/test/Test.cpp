@@ -1,6 +1,6 @@
 #include "Test.h"
 
-#include "../../application/Application.h"
+#include "../../core/Application.h"
 #include "../../renderer/shader/Parser.h"
 #include <imgui.h>
 
@@ -26,8 +26,13 @@ void Scene::Test::render(const Renderer::Renderer& renderer) {
 
     shaderProgram.bind();
     shaderProgram.setUniform("u_Color", glm::vec4{blue, .3f, .8f, 1.f});
-    const auto model = glm::translate(glm::mat4{1.f}, translation);
-    const auto mvp = m_Projection * m_View * model;
+    auto model = glm::translate(glm::mat4{1.f}, translation);
+    auto mvp = m_Projection * m_View * model;
+    shaderProgram.setUniform("u_Mvp", mvp);
+    renderer.draw(m_VertexArray, m_IndexBuffer, shaderProgram);
+
+    model = glm::translate(model, translation);
+    mvp = m_Projection * m_View * model;
     shaderProgram.setUniform("u_Mvp", mvp);
     renderer.draw(m_VertexArray, m_IndexBuffer, shaderProgram);
 }

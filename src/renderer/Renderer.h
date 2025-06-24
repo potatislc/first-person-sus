@@ -6,8 +6,8 @@
 #include <glm/vec4.hpp>
 #include <SDL3/SDL.h>
 
-#include "../Window.h"
-#include "../Assert.h"
+#include "../core/Window.h"
+#include "../core/Assert.h"
 
 namespace Renderer {
     class GlRenderer;

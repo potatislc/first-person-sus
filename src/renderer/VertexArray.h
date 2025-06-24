@@ -4,7 +4,6 @@
 
 namespace Buffer {
     class Vertex;
-    class Index;
 }
 
 namespace Renderer {

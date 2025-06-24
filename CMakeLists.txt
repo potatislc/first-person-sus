@@ -55,7 +55,7 @@ target_link_libraries(imgui_backend PRIVATE SDL3::SDL3)
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
-add_executable(${EXE_NAME} src/main.cpp
+add_executable(${EXE_NAME} src/example/main.cpp
         src/renderer/GlRenderer.cpp
         src/renderer/shader/Source.cpp
         src/renderer/shader/Program.cpp
@@ -67,7 +67,7 @@ add_executable(${EXE_NAME} src/main.cpp
         src/vendor/stb_image/stb_image.cpp
         src/renderer/texture/Texture.cpp
         src/scene/test/Test.cpp
-        src/application/Application.cpp
+        src/core/Application.cpp
         src/scene/node/Node.h
         src/scene/node/Node.cpp)
 

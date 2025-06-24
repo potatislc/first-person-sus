@@ -1,4 +1,4 @@
-#include "application/Application.h"
+#include "../core/Application.h"
 
 int main([[maybe_unused]] int /*unused*/, [[maybe_unused]] char** /*unused*/) {
 #ifdef __linux__

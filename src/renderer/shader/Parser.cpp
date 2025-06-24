@@ -6,7 +6,7 @@
 #include <sstream>
 #include <glad/glad.h>
 
-#include  "../../Assert.h"
+#include  "../../core/Assert.h"
 
 Renderer::Shader::Parser::Parser(const std::string& filePath) : m_Stream{filePath} {
     if (m_Stream.bad()) {
