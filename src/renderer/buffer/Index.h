@@ -10,7 +10,7 @@ namespace Renderer {
 namespace Renderer::Buffer {
     class Index {
     public:
-        Index() = default;
+        Index() = delete;
 
         Index(const uint32_t* data, uint32_t count);
 

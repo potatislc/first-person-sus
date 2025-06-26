@@ -18,6 +18,8 @@ namespace Renderer::Shader {
         None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
     };
 
+    using DataTypeComponentCount = uint8_t;
+
     inline uint32_t dataTypeSize(const DataType type) {
         switch (type) {
             case DataType::Float: return 4;
@@ -38,7 +40,7 @@ namespace Renderer::Shader {
         return 0;
     }
 
-    inline uint32_t dataTypeComponentCount(const DataType type) {
+    inline DataTypeComponentCount componentCount(const DataType type) {
         switch (type) {
             case DataType::Float: return 1;
             case DataType::Float2: return 2;

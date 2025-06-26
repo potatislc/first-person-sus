@@ -7,7 +7,6 @@
 
 #include "../Scene.h"
 #include "../../renderer/VertexArray.h"
-#include "../../renderer/buffer/Index.h"
 #include "../../renderer/shader/Program.h"
 #include "../../renderer/texture/Texture.h"
 
@@ -39,8 +38,7 @@ namespace Scene {
             2, 3, 0
         };
 
-        Renderer::Buffer::Vertex m_vertexBuffer{s_Square.data(), sizeof(s_Square)};
-        Renderer::VertexArray m_vertexArray{};
+        Renderer::VertexArray m_vertexArray;
         Renderer::Shader::Program m_shaderProgram{};
         Renderer::Texture m_texture{};
         glm::mat4 m_projection = glm::ortho(0.f, 960.f, 0.f, 540.f, -1.f, 1.f);

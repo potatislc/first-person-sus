@@ -4,7 +4,7 @@
 
 #include "../Renderer.h"
 
-Renderer::Buffer::Vertex::Vertex(const void* data, const uint32_t size) {
+Renderer::Buffer::Vertex::Vertex(const void* data, const uint32_t size, const Layout& layout) : m_layout{layout} {
     RENDERER_API_CALL(glGenBuffers(1, &m_id));
     bind();
     RENDERER_API_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));

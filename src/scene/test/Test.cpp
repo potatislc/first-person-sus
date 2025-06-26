@@ -3,16 +3,25 @@
 #include "../../core/Application.h"
 #include "../../renderer/shader/Parser.h"
 #include <imgui.h>
+#include <memory>
 
-Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
+// I know this is the most horrible member initializer list you have ever seen,
+// but it is only to demonstrate that you can construct a vertex array completely in-place.
+Scene::Test::Test() : m_vertexArray{
+                          Renderer::Buffer::Index{s_Indices.data(), s_Indices.size()},
+                          {
+                              std::make_shared<Renderer::Buffer::Vertex>(
+                                  s_Square.data(), sizeof(s_Square),
+                                  Renderer::Buffer::Vertex::Layout{
+                                      /* You can push elements to layout in either of these two ways. */
+                                      s_Square.front(),
+                                      Renderer::Buffer::Vertex::Layout::Element{Renderer::Shader::DataType::Float2}
+                                  })
+                          }
+                      }, m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
                       m_texture{
                           Renderer::Texture::createGlTexture("../res/texture/Melon.png")
                       } {
-    m_vertexBuffer.getLayout().push(s_Square.front());
-    m_vertexBuffer.getLayout().push(s_Square.front());
-    m_vertexArray.addBuffer(m_vertexBuffer);
-    m_vertexArray.setIndexBuffer(s_Indices.data(), s_Indices.size());
-
     m_texture.bind(0);
     m_shaderProgram.setUniform("u_Texture", 0);
 }
@@ -41,5 +50,6 @@ void Scene::Test::render(const Renderer::Renderer& renderer) {
 void Scene::Test::renderImGui() {
     ImGui::SliderFloat3("float", &m_translation[0], 0.0f, 960.0f);
     const ImGuiIO& io = ImGui::GetIO();
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000. / io.Framerate, io.Framerate);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", static_cast<double>(1000.f / io.Framerate),
+                static_cast<double>(io.Framerate));
 }
