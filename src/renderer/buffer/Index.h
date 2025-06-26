@@ -39,7 +39,6 @@ namespace Renderer::Buffer {
 
         ~Index();
 
-
         void bind() const;
 
         static void unbind();
