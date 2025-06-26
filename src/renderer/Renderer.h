@@ -96,8 +96,7 @@ namespace Renderer {
 
         virtual void clear(glm::vec4 color) const = 0;
 
-        virtual void draw(const VertexArray& vertexArray, const Buffer::Index& indexBuffer,
-                          const Shader::Program& shaderProgram) const = 0;
+        virtual void draw(const VertexArray& vertexArray, const Shader::Program& shaderProgram) const = 0;
 
     protected:
         static inline Renderer* s_ActiveRenderer{};

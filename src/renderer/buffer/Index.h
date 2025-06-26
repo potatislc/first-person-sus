@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "../../core/Typedef.h"
 
 namespace Renderer {
     class Renderer;
@@ -9,6 +10,8 @@ namespace Renderer {
 namespace Renderer::Buffer {
     class Index {
     public:
+        Index() = default;
+
         Index(const uint32_t* data, uint32_t count);
 
         Index(const Index&) = delete;
@@ -32,7 +35,10 @@ namespace Renderer::Buffer {
             return *this;
         }
 
+        void destroy();
+
         ~Index();
+
 
         void bind() const;
 
@@ -42,8 +48,12 @@ namespace Renderer::Buffer {
             return m_count;
         }
 
+        [[nodiscard]] bool isValid() const {
+            return m_id != 0 && m_count > 0;
+        }
+
     private:
-        uint32_t m_id{};
+        Id m_id{};
         uint32_t m_count{};
     };
 }

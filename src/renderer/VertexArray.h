@@ -33,15 +33,23 @@ namespace Renderer {
 
         ~VertexArray();
 
-        void addBuffer(const Buffer::Vertex& vertexBuffer, const Buffer::Vertex::Layout& vertexLayout) const;
+        void addBuffer(const Buffer::Vertex& vertexBuffer) const;
 
         void bind() const;
 
         static void unbind();
 
+        void setIndexBuffer(const uint32_t* data, const uint32_t count) {
+            m_indexBuffer = Buffer::Index{data, count};
+        }
+
+        const Buffer::Index& getIndexBuffer() const {
+            return m_indexBuffer;
+        }
+
     private:
         Id m_id{};
         std::vector<Buffer::Vertex> m_vertexBuffers;
-        // Buffer::Index m_indexBuffer;
+        Buffer::Index m_indexBuffer;
     };
 }

@@ -48,8 +48,7 @@ namespace Renderer {
 
         void clear(glm::vec4 color) const override;
 
-        void draw(const VertexArray& vertexArray, const Buffer::Index& indexBuffer,
-                  const Shader::Program& shaderProgram) const override;
+        void draw(const VertexArray& vertexArray, const Shader::Program& shaderProgram) const override;
 
     private:
         SDL_GLContext m_context{};

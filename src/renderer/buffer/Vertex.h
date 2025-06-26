@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "../shader/Shader.h"
 
 namespace Renderer {
     class Renderer;
@@ -12,17 +13,17 @@ namespace Renderer::Buffer {
         class Layout {
         public:
             struct Element {
-                uint32_t type{};
-                uint32_t count{};
+                Shader::DataType type{};
+                uint8_t count{}; // Don't do anything stupid!
                 bool normalized{};
-
-                static size_t sizeOfType(uint32_t type);
             };
 
-            template<typename T>
-            void push(uint32_t count) {
-                static_assert(false);
-            }
+            template<typename T, std::enable_if_t<Shader::is_valid_scalar_v<T>, int>  = 0>
+            void push(uint32_t count = 1);
+
+            template<glm::length_t L, typename T, glm::qualifier Q = glm::defaultp, std::enable_if_t<
+                Shader::is_valid_scalar_v<T>, int>  = 0>
+            void push(glm::vec<L, T, Q>);
 
             [[nodiscard]] auto getElements() const { return m_elements; }
 
@@ -59,16 +60,33 @@ namespace Renderer::Buffer {
 
         static void unbind();
 
+        Layout& getLayout() {
+            return m_layout;
+        }
+
+        const Layout& getLayout() const {
+            return m_layout;
+        }
+
     private:
+        Layout m_layout;
         uint32_t m_id{};
     };
 
-    template<>
-    void Vertex::Layout::push<float>(uint32_t count);
+    template<typename T, std::enable_if_t<Shader::is_valid_scalar_v<T>, int> >
+    void Vertex::Layout::push(const uint32_t count) {
+        CORE_ASSERT_MSG(count > 0, "Cannot push vertex layout of count 0.");
+        const auto dataType = Shader::toShaderDataType<T>();
 
-    template<>
-    void Vertex::Layout::push<uint32_t>(uint32_t count);
+        m_elements.emplace_back(dataType, count);
+        m_stride += Shader::dataTypeSize(dataType) * count;
+    }
 
-    template<>
-    void Vertex::Layout::push<uint8_t>(uint32_t count);
+    template<glm::length_t L, typename T, glm::qualifier Q, std::enable_if_t<Shader::is_valid_scalar_v<T>, int> >
+    void Vertex::Layout::push(glm::vec<L, T, Q>) {
+        const auto dataType = Shader::toShaderDataType<T>();
+
+        m_elements.emplace_back(dataType, L);
+        m_stride += Shader::dataTypeSize(dataType) * L;
+    }
 }

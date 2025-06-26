@@ -4,33 +4,6 @@
 
 #include "../Renderer.h"
 
-template<>
-void Renderer::Buffer::Vertex::Layout::push<float>(uint32_t count) {
-    m_elements.emplace_back(GL_FLOAT, count, false);
-    m_stride += Element::sizeOfType(GL_FLOAT) * count;
-}
-
-template<>
-void Renderer::Buffer::Vertex::Layout::push<uint32_t>(uint32_t count) {
-    m_elements.emplace_back(GL_UNSIGNED_INT, count, false);
-    m_stride += Element::sizeOfType(GL_UNSIGNED_INT) * count;
-}
-
-template<>
-void Renderer::Buffer::Vertex::Layout::push<uint8_t>(uint32_t count) {
-    m_elements.emplace_back(GL_UNSIGNED_BYTE, count, true);
-    m_stride += Element::sizeOfType(GL_UNSIGNED_BYTE) * count;
-}
-
-size_t Renderer::Buffer::Vertex::Layout::Element::sizeOfType(const uint32_t type) {
-    switch (type) {
-        case GL_FLOAT: return sizeof(GLfloat);
-        case GL_UNSIGNED_INT: return sizeof(GLuint);
-        case GL_UNSIGNED_BYTE: return sizeof(GLubyte);
-        default: return 0;
-    }
-}
-
 Renderer::Buffer::Vertex::Vertex(const void* data, const uint32_t size) {
     RENDERER_API_CALL(glGenBuffers(1, &m_id));
     bind();
