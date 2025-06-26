@@ -13,14 +13,13 @@ namespace Renderer {
     public:
         VertexArray() = delete;
 
-        explicit VertexArray(Buffer::Index indexBuffer,
-                             std::initializer_list<std::shared_ptr<Buffer::Vertex> > vertexBuffers = {});
+        explicit VertexArray(const std::shared_ptr<Buffer::Vertex>& vertexBuffer, Buffer::Index indexBuffer);
 
         VertexArray(const VertexArray&) = delete;
 
         VertexArray& operator=(const VertexArray&) = delete;
 
-        VertexArray(VertexArray&& other) noexcept : m_vertexBuffers{std::move(other.m_vertexBuffers)},
+        VertexArray(VertexArray&& other) noexcept : m_vertexBuffer{std::move(other.m_vertexBuffer)},
                                                     m_indexBuffer{std::move(other.m_indexBuffer)}, m_id{other.m_id} {
             other.m_id = {};
         }
@@ -30,7 +29,7 @@ namespace Renderer {
                 return *this;
             }
 
-            m_vertexBuffers = std::move(other.m_vertexBuffers);
+            m_vertexBuffer = std::move(other.m_vertexBuffer);
             m_indexBuffer = std::move(other.m_indexBuffer);
             m_id = other.m_id;
             other.m_id = {};
@@ -48,9 +47,9 @@ namespace Renderer {
         }
 
     private:
-        void addBuffer(const std::shared_ptr<Buffer::Vertex>& vertexBuffer);
+        void attachVertexBuffer() const;
 
-        std::vector<std::shared_ptr<Buffer::Vertex> > m_vertexBuffers;
+        std::shared_ptr<Buffer::Vertex> m_vertexBuffer;
         Buffer::Index m_indexBuffer;
         Id m_id{};
     };

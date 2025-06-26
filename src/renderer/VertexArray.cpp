@@ -5,24 +5,22 @@
 #include "Renderer.h"
 #include "buffer/Vertex.h"
 
-Renderer::VertexArray::VertexArray(Buffer::Index indexBuffer,
-                                   const std::initializer_list<std::shared_ptr<Buffer::Vertex> >
-                                   vertexBuffers) : m_indexBuffer{std::move(indexBuffer)} {
+Renderer::VertexArray::VertexArray(const std::shared_ptr<Buffer::Vertex>
+                                   & vertexBuffer, Buffer::Index indexBuffer) : m_vertexBuffer{vertexBuffer},
+    m_indexBuffer{std::move(indexBuffer)} {
     RENDERER_API_CALL(glGenVertexArrays(1, &m_id));
-    for (const auto& vertexBuffer: vertexBuffers) {
-        addBuffer(vertexBuffer);
-    }
+    attachVertexBuffer();
 }
 
 Renderer::VertexArray::~VertexArray() {
     RENDERER_API_CALL(glDeleteVertexArrays(1, &m_id));
 }
 
-void Renderer::VertexArray::addBuffer(const std::shared_ptr<Buffer::Vertex>& vertexBuffer) {
+void Renderer::VertexArray::attachVertexBuffer() const {
     bind();
-    vertexBuffer->bind();
+    m_vertexBuffer->bind();
 
-    const auto& vertexLayout = vertexBuffer->getLayout();
+    const auto& vertexLayout = m_vertexBuffer->getLayout();
     const auto& elements = vertexLayout.getElements();
     for (size_t i{}, offset{}; const auto& [type, count, normalized]: elements) {
         RENDERER_API_CALL(glEnableVertexAttribArray(i));
@@ -36,8 +34,6 @@ void Renderer::VertexArray::addBuffer(const std::shared_ptr<Buffer::Vertex>& ver
         i++;
         offset += Shader::dataTypeSize(type);
     }
-
-    m_vertexBuffers.push_back(vertexBuffer);
 }
 
 void Renderer::VertexArray::bind() const {

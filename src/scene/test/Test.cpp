@@ -8,16 +8,14 @@
 // I know this is the most horrible member initializer list you have ever seen,
 // but it is only to demonstrate that you can construct a vertex array completely in-place.
 Scene::Test::Test() : m_vertexArray{
-                          Renderer::Buffer::Index{s_Indices.data(), s_Indices.size()},
-                          {
-                              std::make_shared<Renderer::Buffer::Vertex>(
-                                  s_Square.data(), sizeof(s_Square),
-                                  Renderer::Buffer::Vertex::Layout{
-                                      /* You can push elements to layout in either of these two ways. */
-                                      s_Square.front(),
-                                      Renderer::Buffer::Vertex::Layout::Element{Renderer::Shader::DataType::Float2}
-                                  })
-                          }
+                          std::make_shared<Renderer::Buffer::Vertex>(
+                              s_Square.data(), sizeof(s_Square),
+                              Renderer::Buffer::Vertex::Layout{
+                                  /* You can push elements to layout in either of these two ways. */
+                                  s_Square.front(),
+                                  Renderer::Buffer::Vertex::Layout::Element{Renderer::Shader::DataType::Float2}
+                              }),
+                          Renderer::Buffer::Index{s_Indices.data(), s_Indices.size()}
                       }, m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
                       m_texture{
                           Renderer::Texture::createGlTexture("../res/texture/Melon.png")
