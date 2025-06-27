@@ -90,7 +90,6 @@ void Renderer::GlRenderer::clear(const glm::vec4 color) const {
 void Renderer::GlRenderer::draw(const VertexArray& vertexArray,
                                 const Shader::Program& shaderProgram) const {
     vertexArray.bind();
-    vertexArray.getIndexBuffer().bind();
     shaderProgram.bind();
     RENDERER_API_CALL(glDrawElements(GL_TRIANGLES, vertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT, nullptr));
 }

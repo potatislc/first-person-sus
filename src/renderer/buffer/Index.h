@@ -12,6 +12,8 @@ namespace Renderer {
 namespace Renderer::Buffer {
     class Index {
     public:
+        static DataBuffer batch(const DataBatch& dataBatch);
+
         Index() = delete;
 
         Index(const void* data, Size size);
@@ -47,7 +49,11 @@ namespace Renderer::Buffer {
 
         static void unbind();
 
-        [[nodiscard]] auto getCount() const {
+        [[nodiscard]] Id getId() const {
+            return m_id;
+        }
+
+        [[nodiscard]] Count getCount() const {
             return m_count;
         }
 
@@ -56,6 +62,7 @@ namespace Renderer::Buffer {
         }
 
     private:
+        DataBuffer m_batchedDataBuffer;
         Id m_id{};
         Count m_count{};
     };

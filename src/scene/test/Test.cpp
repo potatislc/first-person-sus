@@ -14,9 +14,13 @@ Scene::Test::Test() : m_vertexArray{
                                   s_square.front(),
                                   Renderer::Buffer::Vertex::Layout::Attribute{Renderer::Shader::DataType::Float2}
                               }, Renderer::Buffer::DataBatch{
-                                  {s_square.data(), sizeof(s_square)}
+                                  {s_square.data(), sizeof(s_square)}, {s_krazy_square.data(), sizeof(s_krazy_square)}
                               }),
-                          Renderer::Buffer::Index{Renderer::Buffer::DataBatch{{s_indices.data(), sizeof(s_indices)}}}
+                          Renderer::Buffer::Index{
+                              Renderer::Buffer::DataBatch{
+                                  {s_indices.data(), sizeof(s_indices)}, {s_indices.data(), sizeof(s_indices)}
+                              }
+                          }
                       }, m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
                       m_texture{
                           Renderer::Texture::createGlTexture("../res/texture/Melon.png")
@@ -40,10 +44,10 @@ void Scene::Test::render(const Renderer::Renderer& renderer) {
     m_shaderProgram.setUniform("u_Mvp", mvp);
     renderer.draw(m_vertexArray, m_shaderProgram);
 
-    model = glm::translate(model, m_translation);
+    /*model = glm::translate(model, m_translation);
     mvp = m_projection * m_view * model;
     m_shaderProgram.setUniform("u_Mvp", mvp);
-    renderer.draw(m_vertexArray, m_shaderProgram);
+    renderer.draw(m_vertexArray, m_shaderProgram);*/
 }
 
 void Scene::Test::renderImGui() {

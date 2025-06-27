@@ -33,7 +33,16 @@ namespace Scene {
             }
         };
 
-        static constexpr std::array<uint32_t, 6> s_indices = {
+        static constexpr std::array<glm::vec2, 8> s_krazy_square{
+            {
+                {-100.f, -100.f}, {0.f, 0.f}, // Top-left
+                {0.f, -100.f}, {1.f, 0.f}, // Top-right
+                {0.f, 0.f}, {1.f, 1.f}, // Bottom-right
+                {-100.f, 0.f}, {0.f, 1.f} // Bottom-left
+            }
+        };
+
+        static constexpr std::array<Renderer::Buffer::Count, 6> s_indices = {
             0, 1, 2,
             2, 3, 0
         };

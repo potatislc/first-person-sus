@@ -39,6 +39,7 @@ void Renderer::VertexArray::attachVertexBuffer() const {
 
 void Renderer::VertexArray::bind() const {
     RENDERER_API_CALL(glBindVertexArray(m_id));
+    m_indexBuffer.bind();
 }
 
 void Renderer::VertexArray::unbind() {
