@@ -11,12 +11,12 @@ Scene::Test::Test() : m_vertexArray{
                           std::make_shared<Renderer::Buffer::Vertex>(
                               Renderer::Buffer::Vertex::Layout{
                                   /* You can push attributes to layout in either of these two ways. */
-                                  s_Square.front(),
+                                  s_square.front(),
                                   Renderer::Buffer::Vertex::Layout::Attribute{Renderer::Shader::DataType::Float2}
                               }, Renderer::Buffer::DataBatch{
-                                  {s_Square.data(), sizeof(s_Square)}
+                                  {s_square.data(), sizeof(s_square)}
                               }),
-                          Renderer::Buffer::Index{s_Indices.data(), s_Indices.size()}
+                          Renderer::Buffer::Index{Renderer::Buffer::DataBatch{{s_indices.data(), sizeof(s_indices)}}}
                       }, m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
                       m_texture{
                           Renderer::Texture::createGlTexture("../res/texture/Melon.png")

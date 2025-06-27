@@ -44,7 +44,7 @@ namespace Renderer::Buffer {
 
         private:
             std::vector<Attribute> m_attributes;
-            size_t m_stride{};
+            Size m_stride{};
         };
 
         Vertex() = delete;
@@ -84,7 +84,7 @@ namespace Renderer::Buffer {
 
     private:
         Layout m_layout;
-        uint32_t m_id{};
+        Id m_id{};
     };
 
     inline void Vertex::Layout::push(const Attribute& element) {

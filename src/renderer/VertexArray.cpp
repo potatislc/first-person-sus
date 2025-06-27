@@ -22,7 +22,7 @@ void Renderer::VertexArray::attachVertexBuffer() const {
 
     const auto& vertexLayout = m_vertexBuffer->getLayout();
     const auto& elements = vertexLayout.getElements();
-    size_t i{}, offset{};
+    Buffer::Size i{}, offset{};
     for (const auto& [type, normalized]: elements) {
         RENDERER_API_CALL(glEnableVertexAttribArray(i));
         RENDERER_API_CALL(

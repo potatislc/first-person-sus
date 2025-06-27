@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+
+#include "Buffer.h"
 #include "../../core/Typedef.h"
 
 namespace Renderer {
@@ -12,7 +14,9 @@ namespace Renderer::Buffer {
     public:
         Index() = delete;
 
-        Index(const uint32_t* data, uint32_t count);
+        Index(const void* data, Size size);
+
+        explicit Index(const DataBatch& dataBatch);
 
         Index(const Index&) = delete;
 
@@ -53,6 +57,6 @@ namespace Renderer::Buffer {
 
     private:
         Id m_id{};
-        uint32_t m_count{};
+        Count m_count{};
     };
 }

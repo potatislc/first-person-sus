@@ -24,7 +24,7 @@ namespace Scene {
         void renderImGui() override;
 
     private:
-        static constexpr std::array<glm::vec2, 8> s_Square{
+        static constexpr std::array<glm::vec2, 8> s_square{
             {
                 {-50.f, -50.f}, {0.f, 0.f}, // Top-left
                 {50.f, -50.f}, {1.f, 0.f}, // Top-right
@@ -33,7 +33,7 @@ namespace Scene {
             }
         };
 
-        static constexpr std::array<uint32_t, 6> s_Indices = {
+        static constexpr std::array<uint32_t, 6> s_indices = {
             0, 1, 2,
             2, 3, 0
         };
