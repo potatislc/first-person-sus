@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "Buffer.h"
 #include "../shader/Shader.h"
 
 namespace Renderer {
@@ -47,13 +48,6 @@ namespace Renderer::Buffer {
         };
 
         Vertex() = delete;
-
-        struct DataConfig {
-            const void* data{};
-            uint32_t size{};
-        };
-
-        using DataBatch = std::vector<DataConfig>;
 
         Vertex(const Layout& layout, const void* data, uint32_t size);
 

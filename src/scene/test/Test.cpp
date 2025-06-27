@@ -13,7 +13,7 @@ Scene::Test::Test() : m_vertexArray{
                                   /* You can push attributes to layout in either of these two ways. */
                                   s_Square.front(),
                                   Renderer::Buffer::Vertex::Layout::Attribute{Renderer::Shader::DataType::Float2}
-                              }, Renderer::Buffer::Vertex::DataBatch{
+                              }, Renderer::Buffer::DataBatch{
                                   {s_Square.data(), sizeof(s_Square)}
                               }),
                           Renderer::Buffer::Index{s_Indices.data(), s_Indices.size()}
