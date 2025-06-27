@@ -42,7 +42,7 @@ namespace Renderer {
 
         static void unbind();
 
-        const Buffer::Index& getIndexBuffer() const {
+        [[nodiscard]] const Buffer::Index& getIndexBuffer() const {
             return m_indexBuffer;
         }
 

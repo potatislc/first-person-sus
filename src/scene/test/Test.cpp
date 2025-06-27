@@ -9,11 +9,12 @@
 // but it is only to demonstrate that you can construct a vertex array completely in-place.
 Scene::Test::Test() : m_vertexArray{
                           std::make_shared<Renderer::Buffer::Vertex>(
-                              s_Square.data(), sizeof(s_Square),
                               Renderer::Buffer::Vertex::Layout{
-                                  /* You can push elements to layout in either of these two ways. */
+                                  /* You can push attributes to layout in either of these two ways. */
                                   s_Square.front(),
-                                  Renderer::Buffer::Vertex::Layout::Element{Renderer::Shader::DataType::Float2}
+                                  Renderer::Buffer::Vertex::Layout::Attribute{Renderer::Shader::DataType::Float2}
+                              }, Renderer::Buffer::Vertex::DataBatch{
+                                  {s_Square.data(), sizeof(s_Square)}
                               }),
                           Renderer::Buffer::Index{s_Indices.data(), s_Indices.size()}
                       }, m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},

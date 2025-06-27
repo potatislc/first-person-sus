@@ -12,49 +12,52 @@ namespace Renderer::Buffer {
     public:
         class Layout {
         public:
-            struct Element {
-                friend class Layout;
+            struct Attribute {
+                Attribute() = delete;
 
-                Element() = delete;
-
-                explicit Element(const Shader::DataType dataType,
-                                 const bool normalized = {}) : dataType{
-                                                                   dataType
-                                                               },
-                                                               count{
-                                                                   Shader::componentCount(dataType)
-                                                               }, normalized{normalized} {
+                explicit Attribute(const Shader::DataType dataType,
+                                   const bool normalized = {}) : dataType{
+                                                                     dataType
+                                                                 }, normalized{normalized} {
                 }
 
                 Shader::DataType dataType{};
-                Shader::DataTypeComponentCount count{};
                 bool normalized{};
             };
 
             Layout() = delete;
 
-            void push(const Element& element);
+            void push(const Attribute& element);
 
             template<glm::length_t L, typename T, glm::qualifier Q = glm::defaultp>
-            void push(glm::vec<L, T, Q>, bool normalized = {});
+            void push(glm::vec<L, T, Q> /*unused*/, bool normalized = {});
 
             template<typename... Args>
             explicit Layout(Args... args) {
                 (push(std::forward<Args>(args)), ...);
             }
 
-            [[nodiscard]] auto getElements() const { return m_elements; }
+            [[nodiscard]] auto getElements() const { return m_attributes; }
 
             [[nodiscard]] auto getStride() const { return m_stride; }
 
         private:
-            std::vector<Element> m_elements;
+            std::vector<Attribute> m_attributes;
             size_t m_stride{};
         };
 
         Vertex() = delete;
 
-        Vertex(const void* data, uint32_t size, const Layout& layout);
+        struct DataConfig {
+            const void* data{};
+            uint32_t size{};
+        };
+
+        using DataBatch = std::vector<DataConfig>;
+
+        Vertex(const Layout& layout, const void* data, uint32_t size);
+
+        Vertex(const Layout& layout, const DataBatch& dataBatch);
 
         Vertex(const Vertex&) = delete;
 
@@ -81,7 +84,7 @@ namespace Renderer::Buffer {
 
         static void unbind();
 
-        const Layout& getLayout() const {
+        [[nodiscard]] const Layout& getLayout() const {
             return m_layout;
         }
 
@@ -90,18 +93,18 @@ namespace Renderer::Buffer {
         uint32_t m_id{};
     };
 
-    inline void Vertex::Layout::push(const Element& element) {
-        m_elements.push_back(element);
+    inline void Vertex::Layout::push(const Attribute& element) {
+        m_attributes.push_back(element);
         m_stride += Shader::dataTypeSize(element.dataType);
     }
 
     template<glm::length_t L, typename T, glm::qualifier Q>
-    void Vertex::Layout::push(glm::vec<L, T, Q>, bool normalized) {
+    void Vertex::Layout::push(glm::vec<L, T, Q> /*unused*/, bool normalized) {
         using VecType = glm::vec<L, T, Q>;
         const auto dataType = Shader::toShaderDataType<VecType>();
         static_assert(dataType != Shader::DataType::None);
 
-        m_elements.emplace_back(dataType, normalized);
+        m_attributes.emplace_back(dataType, normalized);
         m_stride += Shader::dataTypeSize(dataType);
     }
 }
