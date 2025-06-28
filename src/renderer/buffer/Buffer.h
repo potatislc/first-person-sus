@@ -28,11 +28,11 @@ namespace Renderer::Buffer {
 
         DataBuffer batchedDataBuffer;
         batchedDataBuffer.reserve(totalSize);
-        Size offset{};
+        ptrdiff_t offset{};
         for (const auto& buffer: dataBatch) {
             batchedDataBuffer.resize(offset + buffer.size());
-            std::memcpy(batchedDataBuffer.data() + offset, buffer.data(), buffer.size());
-            offset += buffer.size();
+            std::copy_n(buffer.begin(), buffer.size(), batchedDataBuffer.begin() + offset);
+            offset += static_cast<ptrdiff_t>(buffer.size());
         }
 
         return batchedDataBuffer;

@@ -16,22 +16,20 @@ Renderer::Buffer::DataBuffer Renderer::Buffer::Vertex::layoutInterleave(
     for (Size i = 0; i < dataBatch.size(); i++) {
         const Size attrSize = Shader::dataTypeSize(layout.getAttributes()[i].dataType);
         assert(attrSize > 0);
-        assert(dataBatch[i].size() % attrSize == 0); // Are they aligned?
+        assert(dataBatch[i].size() % attrSize == 0); // Do they share the same alignment?
         minElements = std::min(minElements, dataBatch[i].size() / attrSize);
     }
 
     combinedBuffer.resize(minElements * layout.getStride());
 
-    using DifferenceType = std::_Vector_iterator<std::_Vector_val<std::_Simple_types<unsigned
-        char> > >::difference_type;
-
-    for (DifferenceType i = 0; std::cmp_less(i, minElements); i++) {
-        DifferenceType offsetInStride = 0;
+    for (ptrdiff_t i = 0; std::cmp_less(i, minElements); i++) {
+        ptrdiff_t offsetInStride = 0;
         for (Size j = 0; j < layout.getAttributes().size(); j++) {
             const auto attributeSize = Shader::dataTypeSize(layout.getAttributes()[j].dataType);
             std::copy_n(dataBatch[j].begin() + i * attributeSize,
                         attributeSize,
-                        combinedBuffer.begin() + i * static_cast<DifferenceType>(layout.getStride()) + offsetInStride);
+                        combinedBuffer.begin() + i * static_cast<ptrdiff_t>(layout.getStride()) +
+                        offsetInStride);
             offsetInStride += attributeSize;
         }
     }
