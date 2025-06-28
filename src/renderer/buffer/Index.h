@@ -16,9 +16,11 @@ namespace Renderer::Buffer {
 
         Index() = delete;
 
-        Index(const void* data, Size size);
+        explicit Index(const DataBuffer& dataBuffer);
 
-        explicit Index(const DataBatch& dataBatch);
+        explicit Index(const DataBatch& dataBatch); // Different size dataBuffers
+
+        Index(const DataBuffer& dataBuffer, Count instances); // Same size dataBuffers
 
         Index(const Index&) = delete;
 
@@ -62,7 +64,6 @@ namespace Renderer::Buffer {
         }
 
     private:
-        DataBuffer m_batchedDataBuffer;
         Id m_id{};
         Count m_count{};
     };

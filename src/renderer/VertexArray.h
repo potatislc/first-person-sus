@@ -13,7 +13,7 @@ namespace Renderer {
     public:
         VertexArray() = delete;
 
-        explicit VertexArray(const std::shared_ptr<Buffer::Vertex>& vertexBuffer, Buffer::Index indexBuffer);
+        explicit VertexArray(Buffer::Vertex vertexBuffer, Buffer::Index indexBuffer);
 
         VertexArray(const VertexArray&) = delete;
 
@@ -49,7 +49,7 @@ namespace Renderer {
     private:
         void attachVertexBuffer() const;
 
-        std::shared_ptr<Buffer::Vertex> m_vertexBuffer;
+        Buffer::Vertex m_vertexBuffer;
         Buffer::Index m_indexBuffer;
         Id m_id{};
     };

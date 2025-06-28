@@ -5,9 +5,9 @@
 #include "Renderer.h"
 #include "buffer/Vertex.h"
 
-Renderer::VertexArray::VertexArray(const std::shared_ptr<Buffer::Vertex>
-                                   & vertexBuffer, Buffer::Index indexBuffer) : m_vertexBuffer{vertexBuffer},
-    m_indexBuffer{std::move(indexBuffer)} {
+Renderer::VertexArray::VertexArray(Buffer::Vertex vertexBuffer, Buffer::Index indexBuffer) : m_vertexBuffer{
+        std::move(vertexBuffer)
+    }, m_indexBuffer{std::move(indexBuffer)} {
     RENDERER_API_CALL(glGenVertexArrays(1, &m_id));
     attachVertexBuffer();
 }
@@ -18,11 +18,12 @@ Renderer::VertexArray::~VertexArray() {
 
 void Renderer::VertexArray::attachVertexBuffer() const {
     bind();
-    m_vertexBuffer->bind();
+    m_vertexBuffer.bind();
 
-    const auto& vertexLayout = m_vertexBuffer->getLayout();
-    const auto& elements = vertexLayout.getElements();
-    Buffer::Size i{}, offset{};
+    const auto& vertexLayout = m_vertexBuffer.getLayout();
+    const auto& elements = vertexLayout.getAttributes();
+    Buffer::Size i{};
+    Buffer::Size offset{};
     for (const auto& [type, normalized]: elements) {
         RENDERER_API_CALL(glEnableVertexAttribArray(i));
         RENDERER_API_CALL(

@@ -28,17 +28,34 @@ Renderer::Buffer::DataBuffer Renderer::Buffer::Index::batch(const DataBatch& dat
     return batchedDataBuffer;
 }
 
-Renderer::Buffer::Index::Index(const void* data, const Size size) : m_count{
-    static_cast<Count>(size / sizeof(Count))
+Renderer::Buffer::Index::Index(const DataBuffer& dataBuffer) : m_count{
+    static_cast<Count>(dataBuffer.size() / sizeof(Count))
 } {
     RENDERER_API_CALL(glGenBuffers(1, &m_id));
     // GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
     // Binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state.
     RENDERER_API_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_id));
-    RENDERER_API_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+    RENDERER_API_CALL(glBufferData(GL_ARRAY_BUFFER, dataBuffer.size(), dataBuffer.data(), GL_STATIC_DRAW));
 }
 
 Renderer::Buffer::Index::Index(const DataBatch& dataBatch) {
+    RENDERER_API_CALL(glGenBuffers(1, &m_id));
+    RENDERER_API_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_id));
+
+    const auto batchedDataBuffer = batch(dataBatch);
+    m_count = static_cast<Count>(batchedDataBuffer.size() / sizeof(Count));
+
+    RENDERER_API_CALL(
+        glBufferData(GL_ARRAY_BUFFER, batchedDataBuffer.size(), batchedDataBuffer.data(),
+            GL_STATIC_DRAW));
+}
+
+Renderer::Buffer::Index::Index(const DataBuffer& dataBuffer, Count instances) {
+    DataBatch dataBatch;
+    for (Count i{}; i < instances; i++) {
+        dataBatch.push_back(dataBuffer);
+    }
+
     RENDERER_API_CALL(glGenBuffers(1, &m_id));
     RENDERER_API_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_id));
 

@@ -7,27 +7,36 @@
 
 // I know this is the most horrible member initializer list you have ever seen,
 // but it is only to demonstrate that you can construct a vertex array completely in-place.
-Scene::Test::Test() : m_vertexArray{
-                          std::make_shared<Renderer::Buffer::Vertex>(
-                              Renderer::Buffer::Vertex::Layout{
-                                  /* You can push attributes to layout in either of these two ways. */
-                                  s_square.front(),
-                                  Renderer::Buffer::Vertex::Layout::Attribute{Renderer::Shader::DataType::Float2}
-                              }, Renderer::Buffer::DataBatch{
-                                  Renderer::Buffer::copyDataBuffer(s_square.data(), sizeof(s_square)),
-                                  Renderer::Buffer::copyDataBuffer(s_krazySquareVertices.data(),
-                                                                   sizeof(s_krazySquareVertices))
-                              }),
-                          Renderer::Buffer::Index{
-                              Renderer::Buffer::DataBatch{
-                                  Renderer::Buffer::copyDataBuffer(s_indices.data(), sizeof(s_indices)),
-                                  Renderer::Buffer::copyDataBuffer(s_indices.data(), sizeof(s_indices))
-                              }
-                          }
-                      }, m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
+Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
                       m_texture{
                           Renderer::Texture::createGlTexture("../res/texture/Melon.png")
                       } {
+    const Renderer::Buffer::Vertex::Layout vertexLayout{
+        glm::vec2{},
+        glm::vec2{}
+    };
+
+    const Renderer::Buffer::DataBatch krazyDataBatch{
+        Renderer::Buffer::copyDataBuffer(s_krazySquareVertices.data(), sizeof(s_krazySquareVertices)),
+        Renderer::Buffer::copyDataBuffer(s_krazySquareTexCoords.data(), sizeof(s_krazySquareTexCoords))
+    };
+
+    const auto krazyDataBuffer = Renderer::Buffer::Vertex::layoutInterleave(vertexLayout, krazyDataBatch);
+
+    const Renderer::Buffer::DataBatch dataBatch{
+        Renderer::Buffer::copyDataBuffer(s_square.data(), sizeof(s_square)),
+        Renderer::Buffer::copyDataBuffer(s_square2.data(),
+                                         sizeof(s_square2)),
+        krazyDataBuffer
+    };
+
+    Renderer::Buffer::Vertex vertexBuffer{vertexLayout, dataBatch};
+
+    Renderer::Buffer::Index indexBuffer{
+        Renderer::Buffer::copyDataBuffer(s_indices.data(), sizeof(s_indices)), 3
+    };
+
+    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), std::move(indexBuffer));
     m_texture.bind(0);
     m_shaderProgram.setUniform("u_Texture", 0);
 }
@@ -45,7 +54,7 @@ void Scene::Test::render(const Renderer::Renderer& renderer) {
     auto model = glm::translate(glm::mat4{1.f}, m_translation);
     auto mvp = m_projection * m_view * model;
     m_shaderProgram.setUniform("u_Mvp", mvp);
-    renderer.draw(m_vertexArray, m_shaderProgram);
+    renderer.draw(*m_vertexArray, m_shaderProgram);
 
     /*model = glm::translate(model, m_translation);
     mvp = m_projection * m_view * model;

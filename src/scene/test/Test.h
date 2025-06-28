@@ -33,6 +33,15 @@ namespace Scene {
             }
         };
 
+        static constexpr std::array<glm::vec2, 8> s_square2{
+            {
+                {-500.f, -500.f}, {0.f, 0.f}, // Top-left
+                {0.f, -500.f}, {1.f, 0.f}, // Top-right
+                {0.f, 0.f}, {1.f, 1.f}, // Bottom-right
+                {-500.f, 0.f}, {0.f, 1.f} // Bottom-left
+            }
+        };
+
         static constexpr std::array<glm::vec2, 4> s_krazySquareVertices{
             {
                 {-100.f, -100.f}, // Top-left
@@ -56,7 +65,7 @@ namespace Scene {
             2, 3, 0
         };
 
-        Renderer::VertexArray m_vertexArray;
+        std::unique_ptr<Renderer::VertexArray> m_vertexArray;
         Renderer::Shader::Program m_shaderProgram;
         Renderer::Texture m_texture;
         glm::mat4 m_projection = glm::ortho(0.f, 960.f, 0.f, 540.f, -1.f, 1.f);

@@ -38,7 +38,7 @@ namespace Renderer::Buffer {
                 (push(std::forward<Args>(args)), ...);
             }
 
-            [[nodiscard]] auto getElements() const { return m_attributes; }
+            [[nodiscard]] auto getAttributes() const { return m_attributes; }
 
             [[nodiscard]] auto getStride() const { return m_stride; }
 
@@ -46,6 +46,8 @@ namespace Renderer::Buffer {
             std::vector<Attribute> m_attributes;
             Size m_stride{};
         };
+
+        static Buffer::DataBuffer layoutInterleave(const Layout& layout, const DataBatch& dataBatch);
 
         Vertex() = delete;
 
