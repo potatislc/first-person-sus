@@ -9,8 +9,8 @@ Renderer::Buffer::DataBuffer Renderer::Buffer::Index::batch(const DataBatch& dat
 
     size_t indexOffset{};
     size_t vertexOffset{};
-    for (const auto& [_, size]: dataBatch) {
-        const size_t indexCount = size / sizeof(Count);
+    for (const auto& buffer: dataBatch) {
+        const size_t indexCount = buffer.size() / sizeof(Count);
         size_t vertexCount{};
 
         for (size_t i{indexOffset}; i < indexOffset + indexCount; i++) {

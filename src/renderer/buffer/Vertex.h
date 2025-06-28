@@ -49,9 +49,9 @@ namespace Renderer::Buffer {
 
         Vertex() = delete;
 
-        Vertex(const Layout& layout, const void* data, uint32_t size);
+        Vertex(Layout layout, const void* data, uint32_t size);
 
-        Vertex(const Layout& layout, const DataBatch& dataBatch);
+        Vertex(Layout layout, const DataBatch& dataBatch);
 
         Vertex(const Vertex&) = delete;
 

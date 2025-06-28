@@ -105,7 +105,14 @@ Renderer::Shader::Program::Program(Parser sourceParser) {
 }
 
 void Renderer::Shader::Program::bind() const {
+    static Id s_bound{};
+
+    if (m_id == s_bound) {
+        return;
+    }
+
     RENDERER_API_CALL(glUseProgram(m_id));
+    s_bound = m_id;
 }
 
 void Renderer::Shader::Program::unbind() {

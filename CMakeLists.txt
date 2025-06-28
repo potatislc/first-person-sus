@@ -69,7 +69,8 @@ add_executable(${EXE_NAME} src/example/main.cpp
         src/scene/test/Test.cpp
         src/core/Application.cpp
         src/scene/node/Node.h
-        src/scene/node/Node.cpp)
+        src/scene/node/Node.cpp
+        src/scene/test/Cube.cpp)
 
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend)
 

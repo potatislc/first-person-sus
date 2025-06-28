@@ -14,11 +14,14 @@ Scene::Test::Test() : m_vertexArray{
                                   s_square.front(),
                                   Renderer::Buffer::Vertex::Layout::Attribute{Renderer::Shader::DataType::Float2}
                               }, Renderer::Buffer::DataBatch{
-                                  {s_square.data(), sizeof(s_square)}, {s_krazy_square.data(), sizeof(s_krazy_square)}
+                                  Renderer::Buffer::copyDataBuffer(s_square.data(), sizeof(s_square)),
+                                  Renderer::Buffer::copyDataBuffer(s_krazySquareVertices.data(),
+                                                                   sizeof(s_krazySquareVertices))
                               }),
                           Renderer::Buffer::Index{
                               Renderer::Buffer::DataBatch{
-                                  {s_indices.data(), sizeof(s_indices)}, {s_indices.data(), sizeof(s_indices)}
+                                  Renderer::Buffer::copyDataBuffer(s_indices.data(), sizeof(s_indices)),
+                                  Renderer::Buffer::copyDataBuffer(s_indices.data(), sizeof(s_indices))
                               }
                           }
                       }, m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
