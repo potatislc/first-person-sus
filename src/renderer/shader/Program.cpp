@@ -4,6 +4,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Parser.h"
 #include "../Renderer.h"
@@ -18,11 +19,11 @@ void Renderer::Shader::Program::setUniform(const int32_t location, const float v
 }
 
 void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& val) {
-    RENDERER_API_CALL(glUniform4fv(location, 1, &val[0]));
+    RENDERER_API_CALL(glUniform4fv(location, 1, glm::value_ptr(val)));
 }
 
 void Renderer::Shader::Program::setUniform(const int32_t location, const glm::mat4& val) {
-    RENDERER_API_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &val[0][0]));
+    RENDERER_API_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(val)));
 }
 
 int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) const {

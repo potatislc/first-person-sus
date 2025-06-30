@@ -8,7 +8,7 @@
 #include "../Scene.h"
 #include "../../renderer/VertexArray.h"
 #include "../../renderer/shader/Program.h"
-#include "../../renderer/texture/Texture.h"
+#include "../../renderer/Texture.h"
 
 class Application;
 

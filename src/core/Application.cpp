@@ -6,6 +6,7 @@
 
 #include "../renderer/GlRenderer.h"
 #include "../scene/test/Test.h"
+#include "../scene/test/Cube.h"
 
 Core::Application* Core::Application::s_uniqueInstance{};
 
@@ -13,7 +14,7 @@ Core::Application::Application(const std::string& name, const unsigned int width
                                const Renderer::Type rendererType) {
     switch (rendererType) {
         case Renderer::Type::OPEN_GL:
-            m_window = Renderer::GlRenderer::createWindow(name, width, height);
+            m_window = Renderer::GlRenderer::createWindow(name, static_cast<int>(width), static_cast<int>(height));
             m_renderer = new Renderer::GlRenderer{m_window};
             break;
         default:
@@ -21,7 +22,7 @@ Core::Application::Application(const std::string& name, const unsigned int width
             return;
     }
 
-    m_baseScene = new Scene::Test{};
+    m_baseScene = new Scene::Cube{};
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

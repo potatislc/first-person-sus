@@ -2,8 +2,7 @@
 
 #include <glad/glad.h>
 
-#include <utility>
-#include "../Renderer.h"
+#include "Renderer.h"
 #include "stb_image.h"
 
 Renderer::Texture Renderer::Texture::createGlTexture(const std::string& path) {

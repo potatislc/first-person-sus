@@ -1,1 +1,54 @@
 #include "Cube.h"
+
+#include <imgui.h>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/glm.hpp>
+#include <glm/ext/matrix_transform.hpp>
+
+#include "../../renderer/Renderer.h"
+#include "../../renderer/VertexArray.h"
+#include "../../renderer/buffer/Vertex.h"
+#include "../../renderer/shader/Parser.h"
+
+Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/CubeTest.glsl"}} {
+    const Renderer::Buffer::Vertex::Layout cubeLayout{*s_cubePositions.data(), *s_cubeColors.data()};
+
+    const Renderer::Buffer::DataBatch vertexDataBatch{
+        Renderer::Buffer::copyDataBuffer(s_cubePositions.data(), sizeof(s_cubePositions)),
+        Renderer::Buffer::copyDataBuffer(s_cubeColors.data(), sizeof(s_cubeColors))
+    };
+
+    const auto dataBuffer = Renderer::Buffer::Vertex::layoutInterleave(cubeLayout, vertexDataBatch);
+
+    Renderer::Buffer::Vertex vertexBuffer{cubeLayout, vertexDataBatch};
+    Renderer::Buffer::Index indexBuffer{
+        Renderer::Buffer::copyDataBuffer(s_cubeIndices.data(), s_cubeIndices.size())
+    };
+
+    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), std::move(indexBuffer));
+}
+
+void Scene::Cube::update(const float deltaTime) {
+    Scene::update(deltaTime);
+}
+
+void Scene::Cube::render(const Renderer::Renderer& renderer) {
+    const glm::mat4 proj{glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 100.0f)};
+    glm::mat4 model{1.0f};
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 view{1.0f};
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    m_shaderProgram.setUniform("model", model);
+    m_shaderProgram.setUniform("view", view);
+    m_shaderProgram.setUniform("projection", proj);
+
+    renderer.clear(glm::vec4{0.f, .5f, 1.f, 1.f});
+    renderer.draw(*m_vertexArray, m_shaderProgram);
+}
+
+void Scene::Cube::renderImGui() {
+    const ImGuiIO& io = ImGui::GetIO();
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", static_cast<double>(1000.f / io.Framerate),
+                static_cast<double>(io.Framerate));
+}

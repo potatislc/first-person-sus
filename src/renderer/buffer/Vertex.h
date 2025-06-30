@@ -47,7 +47,7 @@ namespace Renderer::Buffer {
             Size m_stride{};
         };
 
-        static Buffer::DataBuffer layoutInterleave(const Layout& layout, const DataBatch& dataBatch);
+        static DataBuffer layoutInterleave(const Layout& layout, const DataBatch& dataBatch);
 
         Vertex() = delete;
 

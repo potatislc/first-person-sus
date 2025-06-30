@@ -20,7 +20,7 @@ namespace Renderer::Buffer {
 
         explicit Index(const DataBatch& dataBatch); // Different size dataBuffers
 
-        Index(const DataBuffer& dataBuffer, Count instances); // Same size dataBuffers
+        explicit Index(const DataBuffer& dataBuffer, Count instances); // Same size dataBuffers
 
         Index(const Index&) = delete;
 

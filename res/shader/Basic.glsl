@@ -16,8 +16,6 @@ void main() {
 #shader fragment
 #version 330 core
 
-layout(location = 0) out vec4 color;
-
 in vec2 v_texCoord;
 
 uniform vec4 u_Color;
