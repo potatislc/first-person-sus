@@ -32,11 +32,6 @@ Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Ba
 
     Renderer::Buffer::Vertex vertexBuffer{vertexLayout, Renderer::Buffer::batchBufferData(squaresData)};
 
-    /*
-    Renderer::Buffer::Index indexBuffer{
-        Renderer::Buffer::copyBufferData(s_indices.data(), sizeof(s_indices)), 3
-    };*/
-
     auto indexData = Renderer::Buffer::copyIndexData(s_indices.data(), s_indices.size(), 3);
 
     m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), indexData);
