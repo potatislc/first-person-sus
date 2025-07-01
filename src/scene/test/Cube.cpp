@@ -28,6 +28,7 @@ Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Cu
     m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer),
                                                             Renderer::Buffer::copyIndexData(
                                                                 s_cubeIndices.data(), s_cubeIndices.size()));
+    m_camera.setPosition(glm::vec3{0.f, 0.f, 3.f});
 }
 
 void Scene::Cube::update(const float deltaTime) {
@@ -35,18 +36,14 @@ void Scene::Cube::update(const float deltaTime) {
 }
 
 void Scene::Cube::render(const Renderer::Renderer& renderer) {
-    const glm::mat4 proj{glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 100.0f)};
     glm::mat4 model{1.0f};
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, (float) Core::Application::getUniqueInstance().getFrameCount() * .005f,
+    model = glm::rotate(model, static_cast<float>(Core::Application::getUniqueInstance().getFrameCount()) * .005f,
                         glm::vec3(0.5f, 1.0f, 0.0f));
-    glm::mat4 view{1.0f};
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
     m_shaderProgram.bind();
     m_shaderProgram.setUniform("model", model);
-    m_shaderProgram.setUniform("view", view);
-    m_shaderProgram.setUniform("projection", proj);
+    m_shaderProgram.setUniform("view", m_camera.getView());
+    m_shaderProgram.setUniform("projection", m_camera.getProjection());
 
     renderer.clear(glm::vec4{0.f, .5f, 1.f, 1.f});
     renderer.draw(*m_vertexArray, m_shaderProgram);

@@ -3,6 +3,7 @@
 
 #include "../Scene.h"
 #include "../../renderer/shader/Program.h"
+#include "../../renderer/Camera.h"
 
 namespace Renderer {
     class VertexArray;
@@ -59,7 +60,8 @@ namespace Scene {
             4, 5, 1, 1, 0, 4
         };
 
-        std::unique_ptr<Renderer::VertexArray> m_vertexArray;
+        Renderer::Camera m_camera{};
         Renderer::Shader::Program m_shaderProgram;
+        std::unique_ptr<Renderer::VertexArray> m_vertexArray;
     };
 }
