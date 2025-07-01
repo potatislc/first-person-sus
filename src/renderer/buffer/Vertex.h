@@ -44,16 +44,16 @@ namespace Renderer::Buffer {
 
         private:
             std::vector<Attribute> m_attributes;
-            Size m_stride{};
+            size_t m_stride{};
         };
 
-        static DataBuffer layoutInterleave(const Layout& layout, const DataBatch& dataBatch);
+        static BufferData layoutInterleave(const Layout& layout, const std::vector<BufferData>& dataBatch);
 
         Vertex() = delete;
 
         Vertex(Layout layout, const void* data, uint32_t size);
 
-        Vertex(Layout layout, const DataBatch& dataBatch);
+        Vertex(Layout layout, const BufferData& bufferData);
 
         Vertex(const Vertex&) = delete;
 

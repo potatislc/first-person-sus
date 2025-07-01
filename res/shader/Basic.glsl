@@ -21,7 +21,9 @@ in vec2 v_texCoord;
 uniform vec4 u_Color;
 uniform sampler2D u_Texture;
 
+out vec4 FragColor;// Declare an output variable
+
 void main() {
     vec4 texColor = texture(u_Texture, v_texCoord);
-    color = texColor * (u_Color * 4);
+    FragColor = texColor * (u_Color * 4);// Use the output variable
 }

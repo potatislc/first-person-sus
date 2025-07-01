@@ -6,15 +6,15 @@
 
 #include "../Renderer.h"
 
-Renderer::Buffer::DataBuffer Renderer::Buffer::Vertex::layoutInterleave(
-    const Layout& layout, const DataBatch& dataBatch) {
+Renderer::Buffer::BufferData Renderer::Buffer::Vertex::layoutInterleave(
+    const Layout& layout, const std::vector<BufferData>& dataBatch) {
     assert(layout.getAttributes().size() == dataBatch.size());
 
-    DataBuffer combinedBuffer;
+    BufferData combinedBuffer;
 
-    Size minElements{std::numeric_limits<Size>::max()};
-    for (Size i = 0; i < dataBatch.size(); i++) {
-        const Size attrSize = Shader::dataTypeSize(layout.getAttributes()[i].dataType);
+    size_t minElements{std::numeric_limits<size_t>::max()};
+    for (size_t i = 0; i < dataBatch.size(); i++) {
+        const size_t attrSize = Shader::dataTypeSize(layout.getAttributes()[i].dataType);
         assert(attrSize > 0);
         assert(dataBatch[i].size() % attrSize == 0); // Do they share the same alignment?
         minElements = std::min(minElements, dataBatch[i].size() / attrSize);
@@ -24,7 +24,7 @@ Renderer::Buffer::DataBuffer Renderer::Buffer::Vertex::layoutInterleave(
 
     for (ptrdiff_t i = 0; std::cmp_less(i, minElements); i++) {
         ptrdiff_t offsetInStride = 0;
-        for (Size j = 0; j < layout.getAttributes().size(); j++) {
+        for (size_t j = 0; j < layout.getAttributes().size(); j++) {
             const auto attributeSize = Shader::dataTypeSize(layout.getAttributes()[j].dataType);
             std::copy_n(dataBatch[j].begin() + i * attributeSize,
                         attributeSize,
@@ -43,12 +43,10 @@ Renderer::Buffer::Vertex::Vertex(Layout layout, const void* data, const uint32_t
     RENDERER_API_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
 }
 
-Renderer::Buffer::Vertex::Vertex(Layout layout, const DataBatch& dataBatch) : m_layout{std::move(layout)} {
+Renderer::Buffer::Vertex::Vertex(Layout layout, const BufferData& bufferData) : m_layout{std::move(layout)} {
     RENDERER_API_CALL(glGenBuffers(1, &m_id));
     bind();
-    const auto batchedDataBuffer = batch(dataBatch);
-    RENDERER_API_CALL(
-        glBufferData(GL_ARRAY_BUFFER, batchedDataBuffer.size(), batchedDataBuffer.data(), GL_STATIC_DRAW));
+    RENDERER_API_CALL(glBufferData(GL_ARRAY_BUFFER, bufferData.size(), bufferData.data(), GL_STATIC_DRAW));
 }
 
 Renderer::Buffer::Vertex::~Vertex() {

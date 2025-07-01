@@ -55,6 +55,7 @@ Renderer::GlRenderer::GlRenderer(const Core::Window& window) : m_context(SDL_GL_
     // Temporary blend mode set
     RENDERER_API_CALL(glEnable(GL_BLEND));
     RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    RENDERER_API_CALL(glEnable(GL_DEPTH_TEST));
 }
 
 void Renderer::GlRenderer::clearErrors() const {
@@ -84,7 +85,7 @@ void Renderer::GlRenderer::swapWindow(const Core::Window& window) const {
 
 void Renderer::GlRenderer::clear(const glm::vec4 color) const {
     RENDERER_API_CALL(glClearColor(color.r, color.g, color.b, color.a));
-    RENDERER_API_CALL(glClear(GL_COLOR_BUFFER_BIT));
+    RENDERER_API_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
 void Renderer::GlRenderer::draw(const VertexArray& vertexArray,

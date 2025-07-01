@@ -60,7 +60,7 @@ namespace Scene {
             }
         };
 
-        static constexpr std::array<Renderer::Buffer::Count, 6> s_indices = {
+        static constexpr std::array<uint32_t, 6> s_indices = {
             0, 1, 2,
             2, 3, 0
         };

@@ -15,14 +15,12 @@ Core::Application::Application(const std::string& name, const unsigned int width
     switch (rendererType) {
         case Renderer::Type::OPEN_GL:
             m_window = Renderer::GlRenderer::createWindow(name, static_cast<int>(width), static_cast<int>(height));
-            m_renderer = new Renderer::GlRenderer{m_window};
+            m_renderer = std::make_unique<Renderer::GlRenderer>(m_window);
             break;
         default:
             std::cerr << "Application could not start. No RendererType selected. \n";
             return;
     }
-
-    m_baseScene = new Scene::Cube{};
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -34,13 +32,13 @@ Core::Application::Application(const std::string& name, const unsigned int width
 }
 
 Core::Application::~Application() {
-    delete m_baseScene;
+    m_baseScene.reset();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
-    delete m_renderer;
+    m_renderer.reset();
     m_window.destroy();
 
     SDL_Quit();
@@ -49,6 +47,10 @@ Core::Application::~Application() {
 }
 
 void Core::Application::run() {
+    if (m_baseScene == nullptr) {
+        std::cerr << "Application is performing default behaviour. No base scene is assigned!\n";
+    }
+
     auto running = true;
     SDL_Event event{};
 
@@ -96,4 +98,8 @@ void Core::Application::run() {
         m_frameCount++;
         frameStart = SDL_GetPerformanceCounter();
     }
+}
+
+void Core::Application::setBaseScene(std::unique_ptr<Scene::Scene> baseScene) {
+    m_baseScene = std::move(baseScene);
 }

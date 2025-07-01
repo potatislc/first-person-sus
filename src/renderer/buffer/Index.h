@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include "Buffer.h"
 #include "../../core/Typedef.h"
 
@@ -12,15 +10,9 @@ namespace Renderer {
 namespace Renderer::Buffer {
     class Index {
     public:
-        static DataBuffer batch(const DataBatch& dataBatch);
-
         Index() = delete;
 
-        explicit Index(const DataBuffer& dataBuffer);
-
-        explicit Index(const DataBatch& dataBatch); // Different size dataBuffers
-
-        explicit Index(const DataBuffer& dataBuffer, Count instances); // Same size dataBuffers
+        explicit Index(uint32_t count);
 
         Index(const Index&) = delete;
 
@@ -55,7 +47,7 @@ namespace Renderer::Buffer {
             return m_id;
         }
 
-        [[nodiscard]] Count getCount() const {
+        [[nodiscard]] uint32_t getCount() const {
             return m_count;
         }
 
@@ -65,6 +57,6 @@ namespace Renderer::Buffer {
 
     private:
         Id m_id{};
-        Count m_count{};
+        uint32_t m_count{};
     };
 }

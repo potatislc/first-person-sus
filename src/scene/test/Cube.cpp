@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+#include "../../core/Application.h"
 #include "../../renderer/Renderer.h"
 #include "../../renderer/VertexArray.h"
 #include "../../renderer/buffer/Vertex.h"
@@ -13,19 +14,20 @@
 Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/CubeTest.glsl"}} {
     const Renderer::Buffer::Vertex::Layout cubeLayout{*s_cubePositions.data(), *s_cubeColors.data()};
 
-    const Renderer::Buffer::DataBatch vertexDataBatch{
-        Renderer::Buffer::copyDataBuffer(s_cubePositions.data(), sizeof(s_cubePositions)),
-        Renderer::Buffer::copyDataBuffer(s_cubeColors.data(), sizeof(s_cubeColors))
+    const std::vector vertexData{
+        Renderer::Buffer::copyBufferData(s_cubePositions.data(), sizeof(s_cubePositions)),
+        Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors))
     };
 
-    const auto dataBuffer = Renderer::Buffer::Vertex::layoutInterleave(cubeLayout, vertexDataBatch);
+    const auto interleavedVertexData = Renderer::Buffer::Vertex::layoutInterleave(cubeLayout, vertexData);
 
-    Renderer::Buffer::Vertex vertexBuffer{cubeLayout, vertexDataBatch};
-    Renderer::Buffer::Index indexBuffer{
-        Renderer::Buffer::copyDataBuffer(s_cubeIndices.data(), s_cubeIndices.size())
-    };
+    std::cout << interleavedVertexData.size() << " = " << (vertexData[0].size() + vertexData[1].size()) << "\n";
 
-    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), std::move(indexBuffer));
+    Renderer::Buffer::Vertex vertexBuffer{cubeLayout, interleavedVertexData};
+
+    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer),
+                                                            Renderer::Buffer::copyIndexData(
+                                                                s_cubeIndices.data(), s_cubeIndices.size()));
 }
 
 void Scene::Cube::update(const float deltaTime) {
@@ -36,9 +38,12 @@ void Scene::Cube::render(const Renderer::Renderer& renderer) {
     const glm::mat4 proj{glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 100.0f)};
     glm::mat4 model{1.0f};
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, (float) Core::Application::getUniqueInstance().getFrameCount() * .005f,
+                        glm::vec3(0.5f, 1.0f, 0.0f));
     glm::mat4 view{1.0f};
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
+    m_shaderProgram.bind();
     m_shaderProgram.setUniform("model", model);
     m_shaderProgram.setUniform("view", view);
     m_shaderProgram.setUniform("projection", proj);

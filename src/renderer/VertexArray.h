@@ -13,7 +13,9 @@ namespace Renderer {
     public:
         VertexArray() = delete;
 
-        explicit VertexArray(Buffer::Vertex vertexBuffer, Buffer::Index indexBuffer);
+        VertexArray(Buffer::Vertex vertexBuffer, Buffer::Index indexBuffer);
+
+        VertexArray(Buffer::Vertex vertexBuffer, const Buffer::IndexData& indexData);
 
         VertexArray(const VertexArray&) = delete;
 

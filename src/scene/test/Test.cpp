@@ -16,27 +16,30 @@ Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Ba
         glm::vec2{}
     };
 
-    const Renderer::Buffer::DataBatch krazyDataBatch{
-        Renderer::Buffer::copyDataBuffer(s_krazySquareVertices.data(), sizeof(s_krazySquareVertices)),
-        Renderer::Buffer::copyDataBuffer(s_krazySquareTexCoords.data(), sizeof(s_krazySquareTexCoords))
+    const std::vector krazyBufferData{
+        Renderer::Buffer::copyBufferData(s_krazySquareVertices.data(), sizeof(s_krazySquareVertices)),
+        Renderer::Buffer::copyBufferData(s_krazySquareTexCoords.data(), sizeof(s_krazySquareTexCoords))
     };
 
-    const auto krazyDataBuffer = Renderer::Buffer::Vertex::layoutInterleave(vertexLayout, krazyDataBatch);
+    const auto interleavedKrazyBufferData = Renderer::Buffer::Vertex::layoutInterleave(vertexLayout, krazyBufferData);
 
-    const Renderer::Buffer::DataBatch dataBatch{
-        Renderer::Buffer::copyDataBuffer(s_square.data(), sizeof(s_square)),
-        Renderer::Buffer::copyDataBuffer(s_square2.data(),
+    const std::vector squaresData{
+        Renderer::Buffer::copyBufferData(s_square.data(), sizeof(s_square)),
+        Renderer::Buffer::copyBufferData(s_square2.data(),
                                          sizeof(s_square2)),
-        krazyDataBuffer
+        interleavedKrazyBufferData
     };
 
-    Renderer::Buffer::Vertex vertexBuffer{vertexLayout, dataBatch};
+    Renderer::Buffer::Vertex vertexBuffer{vertexLayout, Renderer::Buffer::batchBufferData(squaresData)};
 
+    /*
     Renderer::Buffer::Index indexBuffer{
-        Renderer::Buffer::copyDataBuffer(s_indices.data(), sizeof(s_indices)), 3
-    };
+        Renderer::Buffer::copyBufferData(s_indices.data(), sizeof(s_indices)), 3
+    };*/
 
-    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), std::move(indexBuffer));
+    auto indexData = Renderer::Buffer::copyIndexData(s_indices.data(), s_indices.size(), 3);
+
+    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), indexData);
     m_texture.bind(0);
     m_shaderProgram.setUniform("u_Texture", 0);
 }
