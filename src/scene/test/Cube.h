@@ -60,7 +60,9 @@ namespace Scene {
             4, 5, 1, 1, 0, 4
         };
 
-        Renderer::Camera m_camera{};
+        static constexpr float s_camRadius{3.f};
+
+        Renderer::Camera m_camera;
         Renderer::Shader::Program m_shaderProgram;
         std::unique_ptr<Renderer::VertexArray> m_vertexArray;
     };
