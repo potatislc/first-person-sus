@@ -55,6 +55,9 @@ Renderer::GlRenderer::GlRenderer(const Window& window) : m_context(SDL_GL_Create
     // Temporary blend mode set
     RENDERER_API_CALL(glEnable(GL_BLEND));
     RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    RENDERER_API_CALL(glEnable(GL_CULL_FACE));
+    RENDERER_API_CALL(glCullFace(GL_BACK));
+    RENDERER_API_CALL(glFrontFace(GL_CCW));
     RENDERER_API_CALL(glEnable(GL_DEPTH_TEST));
 }
 
