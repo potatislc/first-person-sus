@@ -13,7 +13,7 @@ namespace Renderer {
     public:
         VertexArray() = delete;
 
-        VertexArray(Buffer::Vertex vertexBuffer, Buffer::Index indexBuffer);
+        VertexArray(Buffer::Vertex vertexBuffer, uint32_t indexCount);
 
         VertexArray(Buffer::Vertex vertexBuffer, const Buffer::IndexData& indexData);
 
@@ -50,6 +50,8 @@ namespace Renderer {
 
     private:
         void attachVertexBuffer() const;
+
+        void attachIndexBuffer(const Buffer::IndexData& indexData) const;
 
         Buffer::Vertex m_vertexBuffer;
         Buffer::Index m_indexBuffer;

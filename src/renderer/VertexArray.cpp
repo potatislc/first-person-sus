@@ -1,15 +1,21 @@
 #include "VertexArray.h"
 
+#include <numeric>
 #include <glad/glad.h>
 
 #include "Renderer.h"
 #include "buffer/Vertex.h"
 
-Renderer::VertexArray::VertexArray(Buffer::Vertex vertexBuffer, Buffer::Index indexBuffer) : m_vertexBuffer{
+Renderer::VertexArray::VertexArray(Buffer::Vertex vertexBuffer, const uint32_t indexCount): m_vertexBuffer{
         std::move(vertexBuffer)
-    }, m_indexBuffer{std::move(indexBuffer)} {
-    RENDERER_API_CALL(glGenVertexArrays(1, &m_id));
+    },
+    m_indexBuffer{indexCount} {
+    glGenVertexArrays(1, &m_id);
+    Buffer::IndexData defaultIndexData(indexCount);
+    std::ranges::iota(defaultIndexData, 0);
+    // std::ranges::reverse(defaultIndexData);
     attachVertexBuffer();
+    attachIndexBuffer(defaultIndexData);
 }
 
 Renderer::VertexArray::VertexArray(Buffer::Vertex vertexBuffer,
@@ -22,12 +28,7 @@ Renderer::VertexArray::VertexArray(Buffer::Vertex vertexBuffer,
                                                                          } {
     RENDERER_API_CALL(glGenVertexArrays(1, &m_id));
     attachVertexBuffer();
-
-    m_indexBuffer.bind();
-    RENDERER_API_CALL(
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData.size() * sizeof(Buffer::IndexData::value_type), indexData.data()
-            , GL_STATIC_DRAW
-        ));
+    attachIndexBuffer(indexData);
 }
 
 Renderer::VertexArray::~VertexArray() {
@@ -54,6 +55,14 @@ void Renderer::VertexArray::attachVertexBuffer() const {
         i++;
         offset += Shader::dataTypeSize(type);
     }
+}
+
+void Renderer::VertexArray::attachIndexBuffer(const Buffer::IndexData& indexData) const {
+    m_indexBuffer.bind();
+    RENDERER_API_CALL(
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData.size() * sizeof(Buffer::IndexData::value_type), indexData.data()
+            , GL_STATIC_DRAW
+        ));
 }
 
 void Renderer::VertexArray::bind() const {
