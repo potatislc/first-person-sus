@@ -9,9 +9,9 @@
 #include "shader/Program.h"
 #include "../core/Window.h"
 
-Core::Window Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
+Window Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
+        LOG_ERR("Failed to initialize SDL: " << SDL_GetError() << '\n');
         SDL_Quit();
     }
 
@@ -23,34 +23,34 @@ Core::Window Renderer::GlRenderer::createWindow(const std::string& name, const i
     int minor{};
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-    std::cout << "Requested OpenGL version: " << major << "." << minor << '\n';
+    LOG("Requested OpenGL version: " << major << "." << minor << '\n');
 
     SDL_Window* window = SDL_CreateWindow(name.c_str(), width, height,
                                           SDL_WINDOW_OPENGL);
     if (window == nullptr) {
-        std::cerr << "Failed to create window: " << SDL_GetError() << '\n';
+        LOG_ERR("Failed to create window: " << SDL_GetError() << '\n');
         SDL_Quit();
     }
 
-    return Core::Window{name, window};
+    return Window{name, window};
 }
 
-Renderer::GlRenderer::GlRenderer(const Core::Window& window) : m_context(SDL_GL_CreateContext(window.get())) {
+Renderer::GlRenderer::GlRenderer(const Window& window) : m_context(SDL_GL_CreateContext(window.get())) {
     if (m_context == nullptr) {
-        std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << '\n';
+        LOG_ERR("Failed to create OpenGL context: " << SDL_GetError() << '\n');
         return;
     }
 
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0) {
-        std::cerr << "Failed to initialize GLAD\n";
+        LOG_ERR("Failed to initialize GLAD\n");
         m_glLoaderInitialized = false;
         return;
     }
 
     s_ActiveRenderer = this;
 
-    std::cout << "GL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_VERSION)) << '\n';
-    std::cout << "GLSL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n';
+    LOG("GL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_VERSION)) << '\n');
+    LOG("GLSL Version: " << RENDERER_API_CALL_RETURN(glGetString(GL_SHADING_LANGUAGE_VERSION)) << '\n');
 
     // Temporary blend mode set
     RENDERER_API_CALL(glEnable(GL_BLEND));
@@ -67,8 +67,8 @@ bool Renderer::GlRenderer::logErrors(const char* functionName, const char* fileN
                                      const size_t line) const {
     auto emptyLog = true;
     while (const auto err = glGetError()) {
-        std::cerr << "OpenGL error: (" << err << ")" << " from function: "
-                << functionName << " inside file: " << fileName << " at line: " << line << '\n';
+        LOG_ERR("OpenGL error: (" << err << ")" << " from function: "
+            << functionName << " inside file: " << fileName << " at line: " << line << '\n');
         emptyLog = false;
     }
 
@@ -79,7 +79,7 @@ void* Renderer::GlRenderer::getContext() const {
     return m_context;
 }
 
-void Renderer::GlRenderer::swapWindow(const Core::Window& window) const {
+void Renderer::GlRenderer::swapWindow(const Window& window) const {
     SDL_GL_SwapWindow(window.get());
 }
 

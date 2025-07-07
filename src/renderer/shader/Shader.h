@@ -36,7 +36,7 @@ namespace Renderer::Shader {
             default: break;
         }
 
-        CORE_ASSERT_MSG(false, "Unknown Shader::DataType!");
+        ASSERT_MSG(false, "Unknown Shader::DataType!");
         return 0;
     }
 
@@ -56,7 +56,7 @@ namespace Renderer::Shader {
             default: break;
         }
 
-        CORE_ASSERT_MSG(false, "Unknown Shader::DataType!");
+        ASSERT_MSG(false, "Unknown Shader::DataType!");
         return 0;
     }
 
@@ -139,7 +139,7 @@ namespace Renderer::Shader {
             default: break;
         }
 
-        CORE_ASSERT_MSG(false, "Unknown Shader::DataType!");
+        ASSERT_MSG(false, "Unknown Shader::DataType!");
         return 0;
     }
 }

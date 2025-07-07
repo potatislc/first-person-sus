@@ -8,17 +8,18 @@
 #include "../scene/test/Test.h"
 #include "../scene/test/Cube.h"
 
-Core::Application* Core::Application::s_uniqueInstance{};
+Application* Application::s_instance{};
 
-Core::Application::Application(const std::string& name, const unsigned int width, const unsigned int height,
-                               const Renderer::Type rendererType) {
+Application::Application(const std::string& name, const unsigned int width, const unsigned int height,
+                         const Renderer::Type rendererType) {
     switch (rendererType) {
         case Renderer::Type::OPEN_GL:
             m_window = Renderer::GlRenderer::createWindow(name, static_cast<int>(width), static_cast<int>(height));
             m_renderer = std::make_unique<Renderer::GlRenderer>(m_window);
+
             break;
         default:
-            std::cerr << "Application could not start. No RendererType selected. \n";
+            LOG_ERR("Application could not start. No RendererType selected. ");
             return;
     }
 
@@ -27,11 +28,16 @@ Core::Application::Application(const std::string& name, const unsigned int width
     ImGui::StyleColorsDark();
     ImGui_ImplSDL3_InitForOpenGL(m_window.get(), m_renderer->getContext());
     ImGui_ImplOpenGL3_Init("#version 330");
-
-    s_uniqueInstance = this;
 }
 
-Core::Application::~Application() {
+Application& Application::initialize(const std::string& name, const unsigned int width,
+                                     const unsigned int height, const Renderer::Type rendererType) {
+    static Application instance{name, width, height, rendererType};
+    s_instance = &instance;
+    return instance;
+}
+
+Application::~Application() {
     m_baseScene.reset();
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -42,13 +48,11 @@ Core::Application::~Application() {
     m_window.destroy();
 
     SDL_Quit();
-
-    s_uniqueInstance = {};
 }
 
-void Core::Application::run() {
+void Application::run() {
     if (m_baseScene == nullptr) {
-        std::cerr << "Application is performing default behaviour. No base scene is assigned!\n";
+        LOG_ERR("Application is performing default behaviour. No base scene is assigned!");
     }
 
     auto running = true;
@@ -100,6 +104,6 @@ void Core::Application::run() {
     }
 }
 
-void Core::Application::setBaseScene(std::unique_ptr<Scene::Scene> baseScene) {
+void Application::setBaseScene(std::unique_ptr<Scene::Scene> baseScene) {
     m_baseScene = std::move(baseScene);
 }

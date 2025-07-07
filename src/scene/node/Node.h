@@ -5,15 +5,14 @@
 #include "../Scene.h"
 
 namespace Scene {
-    class Node final : public Scene {
+    class Node : public Scene {
     public:
-        Node() = delete;
+        Node() = default;
 
-        explicit Node(Scene& scene, const Scene& parent) : m_scene{&scene}, m_parent{&parent} {
-        }
+        template<typename NodeType, typename... ConstructorArgs>
+        auto create(Node& parent, ConstructorArgs... constructorArgs);
 
-        Node(const Node& other) : m_children{other.copyChildren()}, m_scene{other.m_scene->copy()},
-                                  m_parent{other.m_parent}, m_active{other.m_active} {
+        Node(const Node& other) : m_children{other.copyChildren()}, m_parent{other.m_parent}, m_active{other.m_active} {
         }
 
         Node& operator=(const Node& other) {
@@ -22,17 +21,17 @@ namespace Scene {
             }
 
             m_children = other.copyChildren();
-            m_scene = other.m_scene->copy();
             m_parent = other.m_parent;
             m_active = other.m_active;
+
+            // Create copies of the children
 
             return *this;
         }
 
-        Node(Node&& other) noexcept : m_children{std::move(other.m_children)}, m_scene{other.m_scene},
+        Node(Node&& other) noexcept : m_children{std::move(other.m_children)},
                                       m_parent{other.m_parent},
                                       m_active{other.m_active} {
-            other.m_scene = {};
             other.m_parent = {};
             other.m_active = {};
         }
@@ -43,10 +42,7 @@ namespace Scene {
             }
 
             m_children = std::move(other.m_children);
-            m_scene = other.m_scene;
             m_parent = other.m_parent;
-
-            other.m_scene = {};
             other.m_parent = {};
 
             return *this;
@@ -60,11 +56,9 @@ namespace Scene {
 
         void renderImGui() override;
 
-        Scene* copy() const override {
-            return new Node{*this};
+        virtual Node copy() {
+            return Node{*this};
         }
-
-        void addChildCopy(const Scene& scene);
 
         void activate() {
             m_active = true;
@@ -74,14 +68,25 @@ namespace Scene {
             m_active = false;
         }
 
+        std::vector<std::unique_ptr<Node> > copyChildren() const {
+            std::vector<std::unique_ptr<Node> > copied;
+            for (const auto& child: m_children) {
+                copied.push_back(std::make_unique<Node>(child->copy()));
+            }
+
+            return copied;
+        }
+
     private:
-        [[nodiscard]] std::vector<Scene*> copyChildren() const;
-
-        void deleteChildren() const;
-
-        std::vector<Scene*> m_children{};
-        Scene* m_scene{};
-        const Scene* m_parent{};
+        std::vector<std::unique_ptr<Node> > m_children;
+        const Node* m_parent{};
         bool m_active = true;
     };
+
+    template<typename NodeType, typename... ConstructorArgs>
+    auto Node::create(Node& parent, ConstructorArgs... constructorArgs) {
+        NodeType node{constructorArgs...};
+        node.m_parent = &parent;
+        return node;
+    }
 }

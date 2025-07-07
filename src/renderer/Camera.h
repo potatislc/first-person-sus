@@ -9,9 +9,8 @@
 #include "../core/Math.h"
 
 namespace Renderer {
-    struct Camera {
-        static constexpr glm::vec3 s_up{0.f, 1.f, 0.f};
-
+    class Camera {
+    public:
         explicit Camera(const glm::mat4& view = glm::mat4{1.f}, const glm::vec3& position = Math::Vec3::zero,
                         const glm::vec3& direction = Math::Vec3::forward,
                         const float fov = 90.f, const glm::vec2 aspectRatio = glm::vec2{16.f, 9.f})
@@ -22,7 +21,7 @@ namespace Renderer {
         }
 
         [[nodiscard]] glm::vec3 basisRight() const {
-            return glm::normalize(glm::cross(s_up, m_direction));
+            return glm::normalize(glm::cross(Math::Vec3::up, m_direction));
         }
 
         [[nodiscard]] glm::vec3 basisUp() const {

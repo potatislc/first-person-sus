@@ -33,7 +33,7 @@ int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) c
         }
     }
 
-    std::cerr << "Uniform with name: " << name << ". not found.\n";
+    LOG_ERR("Uniform with name: " << name << ". not found.\n");
 
     return Uniform::noLocation;
 }
@@ -41,7 +41,7 @@ int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) c
 bool Renderer::Shader::Program::createProgram() {
     m_id = RENDERER_API_CALL_RETURN(glCreateProgram());
     if (m_id == 0) {
-        std::cerr << s_CreationFailStr << '\n';
+        LOG_ERR(&s_CreationFailStr << '\n');
     }
 
     return static_cast<bool>(m_id);
@@ -53,10 +53,10 @@ bool Renderer::Shader::Program::linkProgram() const {
     int linkStatus = 0;
     RENDERER_API_CALL(glGetProgramiv(m_id, GL_LINK_STATUS, &linkStatus));
     if (linkStatus == 0) {
-        std::cerr << "Failed to link shader program." << '\n';
+        LOG_ERR("Failed to link shader program." << '\n');
         std::array<char, 512> log{};
         glGetProgramInfoLog(m_id, 512, nullptr, log.data());
-        std::cerr << "Link error: " << log.data() << '\n';
+        LOG_ERR("Link error: " << log.data() << '\n');
     }
 
     return static_cast<bool>(linkStatus);
@@ -87,7 +87,7 @@ Renderer::Shader::Program::Program(Parser sourceParser) {
     while (auto shader{sourceParser.next()}) {
         shader.compile();
         if (!shader.isCompiled()) {
-            std::cerr << s_CreationFailStr << '\n';
+            LOG_ERR(&s_CreationFailStr << '\n');
             return;
         }
 

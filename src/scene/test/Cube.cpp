@@ -21,8 +21,6 @@ Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Cu
 
     const auto interleavedVertexData = Renderer::Buffer::Vertex::layoutInterleave(cubeLayout, vertexData);
 
-    std::cout << interleavedVertexData.size() << " = " << (vertexData[0].size() + vertexData[1].size()) << "\n";
-
     Renderer::Buffer::Vertex vertexBuffer{cubeLayout, interleavedVertexData};
 
     m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer),
@@ -37,7 +35,7 @@ void Scene::Cube::update(const float deltaTime) {
 
 void Scene::Cube::render(const Renderer::Renderer& renderer) {
     glm::mat4 model{1.0f};
-    model = glm::rotate(model, static_cast<float>(Core::Application::getUniqueInstance().getFrameCount()) * .005f,
+    model = glm::rotate(model, static_cast<float>(Application::getInstance().getFrameCount()) * .005f,
                         glm::vec3(0.5f, 1.0f, 0.0f));
 
     m_shaderProgram.bind();

@@ -6,9 +6,8 @@
 
 #include "../core/Assert.h"
 
-namespace Core {
-    class Window;
-}
+class Window;
+
 
 namespace Renderer {
     class GlRenderer;
@@ -47,25 +46,25 @@ namespace Renderer {
         template<typename Func>
         static void apiCall(const Renderer* renderer, Func&& func, const char* code, const char* file,
                             const size_t line) {
-            if (!CORE_ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCall: Renderer is not set.\n")) {
+            if (!ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCall: Renderer is not set.\n")) {
                 return;
             }
 
             renderer->clearErrors();
             std::forward<Func>(func)();
-            CORE_ASSERT(renderer->logErrors(code, file, line));
+            ASSERT(renderer->logErrors(code, file, line));
         }
 
         template<typename Func>
         static auto apiCallReturn(const Renderer* renderer, Func&& func, const char* code, const char* file,
                                   const size_t line) -> decltype(func()) {
-            if (!CORE_ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCallReturn: Renderer is not set.\n")) {
+            if (!ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCallReturn: Renderer is not set.\n")) {
                 return decltype(func()){};
             }
 
             renderer->clearErrors();
             auto result = std::forward<Func>(func)();
-            CORE_ASSERT(renderer->logErrors(code, file, line));
+            ASSERT(renderer->logErrors(code, file, line));
             return result;
         }
 
@@ -92,7 +91,7 @@ namespace Renderer {
 
         [[nodiscard]] virtual void* getContext() const = 0;
 
-        virtual void swapWindow(const Core::Window& window) const = 0;
+        virtual void swapWindow(const Window& window) const = 0;
 
         virtual void clear(glm::vec4 color) const = 0;
 

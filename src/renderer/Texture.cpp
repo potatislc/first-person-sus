@@ -26,7 +26,7 @@ Renderer::Texture Renderer::Texture::createGlTexture(const std::string& path) {
     if (texture.m_buffer != nullptr) {
         stbi_image_free(texture.m_buffer);
     } else {
-        std::cerr << "Texture not found, from path: " << path << '\n';
+        LOG_ERR("Texture not found, from path: " << path << '\n');
     }
 
     return texture;

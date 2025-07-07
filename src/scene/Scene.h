@@ -29,10 +29,5 @@ namespace Scene {
 
         virtual void renderImGui() {
         }
-
-        virtual Scene* copy() const {
-            std::cerr << "Scene instance is not copyable with Scene::Scene::copy().\n";
-            return nullptr;
-        }
     };
 }

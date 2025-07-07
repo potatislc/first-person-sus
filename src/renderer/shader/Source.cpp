@@ -16,7 +16,7 @@ void Renderer::Shader::Source::destroy() {
 
 void Renderer::Shader::Source::compile() {
     if (!hasValidSource()) {
-        std::cerr << "Shader compilation failed: " << "Invalid source\n";
+        LOG_ERR("Shader compilation failed: " << "Invalid source\n");
         return;
     }
 
@@ -31,7 +31,7 @@ void Renderer::Shader::Source::compile() {
         std::array<char, 512> infoLog{};
         RENDERER_API_CALL(
             glGetShaderInfoLog(shaderId, infoLog.size(), nullptr, infoLog.data()));
-        std::cerr << "Shader compilation failed:\n" << infoLog.data() << "\n";
+        LOG_ERR("Shader compilation failed:\n" << infoLog.data() << "\n");
         return;
     }
 

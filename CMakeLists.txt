@@ -54,6 +54,7 @@ target_link_libraries(imgui_backend PRIVATE SDL3::SDL3)
 
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 add_executable(${EXE_NAME} src/example/main.cpp
         src/renderer/GlRenderer.cpp
@@ -71,10 +72,9 @@ add_executable(${EXE_NAME} src/example/main.cpp
         src/scene/node/Node.h
         src/scene/node/Node.cpp
         src/scene/test/Cube.cpp
-        src/renderer/Mesh.cpp
         src/renderer/Camera.cpp)
 
-target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend)
+target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend assimp::assimp)
 
 target_include_directories(${PROJECT_NAME}
         PRIVATE

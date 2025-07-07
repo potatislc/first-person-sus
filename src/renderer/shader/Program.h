@@ -7,6 +7,7 @@
 
 #include "Uniform.h"
 #include "../../core/Typedef.h"
+#include "../../core/Log.h"
 
 namespace Renderer {
     class Renderer;
@@ -98,7 +99,7 @@ namespace Renderer::Shader {
         }
 
         if (const bool success = ((shaders.compile(), shaders.isCompiled()) && ...); !success) {
-            std::cerr << s_CreationFailStr << '\n';
+            LOG_ERR(&s_CreationFailStr << '\n');
             return;
         }
 

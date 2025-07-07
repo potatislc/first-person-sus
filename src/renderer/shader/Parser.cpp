@@ -10,16 +10,16 @@
 
 Renderer::Shader::Parser::Parser(const std::string& filePath) : m_stream{filePath} {
     if (m_stream.bad()) {
-        std::cerr << "Invalid shader source path: " << filePath << '\n';
+        LOG_ERR("Invalid shader source path: " << filePath << '\n');
     }
 
-    CORE_ASSERT(m_stream.good());
+    ASSERT(m_stream.good());
 }
 
 Renderer::Shader::Source Renderer::Shader::Parser::operator()() {
     auto fail = [this](const std::string& description) {
-        std::cerr << "Failed to parse shader source: " << description << " At line "
-                << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << '\n';
+        LOG_ERR("Failed to parse shader source: " << description << " At line "
+            << m_lineCount << ". " << "[LINE SOURCE]: " << m_line << '\n');
         return Source{};
     };
 
