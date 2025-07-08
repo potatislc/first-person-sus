@@ -11,17 +11,18 @@
 #include "../../renderer/shader/Parser.h"
 
 
-Scene::Cube2::Cube2() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/CubeTest2.glsl"}}, m_texture{
+Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{"../res/shader/test/CubeTest2.glsl"}}, m_texture{
                             Renderer::Texture::createGlTexture("../res/texture/Wall.png")
                         } {
     const Renderer::Buffer::Vertex::Layout layout{
-        *s_cubePositions.data(), *s_cubeColors.data(), *s_cubeUVs.data()
+        *s_cubePositions.data(), *s_cubeColors.data(), *s_cubeUVs.data(), *s_cubeNormals.data()
     };
 
     const std::vector vertexData{
         Renderer::Buffer::copyBufferData(s_cubePositions.data(), sizeof(s_cubePositions)),
         Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors)),
-        Renderer::Buffer::copyBufferData(s_cubeUVs.data(), sizeof(s_cubeUVs))
+        Renderer::Buffer::copyBufferData(s_cubeUVs.data(), sizeof(s_cubeUVs)),
+        Renderer::Buffer::copyBufferData(s_cubeNormals.data(), sizeof(s_cubeNormals))
     };
 
     const auto interleavedVertexData = Renderer::Buffer::Vertex::layoutInterleave(layout, vertexData);
@@ -32,9 +33,13 @@ Scene::Cube2::Cube2() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/
             Renderer::Buffer::copyIndexData(s_cubeIndices.data(), s_cubeIndices.size());
     m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), indexData);
     m_texture.bind(0);
-    m_shaderProgram.setUniform("texture1", 0);
+    m_cubeShader.bind();
+    m_cubeShader.setUniform("u_texture1", 0);
+    m_cubeShader.setUniform("u_lightColor", glm::vec3{.9f, .5f, .5f});
+    m_cubeShader.setUniform("u_ambientLightStrength", .4f);
+    m_cubeShader.setUniform("u_lightPos", glm::vec3{-2.f, 1.f, -1.f});
 
-    m_camera.setPosition(glm::vec3{0.f, 0.f, 3.f});
+    m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
 }
 
 void Scene::Cube2::update(const float deltaTime) {
@@ -51,13 +56,16 @@ void Scene::Cube2::render(const Renderer::Renderer& renderer) {
     m_camera.setPosition(camPos);
     m_camera.lookAt(Math::Vec3::zero);
 
-    m_shaderProgram.bind();
-    m_shaderProgram.setUniform("model", model);
-    m_shaderProgram.setUniform("view", m_camera.getView());
-    m_shaderProgram.setUniform("projection", m_camera.getProjection());
+    const glm::vec3 lightPos{glm::cos(-animSpeed * 4) * 2.f, .5f, glm::sin(-animSpeed * 4) * 2.f};
+    m_cubeShader.setUniform("u_lightPos", lightPos);
+
+    m_cubeShader.bind();
+    m_cubeShader.setUniform("u_model", model);
+    m_cubeShader.setUniform("u_view", m_camera.getView());
+    m_cubeShader.setUniform("u_projection", m_camera.getProjection());
 
     renderer.clear(glm::vec4{1.f, .3f, .2f, 1.f});
-    renderer.draw(*m_vertexArray, m_shaderProgram);
+    renderer.draw(*m_vertexArray, m_cubeShader);
 }
 
 void Scene::Cube2::renderImGui() {

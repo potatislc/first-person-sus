@@ -12,7 +12,7 @@
 #include "../../renderer/shader/Parser.h"
 
 
-Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/CubeTest.glsl"}} {
+Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/test/CubeTest.glsl"}} {
     const Renderer::Buffer::Vertex::Layout cubeLayout{*s_cubePositions.data(), *s_cubeColors.data()};
 
     const std::vector vertexData{

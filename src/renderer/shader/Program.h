@@ -68,6 +68,8 @@ namespace Renderer::Shader {
 
         static void setUniform(int32_t location, float val);
 
+        static void setUniform(int32_t location, const glm::vec3& val);
+
         static void setUniform(int32_t location, const glm::vec4& val);
 
         static void setUniform(int32_t location, const glm::mat4& val);

@@ -8,7 +8,6 @@
 
 class Window;
 
-
 namespace Renderer {
     class GlRenderer;
     class VertexArray;

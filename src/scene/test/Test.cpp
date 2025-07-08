@@ -7,7 +7,7 @@
 
 // I know this is the most horrible member initializer list you have ever seen,
 // but it is only to demonstrate that you can construct a vertex array completely in-place.
-Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/Basic.glsl"}},
+Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../res/shader/test/Basic.glsl"}},
                       m_texture{
                           Renderer::Texture::createGlTexture("../res/texture/Melon.png")
                       } {

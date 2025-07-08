@@ -18,6 +18,10 @@ void Renderer::Shader::Program::setUniform(const int32_t location, const float v
     RENDERER_API_CALL(glUniform1f(location, val));
 }
 
+void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec3& val) {
+    RENDERER_API_CALL(glUniform3fv(location, 1, glm::value_ptr(val)));
+}
+
 void Renderer::Shader::Program::setUniform(const int32_t location, const glm::vec4& val) {
     RENDERER_API_CALL(glUniform4fv(location, 1, glm::value_ptr(val)));
 }
@@ -33,7 +37,7 @@ int32_t Renderer::Shader::Program::getUniformLocation(const std::string& name) c
         }
     }
 
-    LOG_ERR("Uniform with name: " << name << ". not found.\n");
+    LOG_ERR("Uniform with name: " << name << " not found.\n");
 
     return Uniform::noLocation;
 }
