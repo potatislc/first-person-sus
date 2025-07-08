@@ -38,6 +38,7 @@ Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{"../res/shader/tes
     m_cubeShader.setUniform("u_lightColor", glm::vec3{.9f, .5f, .5f});
     m_cubeShader.setUniform("u_ambientLightStrength", .4f);
     m_cubeShader.setUniform("u_lightPos", glm::vec3{-2.f, 1.f, -1.f});
+    m_cubeShader.setUniform("u_specularity", 1.f);
 
     m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
 }
@@ -55,6 +56,7 @@ void Scene::Cube2::render(const Renderer::Renderer& renderer) {
     const glm::vec3 camPos{glm::cos(animSpeed) * s_camRadius, 0, glm::sin(animSpeed) * s_camRadius};
     m_camera.setPosition(camPos);
     m_camera.lookAt(Math::Vec3::zero);
+    m_cubeShader.setUniform("u_viewPos", m_camera.getPosition());
 
     const glm::vec3 lightPos{glm::cos(-animSpeed * 4) * 2.f, .5f, glm::sin(-animSpeed * 4) * 2.f};
     m_cubeShader.setUniform("u_lightPos", lightPos);
@@ -64,7 +66,7 @@ void Scene::Cube2::render(const Renderer::Renderer& renderer) {
     m_cubeShader.setUniform("u_view", m_camera.getView());
     m_cubeShader.setUniform("u_projection", m_camera.getProjection());
 
-    renderer.clear(glm::vec4{1.f, .3f, .2f, 1.f});
+    renderer.clear(glm::vec4{1.f, .3f, .2f, 1.f} * .1f);
     renderer.draw(*m_vertexArray, m_cubeShader);
 }
 

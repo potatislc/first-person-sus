@@ -36,6 +36,10 @@ namespace Renderer {
             return m_projection;
         }
 
+        [[nodiscard]] glm::vec3 getPosition() const {
+            return m_position;
+        }
+
         void setPosition(const glm::vec3& position) {
             m_position = position;
             m_view = glm::mat4(1.f);
