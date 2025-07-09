@@ -56,33 +56,33 @@ find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 
-add_executable(${EXE_NAME} src/example/main.cpp
-        src/renderer/GlRenderer.cpp
-        src/renderer/shader/Source.cpp
-        src/renderer/shader/Program.cpp
-        src/renderer/shader/Parser.cpp
-        src/renderer/buffer/Vertex.cpp
-        src/renderer/buffer/Index.cpp
-        src/renderer/VertexArray.cpp
-        src/renderer/shader/Uniform.cpp
-        src/vendor/stb_image/stb_image.cpp
-        src/renderer/Texture.cpp
-        src/scene/test/Test.cpp
-        src/core/Application.cpp
-        src/scene/node/Node.h
-        src/scene/node/Node.cpp
-        src/scene/test/Cube.cpp
-        src/renderer/Camera.cpp
-        src/scene/test/Cube2.cpp)
+add_executable(${EXE_NAME} engine/src/example/main.cpp
+        engine/src/renderer/GlRenderer.cpp
+        engine/src/renderer/shader/Source.cpp
+        engine/src/renderer/shader/Program.cpp
+        engine/src/renderer/shader/Parser.cpp
+        engine/src/renderer/buffer/Vertex.cpp
+        engine/src/renderer/buffer/Index.cpp
+        engine/src/renderer/VertexArray.cpp
+        engine/src/renderer/shader/Uniform.cpp
+        engine/src/vendor/stb_image/stb_image.cpp
+        engine/src/renderer/Texture.cpp
+        engine/src/scene/test/Test.cpp
+        engine/src/core/Application.cpp
+        engine/src/scene/node/Node.h
+        engine/src/scene/node/Node.cpp
+        engine/src/scene/test/Cube.cpp
+        engine/src/renderer/Camera.cpp
+        engine/src/scene/test/Cube2.cpp)
 
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend assimp::assimp)
 
 target_include_directories(${PROJECT_NAME}
         PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/stb_image
+        engine/src/vendor/stb_image
 )
 
-file(GLOB STB_IMAGE_SRC "src/vendor/stb_image/stb_image.cpp")
+file(GLOB STB_IMAGE_SRC "engine/src/vendor/stb_image/stb_image.cpp")
 
 set_source_files_properties(${STB_IMAGE_SRC}
         PROPERTIES COMPILE_FLAGS "-w"
@@ -103,6 +103,7 @@ set(WARNING_FLAGS
         -Wno-c++98-compat-pedantic
         -Wno-switch-default
 )
+
 target_compile_options(${EXE_NAME} PRIVATE ${WARNING_FLAGS})
 
 
