@@ -1,10 +1,11 @@
+#pragma once
 #include <array>
 #include <glm/vec3.hpp>
 
-#include "../Scene.h"
-#include "../../renderer/shader/Program.h"
-#include "../../renderer/Camera.h"
-#include "../../renderer/Texture.h"
+#include "scene/Scene.h"
+#include "renderer/shader/Program.h"
+#include "renderer/Camera.h"
+#include "renderer/Texture.h"
 
 namespace Engine::Renderer {
     class VertexArray;
@@ -16,6 +17,14 @@ namespace Engine::Scene {
         Cube2();
 
         ~Cube2() override = default;
+
+        Cube2(const Cube2&) = delete;
+
+        Cube2(Cube2&&) = delete;
+
+        Cube2& operator=(const Cube2&) = delete;
+
+        Cube2& operator=(Cube2&&) = delete;
 
         void update(float deltaTime) override;
 

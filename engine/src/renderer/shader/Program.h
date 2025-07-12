@@ -6,8 +6,8 @@
 #include <glm/vec4.hpp>
 
 #include "Uniform.h"
-#include "../../core/Typedef.h"
-#include "../../core/Log.h"
+#include "core/Typedef.h"
+#include "core/Log.h"
 
 namespace Engine::Renderer {
     class Renderer;

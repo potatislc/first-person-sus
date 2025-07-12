@@ -1,8 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
-#include "../Scene.h"
+#include "scene/Scene.h"
 
 namespace Engine::Scene {
     class Node : public Scene {
@@ -68,7 +69,7 @@ namespace Engine::Scene {
             m_active = false;
         }
 
-        std::vector<std::unique_ptr<Node> > copyChildren() const {
+        [[nodiscard]] std::vector<std::unique_ptr<Node> > copyChildren() const {
             std::vector<std::unique_ptr<Node> > copied;
             for (const auto& child: m_children) {
                 copied.push_back(std::make_unique<Node>(child->copy()));

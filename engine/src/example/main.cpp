@@ -1,6 +1,6 @@
-#include "../core/Application.h"
-#include "../scene/test/Test.h"
-#include "../scene/test/Cube2.h"
+#include "core/Application.h"
+#include "scene/test/Test.h"
+#include "scene/test/Cube2.h"
 
 int main([[maybe_unused]] int /*unused*/, [[maybe_unused]] char** /*unused*/) {
 #ifdef __linux__

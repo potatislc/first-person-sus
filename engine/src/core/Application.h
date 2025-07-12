@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "../renderer/Renderer.h"
-#include "../scene/Scene.h"
+#include "renderer/Renderer.h"
+#include "scene/Scene.h"
 #include "Window.h"
 
 namespace Engine::Scene {

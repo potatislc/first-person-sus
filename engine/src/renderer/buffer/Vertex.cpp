@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "../Renderer.h"
+#include "renderer/Renderer.h"
 
 Engine::Renderer::Buffer::BufferData Engine::Renderer::Buffer::Vertex::layoutInterleave(
     const Layout& layout, const std::vector<BufferData>& dataBatch) {

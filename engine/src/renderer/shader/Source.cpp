@@ -3,7 +3,7 @@
 #include <array>
 #include <iostream>
 #include <glad/glad.h>
-#include "../Renderer.h"
+#include "renderer/Renderer.h"
 
 void Engine::Renderer::Shader::Source::destroy() {
     if (m_id == 0) {

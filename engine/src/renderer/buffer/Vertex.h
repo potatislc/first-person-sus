@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "Buffer.h"
-#include "../shader/Shader.h"
+#include "renderer/shader/Shader.h"
 
 namespace Engine::Renderer {
     class Renderer;

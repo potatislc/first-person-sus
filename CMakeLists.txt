@@ -77,6 +77,14 @@ add_executable(${EXE_NAME} engine/src/example/main.cpp
 
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend assimp::assimp)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE ENGINE_RES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/engine/res")
+
+
+target_include_directories(${PROJECT_NAME}
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/engine/src
+)
+
 target_include_directories(${PROJECT_NAME}
         PRIVATE
         engine/src/vendor/stb_image

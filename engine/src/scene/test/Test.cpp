@@ -1,12 +1,10 @@
 #include "Test.h"
 
-#include "../../core/Application.h"
-#include "../../renderer/shader/Parser.h"
+#include "core/Application.h"
+#include "renderer/shader/Parser.h"
 #include <imgui.h>
 #include <memory>
 
-// I know this is the most horrible member initializer list you have ever seen,
-// but it is only to demonstrate that you can construct a vertex array completely in-place.
 Engine::Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../engine/res/shader/test/Basic.glsl"}},
                               m_texture{
                                   Renderer::Texture::createGlTexture("../engine/res/texture/Melon.png")

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cassert>
 #include <vector>
-#include "../../core/Typedef.h"
+#include "core/Typedef.h"
 
 namespace Engine::Renderer::Buffer {
     using BufferData = std::vector<uint8_t>;

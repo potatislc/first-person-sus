@@ -7,7 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Parser.h"
-#include "../Renderer.h"
+#include "renderer/Renderer.h"
 #include "Source.h"
 
 void Engine::Renderer::Shader::Program::setUniform(const int32_t location, const int val) {

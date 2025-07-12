@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#include "../Renderer.h"
+#include "renderer/Renderer.h"
 
 Engine::Renderer::Buffer::Index::Index(const uint32_t count) : m_count{count} {
     RENDERER_API_CALL(glGenBuffers(1, &m_id));

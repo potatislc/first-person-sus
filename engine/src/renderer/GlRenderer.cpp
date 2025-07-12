@@ -7,7 +7,7 @@
 #include "VertexArray.h"
 #include "buffer/Index.h"
 #include "shader/Program.h"
-#include "../core/Window.h"
+#include "core/Window.h"
 
 Engine::Window Engine::Renderer::GlRenderer::createWindow(const std::string& name, const int width, const int height) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {

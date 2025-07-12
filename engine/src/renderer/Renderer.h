@@ -4,7 +4,7 @@
 #include <utility>
 #include <glm/vec4.hpp>
 
-#include "../core/Assert.h"
+#include "core/Assert.h"
 
 namespace Engine {
     class Window;

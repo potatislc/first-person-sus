@@ -1,15 +1,14 @@
 #include "Cube.h"
 
 #include <imgui.h>
-#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#include "../../core/Application.h"
-#include "../../renderer/Renderer.h"
-#include "../../renderer/VertexArray.h"
-#include "../../renderer/buffer/Vertex.h"
-#include "../../renderer/shader/Parser.h"
+#include "core/Application.h"
+#include "renderer/Renderer.h"
+#include "renderer/VertexArray.h"
+#include "renderer/buffer/Vertex.h"
+#include "renderer/shader/Parser.h"
 
 
 Engine::Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../engine/res/shader/test/CubeTest.glsl"}} {

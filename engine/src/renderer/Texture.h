@@ -4,7 +4,7 @@
 #include <string>
 #include <glm/vec2.hpp>
 
-#include "../core/Typedef.h"
+#include "core/Typedef.h"
 
 namespace Engine::Renderer {
     class Texture {

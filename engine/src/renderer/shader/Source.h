@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Uniform.h"
-#include "../../core/Typedef.h"
+#include "core/Typedef.h"
 
 namespace Engine::Renderer {
     class Renderer;

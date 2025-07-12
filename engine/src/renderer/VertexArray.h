@@ -1,7 +1,7 @@
 #pragma once
 
 #include "buffer/Vertex.h"
-#include "../core/Typedef.h"
+#include "core/Typedef.h"
 #include "buffer/Index.h"
 
 namespace Engine::Renderer::Buffer {

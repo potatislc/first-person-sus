@@ -5,10 +5,10 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#include "../Scene.h"
-#include "../../renderer/VertexArray.h"
-#include "../../renderer/shader/Program.h"
-#include "../../renderer/Texture.h"
+#include "scene/Scene.h"
+#include "renderer/VertexArray.h"
+#include "renderer/shader/Program.h"
+#include "renderer/Texture.h"
 
 namespace Engine {
     class Application;

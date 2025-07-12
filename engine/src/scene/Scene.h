@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 namespace Engine::Renderer {
     class Renderer;
 }

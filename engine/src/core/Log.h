@@ -10,9 +10,7 @@
 
 #ifdef NDEBUG
 #define LOG(message) ()
-#define LOG_NL(message) ()
 #define LOG_ERR(message) ()
-#define LOG_ERR_NL(message) ()
 
 #else
 #include <iostream>

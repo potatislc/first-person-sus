@@ -11,9 +11,9 @@
 #include "../../renderer/shader/Parser.h"
 
 
-Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{"../engine/res/shader/test/CubeTest2.glsl"}},
+Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES_PATH"/shader/test/CubeTest2.glsl"}},
                                 m_texture{
-                                    Renderer::Texture::createGlTexture("../engine/res/texture/Wall.png")
+                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall.png")
                                 } {
     const Renderer::Buffer::Vertex::Layout layout{
         *s_cubePositions.data(), *s_cubeColors.data(), *s_cubeUVs.data(), *s_cubeNormals.data()

@@ -4,9 +4,9 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
 
-#include "../renderer/GlRenderer.h"
-#include "../scene/test/Test.h"
-#include "../scene/test/Cube.h"
+#include "renderer/GlRenderer.h"
+#include "scene/test/Test.h"
+#include "scene/test/Cube.h"
 
 Engine::Application* Engine::Application::s_instance{};
 
