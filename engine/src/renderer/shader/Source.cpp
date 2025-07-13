@@ -15,8 +15,8 @@ void Engine::Renderer::Shader::Source::destroy() {
 }
 
 void Engine::Renderer::Shader::Source::compile() {
-    if (!hasValidSource()) {
-        LOG_ERR("Shader compilation failed: " << "Invalid source\n");
+    if (m_type == 0) {
+        LOG_ERR("Shader compilation failed: " << "Shader type is 0\n");
         return;
     }
 

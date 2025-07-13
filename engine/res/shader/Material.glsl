@@ -5,4 +5,4 @@ struct Material {
     float shininess;
 };
 
-uniform Material u_material;
+// uniform Material u_material;

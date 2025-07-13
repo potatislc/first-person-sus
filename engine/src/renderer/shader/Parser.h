@@ -16,7 +16,7 @@ namespace Engine::Renderer::Shader {
 
         Parser& operator=(Parser&&) = delete;
 
-        ~Parser() = default;
+        ~Parser();
 
         explicit Parser(const std::string& filePath);
 
@@ -27,7 +27,7 @@ namespace Engine::Renderer::Shader {
         }
 
     private:
-        std::ifstream m_stream;
+        std::ifstream m_istream;
         uint32_t m_nextShaderType{};
     };
 }

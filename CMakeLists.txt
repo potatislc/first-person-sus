@@ -60,7 +60,7 @@ add_executable(${EXE_NAME} engine/src/example/main.cpp
         engine/src/renderer/GlRenderer.cpp
         engine/src/renderer/shader/Source.cpp
         engine/src/renderer/shader/Program.cpp
-        engine/src/renderer/shader/Parser.cpp
+        # engine/src/renderer/shader/Parser.cpp
         engine/src/renderer/buffer/Vertex.cpp
         engine/src/renderer/buffer/Index.cpp
         engine/src/renderer/VertexArray.cpp
@@ -73,7 +73,8 @@ add_executable(${EXE_NAME} engine/src/example/main.cpp
         engine/src/scene/node/Node.cpp
         engine/src/scene/test/Cube.cpp
         engine/src/renderer/Camera.cpp
-        engine/src/scene/test/Cube2.cpp)
+        engine/src/scene/test/Cube2.cpp
+        engine/src/renderer/shader/Parser2.cpp)
 
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend assimp::assimp)
 

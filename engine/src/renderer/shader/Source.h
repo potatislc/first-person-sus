@@ -52,12 +52,8 @@ namespace Engine::Renderer::Shader {
             destroy();
         }
 
-        [[nodiscard]] bool hasValidSource() const {
-            return !m_source.empty() && m_type != 0;
-        }
-
         [[nodiscard]] bool isCompiled() const {
-            return hasValidSource() && m_id != 0 && m_type != 0;
+            return !m_source.empty() && m_id != 0 && m_type != 0;
         }
 
         void compile();
@@ -75,7 +71,7 @@ namespace Engine::Renderer::Shader {
         }
 
         explicit operator bool() const {
-            return hasValidSource();
+            return !m_source.empty();
         }
 
         [[nodiscard]] const std::vector<Uniform>& getUniforms() const;

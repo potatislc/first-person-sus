@@ -18,12 +18,16 @@ struct StringReplace {
 
 static constexpr StringReplace engineResPath{.from = "ENGINE_RES_PATH", .to = ENGINE_RES_PATH};
 
-Engine::Renderer::Shader::Parser::Parser(const std::string& filePath) : m_stream{filePath} {
-    if (!m_stream.is_open()) {
+Engine::Renderer::Shader::Parser::~Parser() {
+    m_istream.close();
+}
+
+Engine::Renderer::Shader::Parser::Parser(const std::string& filePath) : m_istream{filePath} {
+    if (!m_istream.is_open()) {
         LOG_ERR("Invalid shader source path: " << filePath << '\n');
     }
 
-    ASSERT(m_stream.is_open());
+    ASSERT(m_istream.is_open());
 }
 
 // Maybe used for other parsers in the future
@@ -47,7 +51,7 @@ public:
         }*/
 
         if (const auto commentStart = m_line.find(s_supportedCommentStyle); commentStart != std::string::npos) {
-            m_line = m_line.substr(commentStart);
+            m_line = m_line.substr(0, commentStart);
         }
 
         return validLine;
@@ -80,6 +84,17 @@ private:
     size_t m_lineCount{};
 };
 
+[[nodiscard]] static bool processUniform(const ParseLine& parseLine,
+                                         std::vector<Engine::Renderer::Shader::Uniform>& uniforms) {
+    if (parseLine.getString().starts_with("uniform ")) {
+        const auto uniformName = parseLine.getLastToken();
+        uniforms.emplace_back(uniformName);
+        return true;
+    }
+
+    return false;
+}
+
 Engine::Renderer::Shader::Source Engine::Renderer::Shader::Parser::operator()() {
     auto fail = [this](const ParseLine& parseLine, const std::string& description) {
         LOG_ERR("Failed to parse shader source: " << description << " At line "
@@ -87,7 +102,7 @@ Engine::Renderer::Shader::Source Engine::Renderer::Shader::Parser::operator()() 
         return Source{};
     };
 
-    ParseLine parseLine{m_stream};
+    ParseLine parseLine{m_istream};
     std::stringstream resStream;
     uint32_t shaderType = m_nextShaderType;
     std::vector<Uniform> uniforms;
@@ -111,14 +126,11 @@ Engine::Renderer::Shader::Source Engine::Renderer::Shader::Parser::operator()() 
             continue;
         }
 
-        // Make it recursive?
         if (parseLine.getString().starts_with("#include ")) {
             std::string includePath = parseLine.getLastToken();
             if (const size_type pos = includePath.find(engineResPath.from); pos != std::string::npos) {
                 includePath.replace(pos, std::strlen(engineResPath.from), engineResPath.to);
             }
-
-            LOG(includePath << '\n');
 
             std::ifstream includeStream{includePath};
             if (!includeStream.is_open()) {
@@ -128,10 +140,7 @@ Engine::Renderer::Shader::Source Engine::Renderer::Shader::Parser::operator()() 
 
             ParseLine parseIncludeLine{includeStream};
             while (parseIncludeLine.next()) {
-                /*if (parseLine.getString().starts_with("#include ")) {
-                    // Call again
-                }*/
-
+                [[maybe_unused]] const auto uniformFound{processUniform(parseIncludeLine, uniforms)};
                 resStream << parseIncludeLine.getString() << '\n';
             }
 
@@ -139,9 +148,7 @@ Engine::Renderer::Shader::Source Engine::Renderer::Shader::Parser::operator()() 
             continue;
         }
 
-        if (parseLine.getString().starts_with("uniform ")) {
-            uniforms.emplace_back(parseLine.getLastToken());
-        }
+        [[maybe_unused]] const auto uniformFound{processUniform(parseLine, uniforms)};
 
         resStream << parseLine.getString() << '\n';
     }
