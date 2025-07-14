@@ -20,17 +20,17 @@ Shader::Parser::~Parser() {
     m_istream.close();
 }
 
-Shader::Parser::Parser(const std::string& filePath, const std::shared_ptr<ShaderDependencySet>& includedPaths,
-                       const std::shared_ptr<ShaderStructsMap>& shaderStructs) : m_filePath{filePath},
-    m_istream{filePath}, m_includedPaths{includedPaths},
-    m_shaderStructs(shaderStructs) {
+Shader::Parser::Parser(const std::string& filePath, const std::shared_ptr<ParseCache>& parseCache) : m_filePath{
+        filePath
+    },
+    m_istream{filePath}, m_parseCache{parseCache} {
     if (!m_istream.is_open()) {
         LOG_ERR("Invalid shader source path: " << filePath << '\n');
     }
 
     ASSERT(m_istream.is_open());
 
-    m_includedPaths->emplace(filePath);
+    m_parseCache->includedPaths.emplace(filePath);
 }
 
 static void removeLineComment(std::string& line) {
@@ -102,12 +102,8 @@ static void findAndRemoveTokens(std::string& line, Args&&... tokens) {
 
 Shader::Source Shader::Parser::buildSource(const uint32_t shaderType, const std::string& sourceString,
                                            const std::vector<Uniform>& uniforms) const {
-    if (m_includedPaths.use_count() == 1) {
-        m_includedPaths->clear();
-    }
-
-    if (m_shaderStructs.use_count() == 1) {
-        m_shaderStructs->clear();
+    if (m_parseCache.use_count() == 1) {
+        m_parseCache->clear();
     }
 
     return Source{shaderType, sourceString, uniforms};
@@ -140,14 +136,14 @@ Shader::Source Shader::Parser::operator()() {
 
                 if (it->ends_with(';')) {
                     const auto trimmedToken = it->substr(0, it->find_first_of(';'));
-                    (*m_shaderStructs)[shaderStructTypeName].emplace_back(trimmedToken);
+                    m_parseCache->shaderStructs[shaderStructTypeName].emplace_back(trimmedToken);
 
                     ++it;
                     continue;
                 }
 
                 if (const auto nextIt = it + 1; nextIt != tokens.end() && nextIt->starts_with(';')) {
-                    (*m_shaderStructs)[shaderStructTypeName].emplace_back(*it);
+                    m_parseCache->shaderStructs[shaderStructTypeName].emplace_back(*it);
                 }
 
                 ++it;
@@ -173,8 +169,8 @@ Shader::Source Shader::Parser::operator()() {
                 const auto uniformType{std::string{tokens[i + 1]}};
                 const auto uniformName{std::string{tokens[i + 2]}};
 
-                if (m_shaderStructs->contains(uniformType)) {
-                    for (const auto& memberName: (*m_shaderStructs)[uniformType]) {
+                if (m_parseCache->shaderStructs.contains(uniformType)) {
+                    for (const auto& memberName: m_parseCache->shaderStructs[uniformType]) {
                         uniforms.emplace_back(uniformName + "." + memberName);
                     }
                 } else {
@@ -186,7 +182,7 @@ Shader::Source Shader::Parser::operator()() {
             if (token == "#include") {
                 const auto nextTokenCopy{std::string{tokens[i + 1]}};
 
-                if (m_includedPaths->contains(nextTokenCopy)) {
+                if (m_parseCache->includedPaths.contains(nextTokenCopy)) {
                     findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
                     continue;
                 }
@@ -196,7 +192,7 @@ Shader::Source Shader::Parser::operator()() {
                     includePath.replace(0, std::strlen(engineResPath.from), engineResPath.to);
                 }
 
-                Parser includeParser{includePath, m_includedPaths, m_shaderStructs};
+                Parser includeParser{includePath, m_parseCache};
                 while (const auto source{includeParser.next()}) {
                     resultStream << source.getSource();
                     uniforms.insert(uniforms.end(), source.getUniforms().begin(), source.getUniforms().end());

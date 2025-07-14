@@ -12,8 +12,13 @@ namespace Engine::Renderer::Shader {
         using ShaderDependencySet = std::unordered_set<std::string>;
 
         struct ParseCache {
+            void clear() {
+                includedPaths.clear();
+                shaderStructs.clear();
+            }
+
             ShaderDependencySet includedPaths;
-            std::shared_ptr<ShaderStructsMap> shaderStructs;
+            ShaderStructsMap shaderStructs;
         };
 
         Parser(
@@ -31,9 +36,7 @@ namespace Engine::Renderer::Shader {
         ~Parser();
 
         explicit Parser(const std::string& filePath,
-                        const std::shared_ptr<std::unordered_set<std::string> >& includedPaths = std::make_shared<
-                            ShaderDependencySet>(),
-                        const std::shared_ptr<ShaderStructsMap>& shaderStructs = std::make_shared<ShaderStructsMap>());
+                        const std::shared_ptr<ParseCache>& parseCache = std::make_shared<ParseCache>());
 
         void logParseFail(size_t lineNbr, std::string_view lineStr, const std::string& description) const;
 
@@ -50,8 +53,6 @@ namespace Engine::Renderer::Shader {
         std::string m_filePath;
         std::ifstream m_istream;
         uint32_t m_nextShaderType{Source::s_shaderHeader};
-        std::shared_ptr<ShaderDependencySet> m_includedPaths;
-        std::shared_ptr<ShaderStructsMap> m_shaderStructs;
-        // std::shared_ptr<ParseCache> m_parseCache;
+        std::shared_ptr<ParseCache> m_parseCache;
     };
 }
