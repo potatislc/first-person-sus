@@ -21,9 +21,7 @@ namespace Engine::Renderer::Shader {
             ShaderStructsMap shaderStructs;
         };
 
-        Parser(
-        )
-        = delete;
+        Parser() = delete;
 
         Parser(const Parser&) = delete;
 

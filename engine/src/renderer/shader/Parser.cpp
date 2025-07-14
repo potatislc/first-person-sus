@@ -109,12 +109,31 @@ Shader::Source Shader::Parser::buildSource(const uint32_t shaderType, const std:
     return Source{shaderType, sourceString, uniforms};
 }
 
+class LineStream {
+public:
+    void operator<<(const std::string& line) {
+        resultStream << line;
+        m_lineNbr++;
+    }
+
+    [[nodiscard]] const std::stringstream& getResult() const {
+        return resultStream;
+    }
+
+    [[nodiscard]] size_t getLineNbr() const {
+        return m_lineNbr;
+    }
+
+private:
+    std::stringstream resultStream;
+    size_t m_lineNbr{1};
+};
+
 Shader::Source Shader::Parser::operator()() {
-    size_t lineNbr{1};
     std::string line;
+    LineStream lineStream;
 
     uint32_t shaderType{m_nextShaderType};
-    std::stringstream resultStream;
     std::vector<Uniform> uniforms;
     std::string shaderStructTypeName;
 
@@ -153,8 +172,7 @@ Shader::Source Shader::Parser::operator()() {
         const auto tokens{tokenize(line)};
 
         if (tokens.size() <= 1) {
-            resultStream << line << '\n';
-            lineNbr++;
+            lineStream << line + '\n';
             continue;
         }
 
@@ -163,7 +181,8 @@ Shader::Source Shader::Parser::operator()() {
 
             if (token == "uniform") {
                 if (i + 2 >= tokens.size()) {
-                    logParseFail(lineNbr, line, "Incomplete uniform declaration. Uniform name not found.");
+                    logParseFail(lineStream.getLineNbr(), line,
+                                 "Incomplete uniform declaration. Uniform name not found.");
                 }
 
                 const auto uniformType{std::string{tokens[i + 1]}};
@@ -194,7 +213,7 @@ Shader::Source Shader::Parser::operator()() {
 
                 Parser includeParser{includePath, m_parseCache};
                 while (const auto source{includeParser.next()}) {
-                    resultStream << source.getSource();
+                    lineStream << source.getSource();
                     uniforms.insert(uniforms.end(), source.getUniforms().begin(), source.getUniforms().end());
                 }
 
@@ -207,14 +226,14 @@ Shader::Source Shader::Parser::operator()() {
 
                 if (shaderType != Source::s_shaderHeader) {
                     m_nextShaderType = toGlShaderType(nextTokenCopy);
-                    LOG(resultStream.str());
-                    return buildSource(shaderType, resultStream.str(), uniforms);
+                    LOG(lineStream.getResult().str());
+                    return buildSource(shaderType, lineStream.getResult().str(), uniforms);
                 }
 
                 shaderType = toGlShaderType(nextTokenCopy);
 
                 if (shaderType == Source::s_shaderHeader) {
-                    logParseFail(lineNbr, line,
+                    logParseFail(lineStream.getLineNbr(), line,
                                  "Shader type evaluated to 0 (shader header), which is not a compilable shader type. ");
                     return Source{};
                 }
@@ -228,13 +247,12 @@ Shader::Source Shader::Parser::operator()() {
             }
         }
 
-        resultStream << line << '\n';
-        lineNbr++;
+        lineStream << line + '\n';
     }
 
     if (shaderType != Source::s_shaderHeader) {
-        LOG(resultStream.str());
+        LOG(lineStream.getResult().str());
     }
 
-    return buildSource(shaderType, resultStream.str(), uniforms);
+    return buildSource(shaderType, lineStream.getResult().str(), uniforms);
 }
