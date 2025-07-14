@@ -1,14 +1,12 @@
-#include "Parser.h"
-
-#include <algorithm>
-#include <cassert>
-#include <fstream>
-#include <iostream>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 #include <glad/glad.h>
 
-#include  "core/Assert.h"
+#include "Parser.h"
+#include "core/Assert.h"
 
+namespace Shader = Engine::Renderer::Shader;
 using size_type = std::string::size_type;
 
 struct StringReplace {
@@ -18,11 +16,11 @@ struct StringReplace {
 
 static constexpr StringReplace engineResPath{.from = "ENGINE_RES_PATH", .to = ENGINE_RES_PATH};
 
-Engine::Renderer::Shader::Parser::~Parser() {
+Shader::Parser::~Parser() {
     m_istream.close();
 }
 
-Engine::Renderer::Shader::Parser::Parser(const std::string& filePath) : m_istream{filePath} {
+Shader::Parser::Parser(const std::string& filePath) : m_istream{filePath} {
     if (!m_istream.is_open()) {
         LOG_ERR("Invalid shader source path: " << filePath << '\n');
     }
@@ -30,134 +28,204 @@ Engine::Renderer::Shader::Parser::Parser(const std::string& filePath) : m_istrea
     ASSERT(m_istream.is_open());
 }
 
-// Maybe used for other parsers in the future
-class ParseLine {
-public:
-    explicit ParseLine(std::istream& is) : m_istream(&is) {
+static void removeLineComment(std::string& line) {
+    static constexpr auto commentChar{"//"};
+
+    if (const auto commentStart = line.find(commentChar); commentStart != std::string::npos) {
+        line.resize(commentStart);
     }
-
-    [[nodiscard]] bool isEmpty() const {
-        return m_line.empty();
-    }
-
-    bool next() {
-        const auto validLine = static_cast<bool>(std::getline(*m_istream, m_line));
-        m_lineCount++;
-
-        // Remove blank lines? Who Cares?
-        /*while (std::ranges::all_of(m_line,
-                                   [](const unsigned char c) { return std::isspace(c); })) {
-            // Idk
-        }*/
-
-        if (const auto commentStart = m_line.find(s_supportedCommentStyle); commentStart != std::string::npos) {
-            m_line = m_line.substr(0, commentStart);
-        }
-
-        return validLine;
-    }
-
-    [[nodiscard]] const std::string& getString() const {
-        return m_line;
-    }
-
-    [[nodiscard]] size_t getLineCount() const {
-        return m_lineCount;
-    }
-
-    // Ignores ';'
-    [[nodiscard]] std::string getLastToken() const {
-        auto token = m_line.substr(m_line.find_last_of(' ') + 1);
-
-        if (const size_t end = token.find_first_of(';'); end != std::string::npos) {
-            token.erase(end);
-        }
-
-        return token;
-    }
-
-private:
-    static constexpr auto s_supportedCommentStyle{"//"};
-
-    std::istream* m_istream{};
-    std::string m_line;
-    size_t m_lineCount{};
-};
-
-[[nodiscard]] static bool processUniform(const ParseLine& parseLine,
-                                         std::vector<Engine::Renderer::Shader::Uniform>& uniforms) {
-    if (parseLine.getString().starts_with("uniform ")) {
-        const auto uniformName = parseLine.getLastToken();
-        uniforms.emplace_back(uniformName);
-        return true;
-    }
-
-    return false;
 }
 
-Engine::Renderer::Shader::Source Engine::Renderer::Shader::Parser::operator()() {
-    auto fail = [this](const ParseLine& parseLine, const std::string& description) {
-        LOG_ERR("Failed to parse shader source: " << description << " At line "
-            << parseLine.getLineCount() << ". " << "[LINE SOURCE]: " << parseLine.getString() << '\n');
-        return Source{};
-    };
+static void ltrim(std::string_view& s, const std::string& predicate = " \t\n\r\f\v;") {
+    s.remove_prefix(std::min(s.find_first_not_of(predicate), s.size()));
+}
 
-    ParseLine parseLine{m_istream};
-    std::stringstream resStream;
-    uint32_t shaderType = m_nextShaderType;
+struct Token {
+    std::string_view name;
+    size_t lineIndex;
+};
+
+using Statement = std::vector<Token>;
+
+static std::vector<std::string_view> tokenize(std::string_view line, const std::string& predicate = " \t\n\r\f\v;") {
+    std::vector<std::string_view> tokens;
+    ltrim(line);
+
+    while (!line.empty()) {
+        if (const size_type tokenEnd = line.find_first_of(predicate); tokenEnd != std::string::npos) {
+            tokens.emplace_back(line.substr(0, tokenEnd));
+            line.remove_prefix(tokenEnd);
+        } else {
+            tokens.emplace_back(line);
+            break;
+        }
+
+        ltrim(line);
+    }
+
+    return tokens;
+}
+
+uint32_t toGlShaderType(const std::string_view& type) {
+    if (type == "vertex") {
+        return GL_VERTEX_SHADER;
+    }
+
+    if (type == "fragment") {
+        return GL_FRAGMENT_SHADER;
+    }
+
+    return {};
+}
+
+static void findAndReplace(std::string& str, const std::string& toFind, const std::string& toReplace) {
+    if (const size_type pos = str.find(toFind); pos != std::string::npos) {
+        str.replace(pos, toFind.size(), toReplace);
+    }
+}
+
+static void logParseFail(const size_t lineNbr, const std::string_view lineStr, const std::string& description) {
+    LOG_ERR("Failed to parse shader source: " << description << " At line "
+        << lineNbr << ". " << "[LINE SOURCE]: " << lineStr << '\n');
+}
+
+template<typename... Args>
+static void findAndRemoveTokens(std::string& line, Args&&... tokens) {
+    (findAndReplace(line, std::forward<Args>(tokens), ""), ...);
+}
+
+Shader::Source Shader::Parser::operator()() {
+    size_t lineNbr{1};
+    std::string line;
+
+    uint32_t shaderType{m_nextShaderType};
+    std::stringstream resultStream;
     std::vector<Uniform> uniforms;
+    std::unordered_set<std::string> includedPaths;
 
-    while (parseLine.next()) {
-        if (parseLine.getString().starts_with("#shader")) {
-            if (parseLine.getString().contains("vertex")) {
-                m_nextShaderType = GL_VERTEX_SHADER;
-            } else if (parseLine.getString().contains("fragment")) {
-                m_nextShaderType = GL_FRAGMENT_SHADER;
-            } else {
-                return fail(parseLine, "Could not deduce shader type.");
-            }
+    std::unordered_map<std::string, std::vector<std::string> > shaderStructs;
+    std::string structScopeTypeName;
 
-            if (shaderType != 0) {
-                break;
-            }
-
-            shaderType = m_nextShaderType;
-
+    while (std::getline(m_istream, line)) {
+        removeLineComment(line);
+        if (line.empty()) {
             continue;
         }
 
-        if (parseLine.getString().starts_with("#include ")) {
-            std::string includePath = parseLine.getLastToken();
-            if (const size_type pos = includePath.find(engineResPath.from); pos != std::string::npos) {
-                includePath.replace(pos, std::strlen(engineResPath.from), engineResPath.to);
-            }
+        if (!structScopeTypeName.empty()) {
+            const auto tokens{tokenize(line, " \t\n\f\v")};
 
-            std::ifstream includeStream{includePath};
-            if (!includeStream.is_open()) {
-                includeStream.close();
-                return fail(parseLine, "Invalid include path: " + includePath + ".");
-            }
+            auto it = tokens.begin();
+            while (it != tokens.end()) {
+                if (it->contains('}')) {
+                    structScopeTypeName = "";
+                    break;
+                }
 
-            ParseLine parseIncludeLine{includeStream};
-            while (parseIncludeLine.next()) {
-                [[maybe_unused]] const auto uniformFound{processUniform(parseIncludeLine, uniforms)};
-                resStream << parseIncludeLine.getString() << '\n';
-            }
+                if (it->ends_with(';')) {
+                    const auto trimmedToken = it->substr(0, it->find_first_of(';'));
+                    shaderStructs[structScopeTypeName].emplace_back(trimmedToken);
 
-            includeStream.close();
+                    ++it;
+                    continue;
+                }
+
+
+                if (const auto nextIt = it + 1; nextIt != tokens.end() && nextIt->starts_with(';')) {
+                    shaderStructs[structScopeTypeName].emplace_back(*it);
+                }
+
+                ++it;
+            }
+        }
+
+        const auto tokens{tokenize(line)};
+
+        if (tokens.size() <= 1) {
+            resultStream << line << '\n';
+            lineNbr++;
             continue;
         }
 
-        [[maybe_unused]] const auto uniformFound{processUniform(parseLine, uniforms)};
+        for (size_t i{}; i < tokens.size() - 1; i++) {
+            const auto token = tokens[i];
 
-        resStream << parseLine.getString() << '\n';
+            if (token == "uniform") {
+                if (i + 2 >= tokens.size()) {
+                    logParseFail(lineNbr, line, "Incomplete uniform declaration. Uniform name not found.");
+                }
+
+                const auto uniformType{std::string{tokens[i + 1]}};
+                const auto uniformName{std::string{tokens[i + 2]}};
+
+                if (shaderStructs.contains(uniformType)) {
+                    for (const auto& memberName: shaderStructs[uniformType]) {
+                        uniforms.emplace_back(uniformName + "." + memberName);
+                    }
+                } else {
+                    uniforms.emplace_back(uniformName);
+                }
+                continue;
+            }
+
+            if (token == "#include") {
+                const auto nextTokenCopy{std::string{tokens[i + 1]}};
+
+                if (includedPaths.contains(nextTokenCopy)) {
+                    findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
+                    continue;
+                }
+
+                includedPaths.emplace(nextTokenCopy);
+
+                auto includePath{nextTokenCopy};
+                if (includePath.starts_with(engineResPath.from)) {
+                    includePath.replace(0, std::strlen(engineResPath.from), engineResPath.to);
+                }
+
+                Parser includeParser{includePath};
+                while (const auto source{includeParser.next()}) {
+                    resultStream << source.getSource();
+                    uniforms.insert(uniforms.end(), source.getUniforms().begin(), source.getUniforms().end());
+                }
+
+                findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
+                continue;
+            }
+
+            if (token == "#shader") {
+                const auto nextTokenCopy{std::string{tokens[i + 1]}};
+
+                if (shaderType != Source::s_shaderHeader) {
+                    m_nextShaderType = toGlShaderType(nextTokenCopy);
+                    LOG(resultStream.str());
+                    return Source{shaderType, resultStream.str(), uniforms};
+                }
+
+                shaderType = toGlShaderType(nextTokenCopy);
+
+                if (shaderType == Source::s_shaderHeader) {
+                    logParseFail(lineNbr, line,
+                                 "Shader type evaluated to 0 (shader header), which is not a compilable shader type. ");
+                    return Source{};
+                }
+
+                findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
+                continue;
+            }
+
+            if (token == "struct") {
+                structScopeTypeName = std::string{tokens[i + 1]};
+            }
+        }
+
+        resultStream << line << '\n';
+        lineNbr++;
     }
 
-    if (shaderType == 0) {
-        return fail(parseLine, "Shader type is not set.");
+    if (shaderType != Source::s_shaderHeader) {
+        LOG(resultStream.str());
     }
 
-    LOG(resStream.str());
-
-    return Source{shaderType, resStream.str(), uniforms};
+    return Source{shaderType, resultStream.str(), uniforms};
 }
