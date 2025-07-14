@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <unordered_set>
 #include <unordered_map>
 #include "Source.h"
 
@@ -8,8 +9,16 @@ namespace Engine::Renderer::Shader {
     class Parser {
     public:
         using ShaderStructsMap = std::unordered_map<std::string, std::vector<std::string> >;
+        using ShaderDependencySet = std::unordered_set<std::string>;
 
-        Parser() = delete;
+        struct ParseCache {
+            ShaderDependencySet includedPaths;
+            std::shared_ptr<ShaderStructsMap> shaderStructs;
+        };
+
+        Parser(
+        )
+        = delete;
 
         Parser(const Parser&) = delete;
 
@@ -22,9 +31,14 @@ namespace Engine::Renderer::Shader {
         ~Parser();
 
         explicit Parser(const std::string& filePath,
+                        const std::shared_ptr<std::unordered_set<std::string> >& includedPaths = std::make_shared<
+                            ShaderDependencySet>(),
                         const std::shared_ptr<ShaderStructsMap>& shaderStructs = std::make_shared<ShaderStructsMap>());
 
         void logParseFail(size_t lineNbr, std::string_view lineStr, const std::string& description) const;
+
+        [[nodiscard]] Source buildSource(uint32_t shaderType, const std::string& sourceString,
+                                         const std::vector<Uniform>& uniforms) const;
 
         Source operator()();
 
@@ -36,7 +50,8 @@ namespace Engine::Renderer::Shader {
         std::string m_filePath;
         std::ifstream m_istream;
         uint32_t m_nextShaderType{Source::s_shaderHeader};
-
-        std::shared_ptr<std::unordered_map<std::string, std::vector<std::string> > > m_shaderStructs;
+        std::shared_ptr<ShaderDependencySet> m_includedPaths;
+        std::shared_ptr<ShaderStructsMap> m_shaderStructs;
+        // std::shared_ptr<ParseCache> m_parseCache;
     };
 }

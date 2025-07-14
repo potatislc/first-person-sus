@@ -20,15 +20,17 @@ Shader::Parser::~Parser() {
     m_istream.close();
 }
 
-Shader::Parser::Parser(const std::string& filePath,
+Shader::Parser::Parser(const std::string& filePath, const std::shared_ptr<ShaderDependencySet>& includedPaths,
                        const std::shared_ptr<ShaderStructsMap>& shaderStructs) : m_filePath{filePath},
-    m_istream{filePath},
+    m_istream{filePath}, m_includedPaths{includedPaths},
     m_shaderStructs(shaderStructs) {
     if (!m_istream.is_open()) {
         LOG_ERR("Invalid shader source path: " << filePath << '\n');
     }
 
     ASSERT(m_istream.is_open());
+
+    m_includedPaths->emplace(filePath);
 }
 
 static void removeLineComment(std::string& line) {
@@ -98,6 +100,19 @@ static void findAndRemoveTokens(std::string& line, Args&&... tokens) {
     (findAndReplace(line, std::forward<Args>(tokens), ""), ...);
 }
 
+Shader::Source Shader::Parser::buildSource(const uint32_t shaderType, const std::string& sourceString,
+                                           const std::vector<Uniform>& uniforms) const {
+    if (m_includedPaths.use_count() == 1) {
+        m_includedPaths->clear();
+    }
+
+    if (m_shaderStructs.use_count() == 1) {
+        m_shaderStructs->clear();
+    }
+
+    return Source{shaderType, sourceString, uniforms};
+}
+
 Shader::Source Shader::Parser::operator()() {
     size_t lineNbr{1};
     std::string line;
@@ -105,7 +120,6 @@ Shader::Source Shader::Parser::operator()() {
     uint32_t shaderType{m_nextShaderType};
     std::stringstream resultStream;
     std::vector<Uniform> uniforms;
-    std::unordered_set<std::string> includedPaths;
     std::string shaderStructTypeName;
 
     while (std::getline(m_istream, line)) {
@@ -131,7 +145,6 @@ Shader::Source Shader::Parser::operator()() {
                     ++it;
                     continue;
                 }
-
 
                 if (const auto nextIt = it + 1; nextIt != tokens.end() && nextIt->starts_with(';')) {
                     (*m_shaderStructs)[shaderStructTypeName].emplace_back(*it);
@@ -173,19 +186,17 @@ Shader::Source Shader::Parser::operator()() {
             if (token == "#include") {
                 const auto nextTokenCopy{std::string{tokens[i + 1]}};
 
-                if (includedPaths.contains(nextTokenCopy)) {
+                if (m_includedPaths->contains(nextTokenCopy)) {
                     findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
                     continue;
                 }
-
-                includedPaths.emplace(nextTokenCopy);
 
                 auto includePath{nextTokenCopy};
                 if (includePath.starts_with(engineResPath.from)) {
                     includePath.replace(0, std::strlen(engineResPath.from), engineResPath.to);
                 }
 
-                Parser includeParser{includePath, m_shaderStructs};
+                Parser includeParser{includePath, m_includedPaths, m_shaderStructs};
                 while (const auto source{includeParser.next()}) {
                     resultStream << source.getSource();
                     uniforms.insert(uniforms.end(), source.getUniforms().begin(), source.getUniforms().end());
@@ -201,7 +212,7 @@ Shader::Source Shader::Parser::operator()() {
                 if (shaderType != Source::s_shaderHeader) {
                     m_nextShaderType = toGlShaderType(nextTokenCopy);
                     LOG(resultStream.str());
-                    return Source{shaderType, resultStream.str(), uniforms};
+                    return buildSource(shaderType, resultStream.str(), uniforms);
                 }
 
                 shaderType = toGlShaderType(nextTokenCopy);
@@ -218,12 +229,6 @@ Shader::Source Shader::Parser::operator()() {
 
             if (token == "struct") {
                 shaderStructTypeName = std::string{tokens[i + 1]};
-
-                // Allow redefinitions since it is possible that the definitions are in different shader
-                // sources within the same file. Otherwise, OpenGl will log the error anyway.
-                if (m_shaderStructs->contains(shaderStructTypeName)) {
-                    (*m_shaderStructs)[shaderStructTypeName].clear();
-                }
             }
         }
 
@@ -235,5 +240,5 @@ Shader::Source Shader::Parser::operator()() {
         LOG(resultStream.str());
     }
 
-    return Source{shaderType, resultStream.str(), uniforms};
+    return buildSource(shaderType, resultStream.str(), uniforms);
 }
