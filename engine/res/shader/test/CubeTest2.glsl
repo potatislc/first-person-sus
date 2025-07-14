@@ -1,6 +1,7 @@
 #shader vertex
 #version 330 core
 #include ENGINE_RES_PATH/shader/Mvp.glsl
+#include ENGINE_RES_PATH/shader/Mvp.glsl
 
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_color;
@@ -33,28 +34,32 @@ out vec4 fragColor;
 
 uniform sampler2D u_texture1;
 uniform vec3 u_lightColor;
-uniform float u_ambientLightStrength;
 uniform vec3 u_lightPos;
 uniform vec3 u_viewPos;
-uniform float u_specularity;
 
 void main() {
     vec4 texColor = texture(u_texture1, v_texCoord);
 
+    // Normalize normal and calculate lighting directions
     vec3 normal = normalize(v_normal);
     vec3 lightDir = normalize(u_lightPos - v_fragPos);
-
-    vec3 ambient = u_lightColor * u_ambientLightStrength;
-
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * u_lightColor;
-
     vec3 viewDir = normalize(u_viewPos - v_fragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = u_specularity * spec * u_lightColor;
 
-    vec4 result = texColor * vec4(v_vertexColor * (ambient + diffuse + specular), 1.0);
+    // Ambient lighting
+    vec3 ambient = u_material.ambientColor * u_lightColor;
+
+    // Diffuse lighting
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * u_material.diffuseColor * u_lightColor;
+
+    // Specular lighting
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_material.shininess);
+    vec3 specular = u_material.specularColor * spec * u_lightColor;
+
+    // Combine and apply texture and vertex color
+    vec3 lighting = ambient + diffuse + specular;
+    vec4 result = texColor * vec4(v_vertexColor * lighting, 1.0);
     fragColor = result;
 }
 

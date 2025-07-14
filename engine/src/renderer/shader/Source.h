@@ -13,9 +13,13 @@ namespace Engine::Renderer {
 namespace Engine::Renderer::Shader {
     class Source {
     public:
+        using Type = uint32_t;
+
+        static constexpr Type s_shaderHeader{0};
+
         Source() = default;
 
-        Source(const uint32_t type, std::string source, std::vector<Uniform> uniforms = {}) : m_source{
+        Source(const Type type, std::string source, std::vector<Uniform> uniforms = {}) : m_source{
                 std::move(source)
             }, m_uniforms{
                 std::move(uniforms)
@@ -80,6 +84,6 @@ namespace Engine::Renderer::Shader {
         std::string m_source;
         std::vector<Uniform> m_uniforms;
         Id m_id{};
-        uint32_t m_type{};
+        Type m_type{s_shaderHeader};
     };
 }

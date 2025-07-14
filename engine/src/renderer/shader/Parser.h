@@ -28,6 +28,6 @@ namespace Engine::Renderer::Shader {
 
     private:
         std::ifstream m_istream;
-        uint32_t m_nextShaderType{};
+        uint32_t m_nextShaderType{Source::s_shaderHeader};
     };
 }

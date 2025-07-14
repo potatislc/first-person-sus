@@ -37,9 +37,11 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     m_cubeShader.bind();
     m_cubeShader.setUniform("u_texture1", 0);
     m_cubeShader.setUniform("u_lightColor", glm::vec3{.9f, .5f, .5f});
-    m_cubeShader.setUniform("u_ambientLightStrength", .4f);
     m_cubeShader.setUniform("u_lightPos", glm::vec3{-2.f, 1.f, -1.f});
-    m_cubeShader.setUniform("u_specularity", 1.f);
+    m_cubeShader.setUniform("u_material.ambientColor", glm::vec3{.4f, .4f, .4f});
+    m_cubeShader.setUniform("u_material.specularColor", Math::Vec3::one);
+    m_cubeShader.setUniform("u_material.diffuseColor", Math::Vec3::one);
+    m_cubeShader.setUniform("u_material.shininess", .8f);
 
     m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
 }

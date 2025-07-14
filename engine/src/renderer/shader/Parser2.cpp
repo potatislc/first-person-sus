@@ -1,4 +1,6 @@
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 #include <glad/glad.h>
 
 #include "Parser.h"
@@ -34,8 +36,8 @@ static void removeLineComment(std::string& line) {
     }
 }
 
-static void ltrim(std::string_view& s) {
-    s.remove_prefix(std::min(s.find_first_not_of(" \t\n\r\f\v;"), s.size()));
+static void ltrim(std::string_view& s, const std::string& predicate = " \t\n\r\f\v;") {
+    s.remove_prefix(std::min(s.find_first_not_of(predicate), s.size()));
 }
 
 struct Token {
@@ -45,12 +47,12 @@ struct Token {
 
 using Statement = std::vector<Token>;
 
-static std::vector<std::string_view> tokenize(std::string_view line) {
+static std::vector<std::string_view> tokenize(std::string_view line, const std::string& predicate = " \t\n\r\f\v;") {
     std::vector<std::string_view> tokens;
     ltrim(line);
 
     while (!line.empty()) {
-        if (const size_type tokenEnd = line.find_first_of(" \t\n\r\f\v;"); tokenEnd != std::string::npos) {
+        if (const size_type tokenEnd = line.find_first_of(predicate); tokenEnd != std::string::npos) {
             tokens.emplace_back(line.substr(0, tokenEnd));
             line.remove_prefix(tokenEnd);
         } else {
@@ -82,17 +84,27 @@ static void findAndReplace(std::string& str, const std::string& toFind, const st
     }
 }
 
+static void logParseFail(const size_t lineNbr, const std::string_view lineStr, const std::string& description) {
+    LOG_ERR("Failed to parse shader source: " << description << " At line "
+        << lineNbr << ". " << "[LINE SOURCE]: " << lineStr << '\n');
+}
+
+template<typename... Args>
+static void findAndRemoveTokens(std::string& line, Args&&... tokens) {
+    (findAndReplace(line, std::forward<Args>(tokens), ""), ...);
+}
+
 Shader::Source Shader::Parser::operator()() {
-    size_t lineNumber{1};
+    size_t lineNbr{1};
     std::string line;
 
-    uint32_t shaderType{}; // This probably not needed if you play your cards right
+    uint32_t shaderType{m_nextShaderType};
     std::stringstream resultStream;
     std::vector<Uniform> uniforms;
+    std::unordered_set<std::string> includedPaths;
 
-    if (m_nextShaderType != 0) {
-        shaderType = m_nextShaderType;
-    }
+    std::unordered_map<std::string, std::vector<std::string> > shaderStructs;
+    std::string structScopeTypeName;
 
     while (std::getline(m_istream, line)) {
         removeLineComment(line);
@@ -100,11 +112,38 @@ Shader::Source Shader::Parser::operator()() {
             continue;
         }
 
+        if (!structScopeTypeName.empty()) {
+            const auto tokens{tokenize(line, " \t\n\f\v")};
+
+            auto it = tokens.begin();
+            while (it != tokens.end()) {
+                if (it->contains('}')) {
+                    structScopeTypeName = "";
+                    break;
+                }
+
+                if (it->ends_with(';')) {
+                    const auto trimmedToken = it->substr(0, it->find_first_of(';'));
+                    shaderStructs[structScopeTypeName].emplace_back(trimmedToken);
+
+                    ++it;
+                    continue;
+                }
+
+
+                if (const auto nextIt = it + 1; nextIt != tokens.end() && nextIt->starts_with(';')) {
+                    shaderStructs[structScopeTypeName].emplace_back(*it);
+                }
+
+                ++it;
+            }
+        }
+
         const auto tokens{tokenize(line)};
 
         if (tokens.size() <= 1) {
             resultStream << line << '\n';
-            lineNumber++;
+            lineNbr++;
             continue;
         }
 
@@ -112,55 +151,79 @@ Shader::Source Shader::Parser::operator()() {
             const auto token = tokens[i];
 
             if (token == "uniform") {
-                // Scariest 2 of all time
-                uniforms.emplace_back(std::string{tokens[i + 2]});
+                if (i + 2 >= tokens.size()) {
+                    logParseFail(lineNbr, line, "Incomplete uniform declaration. Uniform name not found.");
+                }
+
+                const auto uniformType{std::string{tokens[i + 1]}};
+                const auto uniformName{std::string{tokens[i + 2]}};
+
+                if (shaderStructs.contains(uniformType)) {
+                    for (const auto& memberName: shaderStructs[uniformType]) {
+                        uniforms.emplace_back(uniformName + "." + memberName);
+                    }
+                } else {
+                    uniforms.emplace_back(uniformName);
+                }
                 continue;
             }
 
             if (token == "#include") {
                 const auto nextTokenCopy{std::string{tokens[i + 1]}};
 
+                if (includedPaths.contains(nextTokenCopy)) {
+                    findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
+                    continue;
+                }
+
+                includedPaths.emplace(nextTokenCopy);
+
                 auto includePath{nextTokenCopy};
                 if (includePath.starts_with(engineResPath.from)) {
                     includePath.replace(0, std::strlen(engineResPath.from), engineResPath.to);
                 }
-
-                findAndReplace(line, std::string{token}, "");
-                findAndReplace(line, nextTokenCopy, "");
 
                 Parser includeParser{includePath};
                 while (const auto source{includeParser.next()}) {
                     resultStream << source.getSource();
                     uniforms.insert(uniforms.end(), source.getUniforms().begin(), source.getUniforms().end());
                 }
+
+                findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
+                continue;
             }
 
             if (token == "#shader") {
-                if (shaderType != 0) {
-                    m_nextShaderType = toGlShaderType(tokens[i + 1]);
+                const auto nextTokenCopy{std::string{tokens[i + 1]}};
+
+                if (shaderType != Source::s_shaderHeader) {
+                    m_nextShaderType = toGlShaderType(nextTokenCopy);
                     LOG(resultStream.str());
                     return Source{shaderType, resultStream.str(), uniforms};
                 }
 
-                shaderType = toGlShaderType(tokens[i + 1]);
+                shaderType = toGlShaderType(nextTokenCopy);
 
-                if (shaderType == 0) {
-                    // Fail!
+                if (shaderType == Source::s_shaderHeader) {
+                    logParseFail(lineNbr, line,
+                                 "Shader type evaluated to 0 (shader header), which is not a compilable shader type. ");
                     return Source{};
                 }
 
-                const auto nextTokenCopy{std::string{tokens[i + 1]}};
-                findAndReplace(line, std::string{token}, "");
-                findAndReplace(line, nextTokenCopy, "");
+                findAndRemoveTokens(line, std::string{token}, nextTokenCopy);
+                continue;
+            }
+
+            if (token == "struct") {
+                structScopeTypeName = std::string{tokens[i + 1]};
             }
         }
 
         resultStream << line << '\n';
-        lineNumber++;
+        lineNbr++;
     }
 
-    // Don't care about simply shader data files only full sources
-    if (shaderType != 0) {
+    if (shaderType != Source::s_shaderHeader) {
         LOG(resultStream.str());
     }
 

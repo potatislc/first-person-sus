@@ -15,8 +15,8 @@ void Engine::Renderer::Shader::Source::destroy() {
 }
 
 void Engine::Renderer::Shader::Source::compile() {
-    if (m_type == 0) {
-        LOG_ERR("Shader compilation failed: " << "Shader type is 0\n");
+    if (m_type == s_shaderHeader) {
+        LOG_ERR("Shader compilation failed: " << "Shaders of type 0 (shader header) cannot be compiled.\n");
         return;
     }
 

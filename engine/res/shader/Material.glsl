@@ -1,8 +1,8 @@
 struct Material {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec3 ambientColor;
+    vec3 diffuseColor;
+    vec3 specularColor;
     float shininess;
 };
 
-// uniform Material u_material;
+uniform Material u_material;
