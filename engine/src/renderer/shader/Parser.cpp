@@ -20,7 +20,10 @@ Shader::Parser::~Parser() {
     m_istream.close();
 }
 
-Shader::Parser::Parser(const std::string& filePath) : m_istream{filePath} {
+Shader::Parser::Parser(const std::string& filePath,
+                       const std::shared_ptr<ShaderStructsMap>& shaderStructs) : m_filePath{filePath},
+    m_istream{filePath},
+    m_shaderStructs(shaderStructs) {
     if (!m_istream.is_open()) {
         LOG_ERR("Invalid shader source path: " << filePath << '\n');
     }
@@ -84,9 +87,10 @@ static void findAndReplace(std::string& str, const std::string& toFind, const st
     }
 }
 
-static void logParseFail(const size_t lineNbr, const std::string_view lineStr, const std::string& description) {
-    LOG_ERR("Failed to parse shader source: " << description << " At line "
-        << lineNbr << ". " << "[LINE SOURCE]: " << lineStr << '\n');
+void Shader::Parser::logParseFail(const size_t lineNbr, const std::string_view lineStr,
+                                  const std::string& description) const {
+    LOG_ERR("Failed to parse shader source: " << description << "Inside file: " << m_filePath << ". At line "
+        << lineNbr << ". [LINE SOURCE]: " << lineStr << '\n');
 }
 
 template<typename... Args>
@@ -102,9 +106,7 @@ Shader::Source Shader::Parser::operator()() {
     std::stringstream resultStream;
     std::vector<Uniform> uniforms;
     std::unordered_set<std::string> includedPaths;
-
-    std::unordered_map<std::string, std::vector<std::string> > shaderStructs;
-    std::string structScopeTypeName;
+    std::string shaderStructTypeName;
 
     while (std::getline(m_istream, line)) {
         removeLineComment(line);
@@ -112,19 +114,19 @@ Shader::Source Shader::Parser::operator()() {
             continue;
         }
 
-        if (!structScopeTypeName.empty()) {
+        if (!shaderStructTypeName.empty()) {
             const auto tokens{tokenize(line, " \t\n\f\v")};
 
             auto it = tokens.begin();
             while (it != tokens.end()) {
                 if (it->contains('}')) {
-                    structScopeTypeName = "";
+                    shaderStructTypeName = "";
                     break;
                 }
 
                 if (it->ends_with(';')) {
                     const auto trimmedToken = it->substr(0, it->find_first_of(';'));
-                    shaderStructs[structScopeTypeName].emplace_back(trimmedToken);
+                    (*m_shaderStructs)[shaderStructTypeName].emplace_back(trimmedToken);
 
                     ++it;
                     continue;
@@ -132,7 +134,7 @@ Shader::Source Shader::Parser::operator()() {
 
 
                 if (const auto nextIt = it + 1; nextIt != tokens.end() && nextIt->starts_with(';')) {
-                    shaderStructs[structScopeTypeName].emplace_back(*it);
+                    (*m_shaderStructs)[shaderStructTypeName].emplace_back(*it);
                 }
 
                 ++it;
@@ -158,8 +160,8 @@ Shader::Source Shader::Parser::operator()() {
                 const auto uniformType{std::string{tokens[i + 1]}};
                 const auto uniformName{std::string{tokens[i + 2]}};
 
-                if (shaderStructs.contains(uniformType)) {
-                    for (const auto& memberName: shaderStructs[uniformType]) {
+                if (m_shaderStructs->contains(uniformType)) {
+                    for (const auto& memberName: (*m_shaderStructs)[uniformType]) {
                         uniforms.emplace_back(uniformName + "." + memberName);
                     }
                 } else {
@@ -183,7 +185,7 @@ Shader::Source Shader::Parser::operator()() {
                     includePath.replace(0, std::strlen(engineResPath.from), engineResPath.to);
                 }
 
-                Parser includeParser{includePath};
+                Parser includeParser{includePath, m_shaderStructs};
                 while (const auto source{includeParser.next()}) {
                     resultStream << source.getSource();
                     uniforms.insert(uniforms.end(), source.getUniforms().begin(), source.getUniforms().end());
@@ -215,7 +217,13 @@ Shader::Source Shader::Parser::operator()() {
             }
 
             if (token == "struct") {
-                structScopeTypeName = std::string{tokens[i + 1]};
+                shaderStructTypeName = std::string{tokens[i + 1]};
+
+                // Allow redefinitions since it is possible that the definitions are in different shader
+                // sources within the same file. Otherwise, OpenGl will log the error anyway.
+                if (m_shaderStructs->contains(shaderStructTypeName)) {
+                    (*m_shaderStructs)[shaderStructTypeName].clear();
+                }
             }
         }
 

@@ -4,5 +4,3 @@ struct Material {
     vec3 specularColor;
     float shininess;
 };
-
-uniform Material u_material;

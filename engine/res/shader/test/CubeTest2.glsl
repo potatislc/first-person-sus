@@ -1,7 +1,6 @@
 #shader vertex
 #version 330 core
 #include ENGINE_RES_PATH/shader/Mvp.glsl
-#include ENGINE_RES_PATH/shader/Mvp.glsl
 
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_color;
@@ -36,6 +35,7 @@ uniform sampler2D u_texture1;
 uniform vec3 u_lightColor;
 uniform vec3 u_lightPos;
 uniform vec3 u_viewPos;
+uniform Material u_material;
 
 void main() {
     vec4 texColor = texture(u_texture1, v_texCoord);
