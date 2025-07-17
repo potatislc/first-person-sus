@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <imgui.h>
+#include <thread>
+
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
 
@@ -9,7 +11,7 @@
 #include "scene/test/Test.h"
 #include "scene/test/Cube.h"
 
-using Clock = std::chrono::high_resolution_clock;
+using Clock = std::chrono::steady_clock;
 using Duration = std::chrono::duration<double>;
 
 Engine::Application* Engine::Application::s_instance{};
@@ -62,17 +64,15 @@ void Engine::Application::run() {
     auto running{true};
     SDL_Event event{};
 
-    const uint64_t perfFreq{SDL_GetPerformanceFrequency()};
     constexpr unsigned int fps{120};
-    constexpr double targetFrameTime{1.0 / fps};
-    const auto targetTicks{static_cast<uint64_t>(targetFrameTime * static_cast<double>(perfFreq))};
-    uint64_t lastFrameStart{SDL_GetPerformanceCounter()};
+    constexpr Duration targetFrameTime{1.0 / fps};
+    auto lastFrameStart{Clock::now()};
 
     while (running) {
-        const uint64_t frameStart{SDL_GetPerformanceCounter()};
+        const auto frameStart{Clock::now()};
 
-        const auto deltaTime{static_cast<double>(frameStart - lastFrameStart) / static_cast<double>(perfFreq)};
-        m_timeSinceInit += deltaTime;
+        const Duration deltaTime{frameStart - lastFrameStart};
+        m_timeSinceInit += deltaTime.count();
         lastFrameStart = frameStart;
 
         while (SDL_PollEvent(&event)) {
@@ -88,7 +88,7 @@ void Engine::Application::run() {
         ImGui::NewFrame();
 
         if (m_baseScene != nullptr) {
-            m_baseScene->update(deltaTime);
+            m_baseScene->update(deltaTime.count());
             m_baseScene->render(*m_renderer);
         }
 
@@ -101,12 +101,17 @@ void Engine::Application::run() {
 
         m_renderer->swapWindow(m_window);
 
-        uint64_t const frameEnd = SDL_GetPerformanceCounter();
+        const auto frameEnd = Clock::now();
 
-        if (uint64_t const elapsedTicks = frameEnd - frameStart; elapsedTicks < targetTicks) {
-            uint64_t const delayTicks = targetTicks - elapsedTicks;
-            const auto delayMs = static_cast<uint32_t>((delayTicks * 1000) / perfFreq);
-            SDL_Delay(delayMs);
+        if (const Duration elapsed{frameEnd - frameStart}; elapsed < targetFrameTime) {
+            static constexpr auto sleepPrecision{std::chrono::milliseconds(2)};
+            if (const auto remaining = targetFrameTime - elapsed; remaining > sleepPrecision) {
+                std::this_thread::sleep_for(remaining - sleepPrecision);
+            }
+
+            // Spin wait (maybe don't do this for portable devices)
+            while (Clock::now() - frameStart < targetFrameTime) {
+            }
         }
 
         m_frameCount++;
