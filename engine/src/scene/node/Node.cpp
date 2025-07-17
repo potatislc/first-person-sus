@@ -2,7 +2,7 @@
 
 Engine::Scene::Node::~Node() = default;
 
-void Engine::Scene::Node::update(const float deltaTime) {
+void Engine::Scene::Node::update(const double deltaTime) {
     if (!m_active) {
         return;
     }

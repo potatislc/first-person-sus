@@ -36,24 +36,30 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     m_texture.bind(0);
     m_cubeShader.bind();
     m_cubeShader.setUniform("u_texture1", 0);
-    m_cubeShader.setUniform("u_lightColor", glm::vec3{.9f, .5f, .5f});
-    m_cubeShader.setUniform("u_lightPos", glm::vec3{-2.f, 1.f, -1.f});
-    m_cubeShader.setUniform("u_material.ambientColor", glm::vec3{.4f, .4f, .4f});
-    m_cubeShader.setUniform("u_material.specularColor", Math::Vec3::one);
-    m_cubeShader.setUniform("u_material.diffuseColor", Math::Vec3::one);
-    m_cubeShader.setUniform("u_material.shininess", .8f);
+
+    // Material default values
+    m_cubeShader.setUniform("u_material.ambient", glm::vec3{0.1f, 0.1f, 0.1f});
+    m_cubeShader.setUniform("u_material.diffuse", glm::vec3{0.8f, 0.8f, 0.8f});
+    m_cubeShader.setUniform("u_material.specular", glm::vec3{1.0f, 1.0f, 1.0f});
+    m_cubeShader.setUniform("u_material.emission", glm::vec3{0.0f, 0.0f, 0.0f});
+    m_cubeShader.setUniform("u_material.shine", 32.0f);
+
+    // Light default values
+    m_cubeShader.setUniform("u_light.position", glm::vec3{10.0f, 10.0f, 10.0f});
+    m_cubeShader.setUniform("u_light.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
+    m_cubeShader.setUniform("u_light.diffuse", glm::vec3{0.5f, 0.5f, 0.5f});
+    m_cubeShader.setUniform("u_light.specular", glm::vec3{1.0f, 1.0f, 1.0f});
+
 
     m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
 }
 
-void Engine::Scene::Cube2::update(const float deltaTime) {
-    Scene::update(deltaTime);
+void Engine::Scene::Cube2::update(const double deltaTime) {
 }
 
 void Engine::Scene::Cube2::render(const Renderer::Renderer& renderer) {
-    const auto animSpeed{static_cast<float>(Application::getInstance().getFrameCount()) * .005f};
-
     glm::mat4 model{1.0f};
+    const auto animSpeed = static_cast<float>(Application::getInstance().getTimeSinceInit());
     model = glm::rotate(model, animSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
 
     const glm::vec3 camPos{glm::cos(animSpeed) * s_camRadius, 0, glm::sin(animSpeed) * s_camRadius};
@@ -62,7 +68,7 @@ void Engine::Scene::Cube2::render(const Renderer::Renderer& renderer) {
     m_cubeShader.setUniform("u_viewPos", m_camera.getPosition());
 
     const glm::vec3 lightPos{glm::cos(-animSpeed * 4) * 2.f, .5f, glm::sin(-animSpeed * 4) * 2.f};
-    m_cubeShader.setUniform("u_lightPos", lightPos);
+    m_cubeShader.setUniform("u_light.position", lightPos);
 
     m_cubeShader.bind();
     m_cubeShader.setUniform("u_model", model);

@@ -19,7 +19,7 @@ namespace Engine::Scene {
     public:
         explicit Test();
 
-        void update(float deltaTime) override;
+        void update(double deltaTime) override;
 
         void render(const Renderer::Renderer& renderer) override;
 

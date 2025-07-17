@@ -51,7 +51,7 @@ namespace Engine::Scene {
 
         ~Node() override;
 
-        void update(float deltaTime) override;
+        void update(double deltaTime) override;
 
         void render(const Renderer::Renderer& renderer) override;
 

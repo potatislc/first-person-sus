@@ -53,6 +53,10 @@ namespace Engine {
             return *m_renderer;
         }
 
+        [[nodiscard]] double getTimeSinceInit() const {
+            return m_timeSinceInit;
+        }
+
     private:
         Application() = default;
 
@@ -65,5 +69,6 @@ namespace Engine {
         std::unique_ptr<Renderer::Renderer> m_renderer;
         std::unique_ptr<Scene::Scene> m_baseScene;
         uint64_t m_frameCount{};
+        double m_timeSinceInit{};
     };
 }

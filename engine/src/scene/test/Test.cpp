@@ -37,7 +37,7 @@ Engine::Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../engin
     m_shaderProgram.setUniform("u_Texture", 0);
 }
 
-void Engine::Scene::Test::update(const float deltaTime) {
+void Engine::Scene::Test::update(const double deltaTime) {
 }
 
 void Engine::Scene::Test::render(const Renderer::Renderer& renderer) {

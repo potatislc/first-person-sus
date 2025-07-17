@@ -26,7 +26,7 @@ namespace Engine::Scene {
 
         Cube2& operator=(Cube2&&) = delete;
 
-        void update(float deltaTime) override;
+        void update(double deltaTime) override;
 
         void render(const Renderer::Renderer& renderer) override;
 

@@ -19,7 +19,7 @@ namespace Engine::Scene {
 
         virtual ~Scene() = default;
 
-        virtual void update(float deltaTime) {
+        virtual void update(double deltaTime) {
         }
 
         virtual void render(const Renderer::Renderer& renderer) {

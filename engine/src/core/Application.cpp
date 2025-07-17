@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include <chrono>
 #include <imgui.h>
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
@@ -7,6 +8,9 @@
 #include "renderer/GlRenderer.h"
 #include "scene/test/Test.h"
 #include "scene/test/Cube.h"
+
+using Clock = std::chrono::high_resolution_clock;
+using Duration = std::chrono::duration<double>;
 
 Engine::Application* Engine::Application::s_instance{};
 
@@ -55,16 +59,22 @@ void Engine::Application::run() {
         LOG_ERR("Application is performing default behaviour. No base scene is assigned!");
     }
 
-    auto running = true;
+    auto running{true};
     SDL_Event event{};
 
-    const uint64_t perfFreq = SDL_GetPerformanceFrequency();
-    constexpr unsigned int fps = 60;
-    constexpr double targetFrameTime = 1.0 / fps;
-    const auto targetTicks = static_cast<uint64_t>(targetFrameTime * static_cast<double>(perfFreq));
-    uint64_t frameStart = SDL_GetPerformanceCounter();
+    const uint64_t perfFreq{SDL_GetPerformanceFrequency()};
+    constexpr unsigned int fps{120};
+    constexpr double targetFrameTime{1.0 / fps};
+    const auto targetTicks{static_cast<uint64_t>(targetFrameTime * static_cast<double>(perfFreq))};
+    uint64_t lastFrameStart{SDL_GetPerformanceCounter()};
 
     while (running) {
+        const uint64_t frameStart{SDL_GetPerformanceCounter()};
+
+        const auto deltaTime{static_cast<double>(frameStart - lastFrameStart) / static_cast<double>(perfFreq)};
+        m_timeSinceInit += deltaTime;
+        lastFrameStart = frameStart;
+
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL3_ProcessEvent(&event);
 
@@ -73,14 +83,14 @@ void Engine::Application::run() {
             }
         }
 
-        if (m_baseScene != nullptr) {
-            m_baseScene->update(0.f);
-            m_baseScene->render(*m_renderer);
-        }
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
+
+        if (m_baseScene != nullptr) {
+            m_baseScene->update(deltaTime);
+            m_baseScene->render(*m_renderer);
+        }
 
         if (m_baseScene != nullptr) {
             m_baseScene->renderImGui();
@@ -100,7 +110,6 @@ void Engine::Application::run() {
         }
 
         m_frameCount++;
-        frameStart = SDL_GetPerformanceCounter();
     }
 }
 

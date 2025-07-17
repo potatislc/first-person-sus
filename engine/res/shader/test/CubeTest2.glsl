@@ -32,29 +32,16 @@ in vec3 v_fragPos;
 out vec4 fragColor;
 
 uniform sampler2D u_texture1;
-uniform vec3 u_lightColor;
-uniform vec3 u_lightPos;
 uniform vec3 u_viewPos;
 uniform Material u_material;
+uniform Light u_light;
 
 void main() {
     vec4 texColor = texture(u_texture1, v_texCoord);
 
     vec3 normal = normalize(v_normal);
-    vec3 lightDir = normalize(u_lightPos - v_fragPos);
     vec3 viewDir = normalize(u_viewPos - v_fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-
-    vec3 ambient = u_material.ambientColor * u_lightColor;
-
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * u_material.diffuseColor * u_lightColor;
-
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_material.shininess);
-    vec3 specular = u_material.specularColor * spec * u_lightColor;
-
-    vec3 lighting = ambient + diffuse + specular;
-    vec4 result = texColor * vec4(v_vertexColor * lighting, 1.0);
+    vec4 result = texColor * vec4(v_vertexColor * phongLighting(u_material, u_light, normal, viewDir, v_fragPos), 1.0);
     fragColor = result;
 }
 

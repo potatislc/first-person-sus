@@ -29,7 +29,7 @@ Engine::Scene::Cube::Cube() : m_shaderProgram{Renderer::Shader::Parser{"../engin
     m_camera.setPosition(glm::vec3{0.f, 0.f, 3.f});
 }
 
-void Engine::Scene::Cube::update(const float deltaTime) {
+void Engine::Scene::Cube::update(const double deltaTime) {
     Scene::update(deltaTime);
 }
 
