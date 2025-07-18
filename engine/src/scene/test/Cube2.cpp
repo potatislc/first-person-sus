@@ -12,8 +12,15 @@
 
 
 Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES_PATH"/shader/test/CubeTest2.glsl"}},
-                                m_texture{
+                                m_color{
                                     Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall.png")
+                                },
+                                m_diffuse{
+                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall-diffuse.png")
+                                }, m_specular{
+                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall-border.png")
+                                }, m_emission{
+                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall-graffiti.png")
                                 } {
     const Renderer::Buffer::Vertex::Layout layout{
         *s_cubePositions.data(), *s_cubeColors.data(), *s_cubeUVs.data(), *s_cubeNormals.data()
@@ -33,16 +40,16 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     auto indexData =
             Renderer::Buffer::copyIndexData(s_cubeIndices.data(), s_cubeIndices.size());
     m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), indexData);
-    m_texture.bind(0);
+    m_color.bind(0);
+    m_diffuse.bind(1);
+    m_specular.bind(2);
+    m_emission.bind(3);
     m_cubeShader.bind();
     m_cubeShader.setUniform("u_texture1", 0);
-
-    // Material default values
-    m_cubeShader.setUniform("u_material.ambient", glm::vec3{0.1f, 0.1f, 0.1f});
-    m_cubeShader.setUniform("u_material.diffuse", glm::vec3{0.8f, 0.8f, 0.8f});
-    m_cubeShader.setUniform("u_material.specular", glm::vec3{1.0f, 1.0f, 1.0f});
-    m_cubeShader.setUniform("u_material.emission", glm::vec3{0.0f, 0.0f, 0.0f});
-    m_cubeShader.setUniform("u_material.shine", 32.0f);
+    m_cubeShader.setUniform("u_matMap.diffuse", 1);
+    m_cubeShader.setUniform("u_matMap.specular", 2);
+    m_cubeShader.setUniform("u_matMap.emission", 3);
+    m_cubeShader.setUniform("u_matMap.shine", 32.f);
 
     // Light default values
     m_cubeShader.setUniform("u_light.position", glm::vec3{10.0f, 10.0f, 10.0f});

@@ -183,7 +183,10 @@ namespace Engine::Scene {
 
         Renderer::Camera m_camera;
         Renderer::Shader::Program m_cubeShader;
-        Renderer::Texture m_texture;
+        Renderer::Texture m_color;
+        Renderer::Texture m_diffuse;
+        Renderer::Texture m_specular;
+        Renderer::Texture m_emission;
         std::unique_ptr<Renderer::VertexArray> m_vertexArray;
         glm::vec3 m_lightColor{1.f, 1.f, 1.f};
     };

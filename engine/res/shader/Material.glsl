@@ -8,7 +8,7 @@ struct Material {
     float shine;
 };
 
-struct SampleMaterial {
+struct MaterialMap {
     vec3 ambient;
     sampler2D diffuse;
     sampler2D specular;
@@ -16,7 +16,7 @@ struct SampleMaterial {
     float shine;
 };
 
-Material sampleMaterial(SampleMaterial material, vec2 texCoords) {
+Material sampleMap(MaterialMap material, vec2 texCoords) {
     Material sampled;
     sampled.diffuse = texture(material.diffuse, texCoords).rgb;
     sampled.specular = texture(material.specular, texCoords).rgb;
@@ -42,7 +42,7 @@ vec3 calcPhongSpecular(vec3 materialSpecular, float materialShine, vec3 lightDir
 
 vec3 phongLighting(Material material, Light light, vec3 normal, vec3 viewDir, vec3 fragPos) {
     vec3 lightDir = normalize(light.position - fragPos);
-    
+
     return calcAmbient(material.ambient, light.ambient) +
     calcPhongDiffuse(material.diffuse, lightDir, light.diffuse, normal) +
     calcPhongSpecular(material.specular, material.shine, lightDir, light.specular, normal, viewDir) +

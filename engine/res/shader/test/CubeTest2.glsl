@@ -33,7 +33,8 @@ out vec4 fragColor;
 
 uniform sampler2D u_texture1;
 uniform vec3 u_viewPos;
-uniform Material u_material;
+// uniform Material u_material;
+uniform MaterialMap u_matMap;
 uniform Light u_light;
 
 void main() {
@@ -41,7 +42,7 @@ void main() {
 
     vec3 normal = normalize(v_normal);
     vec3 viewDir = normalize(u_viewPos - v_fragPos);
-    vec4 result = texColor * vec4(v_vertexColor * phongLighting(u_material, u_light, normal, viewDir, v_fragPos), 1.0);
+    vec4 result = texColor * vec4(v_vertexColor * phongLighting(sampleMap(u_matMap, v_texCoord), u_light, normal, viewDir, v_fragPos), 1.0);
     fragColor = result;
 }
 
