@@ -33,9 +33,8 @@ out vec4 fragColor;
 
 uniform sampler2D u_texture1;
 uniform vec3 u_viewPos;
-// uniform Material u_material;
 uniform MaterialMap u_matMap;
-uniform Light u_light;
+uniform PointLight u_light;
 
 void main() {
     vec4 texColor = texture(u_texture1, v_texCoord);

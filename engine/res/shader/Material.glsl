@@ -40,11 +40,14 @@ vec3 calcPhongSpecular(vec3 materialSpecular, float materialShine, vec3 lightDir
     return lightColor * (spec * materialSpecular);
 }
 
-vec3 phongLighting(Material material, Light light, vec3 normal, vec3 viewDir, vec3 fragPos) {
-    vec3 lightDir = normalize(light.position - fragPos);
+vec3 phongLighting(Material material, PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos) {
+    vec3 direction = normalize(light.position - fragPos);
+    float distance    = length(light.position - fragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance +
+    light.quadratic * (distance * distance));
 
-    return calcAmbient(material.ambient, light.ambient) +
-    calcPhongDiffuse(material.diffuse, lightDir, light.diffuse, normal) +
-    calcPhongSpecular(material.specular, material.shine, lightDir, light.specular, normal, viewDir) +
+    return calcAmbient(material.ambient, light.ambient * attenuation) +
+    calcPhongDiffuse(material.diffuse, direction, light.diffuse * attenuation, normal) +
+    calcPhongSpecular(material.specular, material.shine, direction, light.specular * attenuation, normal, viewDir) +
     material.emission;
 }

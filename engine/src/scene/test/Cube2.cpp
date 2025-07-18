@@ -56,7 +56,9 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     m_cubeShader.setUniform("u_light.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
     m_cubeShader.setUniform("u_light.diffuse", glm::vec3{0.5f, 0.5f, 0.5f});
     m_cubeShader.setUniform("u_light.specular", glm::vec3{1.0f, 1.0f, 1.0f});
-
+    m_cubeShader.setUniform("u_light.constant", 1.0f);
+    m_cubeShader.setUniform("u_light.linear", 0.09f);
+    m_cubeShader.setUniform("u_light.quadratic", 0.032f);
 
     m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
 }
