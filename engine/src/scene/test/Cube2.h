@@ -2,6 +2,7 @@
 #include <array>
 #include <glm/vec3.hpp>
 
+#include "core/InputMap.h"
 #include "scene/Scene.h"
 #include "renderer/shader/Program.h"
 #include "renderer/Camera.h"
@@ -189,5 +190,7 @@ namespace Engine::Scene {
         Renderer::Texture m_emission;
         std::unique_ptr<Renderer::VertexArray> m_vertexArray;
         glm::vec3 m_lightColor{1.f, 1.f, 1.f};
+        InputMap::ActionId m_actionJump;
+        InputMap::ActionId m_actionRelease;
     };
 }

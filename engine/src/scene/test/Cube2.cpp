@@ -9,6 +9,7 @@
 #include "../../renderer/VertexArray.h"
 #include "../../renderer/buffer/Vertex.h"
 #include "../../renderer/shader/Parser.h"
+#include "core/InputMap.h"
 
 
 Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES_PATH"/shader/test/CubeTest2.glsl"}},
@@ -61,9 +62,22 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     m_cubeShader.setUniform("u_light.quadratic", 0.032f);
 
     m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
+
+    m_actionJump = InputMap::getInstance().createAction("Jump");
+    InputMap::getInstance().bind(SDLK_SPACE, m_actionJump);
+
+    m_actionRelease = InputMap::getInstance().createAction("Release");
+    InputMap::getInstance().bind(SDLK_RETURN, m_actionRelease);
 }
 
 void Engine::Scene::Cube2::update(const double deltaTime) {
+    if (InputMap::getInstance().getActionState(m_actionJump) == InputMap::ActionState::JUST_PRESSED) {
+        LOG("Just jumped! \n");
+    }
+
+    if (InputMap::getInstance().getActionState(m_actionRelease) == InputMap::ActionState::JUST_RELEASED) {
+        LOG("Just released! \n");
+    }
 }
 
 void Engine::Scene::Cube2::render(const Renderer::Renderer& renderer) {

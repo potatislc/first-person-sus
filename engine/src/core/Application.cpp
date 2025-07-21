@@ -2,10 +2,12 @@
 
 #include <chrono>
 #include <imgui.h>
+#include <print>
 #include <thread>
 
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
+#include "InputMap.h"
 
 #include "renderer/GlRenderer.h"
 #include "scene/test/Test.h"
@@ -74,12 +76,36 @@ void Engine::Application::run() {
         const Duration deltaTime{frameStart - lastFrameStart};
         m_timeSinceInit += deltaTime.count();
         lastFrameStart = frameStart;
+        auto& inputMap{InputMap::getInstance()};
+        inputMap.updateActionState();
 
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL3_ProcessEvent(&event);
+            switch (event.type) {
+                case SDL_EVENT_KEY_DOWN: {
+                    if (!event.key.repeat) {
+                        LOG("Key press detected\n");
+                        inputMap.getKeyBind(event.key.key).setActionState(
+                            inputMap, InputMap::ActionState::JUST_PRESSED);
+                    }
+                    if (event.key.key == SDLK_ESCAPE) {
+                        running = false;
+                    }
+                }
+                break;
 
-            if (event.type == SDL_EVENT_QUIT) {
-                running = false;
+                case SDL_EVENT_KEY_UP:
+                    LOG("Key release detected\n");
+                    inputMap.getKeyBind(event.key.key).setActionState(
+                        inputMap, InputMap::ActionState::JUST_RELEASED);
+                    break;
+
+                case SDL_EVENT_QUIT:
+                    running = false;
+                    break;
+
+                default:
+                    break;
             }
         }
 
