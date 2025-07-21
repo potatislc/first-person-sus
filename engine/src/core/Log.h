@@ -16,6 +16,6 @@
 #include <iostream>
 
 #define LOG(message) (std::cout << message)
-#define LOG_ERR(message) (std::cerr << message)
+#define LOG_ERR(message) (std::cerr << message << " Inside file: " << __FILE__ << ". At line: " << __LINE__ << " \n")
 
 #endif

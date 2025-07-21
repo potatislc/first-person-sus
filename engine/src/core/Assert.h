@@ -14,16 +14,14 @@ inline bool debugAssert(const bool condition) {
     return condition;
 }
 
-inline bool debugAssert(const bool condition, const std::string& message) {
-    if (!condition) {
-        LOG_ERR(message);
-        debugBreak();
-    }
-
-    return condition;
-}
-
 #define ASSERT(condition) debugAssert(condition)
-#define ASSERT_MSG(condition, message) debugAssert(condition, message)
+#define ASSERT_MSG(condition, message) \
+    do { \
+        if (!(condition)) { \
+        LOG_ERR("Assertion failed: " << message); \
+        debugAssert(condition); \
+        } \
+    } while (0)
+
 
 #endif

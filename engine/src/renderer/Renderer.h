@@ -47,9 +47,7 @@ namespace Engine::Renderer {
         template<typename Func>
         static void apiCall(const Renderer* renderer, Func&& func, const char* code, const char* file,
                             const size_t line) {
-            if (!ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCall: Renderer is not set.\n")) {
-                return;
-            }
+            ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCall: Renderer is not set.\n");
 
             renderer->clearErrors();
             std::forward<Func>(func)();
@@ -59,9 +57,7 @@ namespace Engine::Renderer {
         template<typename Func>
         static auto apiCallReturn(const Renderer* renderer, Func&& func, const char* code, const char* file,
                                   const size_t line) -> decltype(func()) {
-            if (!ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCallReturn: Renderer is not set.\n")) {
-                return decltype(func()){};
-            }
+            ASSERT_MSG(renderer != nullptr, "In Renderer::Debug::apiCallReturn: Renderer is not set.\n");
 
             renderer->clearErrors();
             auto result = std::forward<Func>(func)();
