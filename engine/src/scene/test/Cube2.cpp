@@ -62,22 +62,51 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     m_cubeShader.setUniform("u_light.quadratic", 0.032f);
 
     m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
-
-    m_actionJump = InputMap::getInstance().createAction("Jump");
-    InputMap::getInstance().bind(SDLK_SPACE, m_actionJump);
-
-    m_actionRelease = InputMap::getInstance().createAction("Release");
-    InputMap::getInstance().bind(SDLK_RETURN, m_actionRelease);
 }
 
 void Engine::Scene::Cube2::update(const double deltaTime) {
-    if (InputMap::getInstance().getActionState(m_actionJump) == InputMap::ActionState::JUST_PRESSED) {
-        LOG("Just jumped! \n");
-    }
+    auto& inputMap = InputMap::getInstance();
+    static const auto actionForward{inputMap.createAction("Forward")};
+    static const auto actionBackward{inputMap.createAction("Backward")};
+    static const auto actionRight{inputMap.createAction("Right")};
+    static const auto actionLeft{inputMap.createAction("Left")};
+    static const auto actionUp{inputMap.createAction("Up")};
+    static const auto actionDown{inputMap.createAction("Down")};
 
-    if (InputMap::getInstance().getActionState(m_actionRelease) == InputMap::ActionState::JUST_RELEASED) {
-        LOG("Just released! \n");
-    }
+    static auto a = [&inputMap]() {
+        inputMap.bind(SDLK_W, actionForward);
+        inputMap.bind(SDLK_S, actionBackward);
+        inputMap.bind(SDLK_D, actionRight);
+        inputMap.bind(SDLK_A, actionLeft);
+        inputMap.bind(SDLK_SPACE, actionUp);
+        inputMap.bind(SDLK_LSHIFT, actionDown);
+
+        inputMap.bind(SDL_SCANCODE_W, actionForward);
+        inputMap.bind(SDL_SCANCODE_S, actionBackward);
+        inputMap.bind(SDL_SCANCODE_D, actionRight);
+        inputMap.bind(SDL_SCANCODE_A, actionLeft);
+        inputMap.bind(SDL_SCANCODE_SPACE, actionUp);
+        inputMap.bind(SDL_SCANCODE_SPACE, actionDown);
+    };
+
+    a();
+
+    const glm::ivec3 inputDir{
+        static_cast<int>(inputMap.isActionPressed(actionRight)) - static_cast<int>(inputMap.
+            isActionPressed(actionLeft)),
+        static_cast<int>(inputMap.isActionPressed(actionUp)) - static_cast<int>(inputMap.
+            isActionPressed(actionDown)),
+        static_cast<int>(inputMap.isActionPressed(actionBackward)) - static_cast<int>(inputMap.isActionPressed(
+            actionForward))
+    };
+
+
+    constexpr auto moveSpeed{5.f};
+    const glm::vec3 velocity{glm::vec3{inputDir} * moveSpeed * static_cast<float>(deltaTime)};
+    /*if (inputDir != glm::ivec3{Math::Vec3::zero}) {
+        LOG("x: " << velocity.x << ", z: " << velocity.z << '\n');
+    }*/
+    m_camera.translate(velocity);
 }
 
 void Engine::Scene::Cube2::render(const Renderer::Renderer& renderer) {
@@ -85,9 +114,6 @@ void Engine::Scene::Cube2::render(const Renderer::Renderer& renderer) {
     const auto animSpeed = static_cast<float>(Application::getInstance().getTimeSinceInit());
     model = glm::rotate(model, animSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
 
-    const glm::vec3 camPos{glm::cos(animSpeed) * s_camRadius, 0, glm::sin(animSpeed) * s_camRadius};
-    m_camera.setPosition(camPos);
-    m_camera.lookAt(Math::Vec3::zero);
     m_cubeShader.setUniform("u_viewPos", m_camera.getPosition());
 
     const glm::vec3 lightPos{glm::cos(-animSpeed * 4) * 2.f, .5f, glm::sin(-animSpeed * 4) * 2.f};

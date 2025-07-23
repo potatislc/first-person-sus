@@ -85,7 +85,7 @@ void Engine::Application::run() {
                 case SDL_EVENT_KEY_DOWN: {
                     if (!event.key.repeat) {
                         LOG("Key press detected\n");
-                        inputMap.getKeyBind(event.key.key).setActionState(
+                        inputMap.getKeyBind(event.key.key /* event.key.scancode */).setActionState(
                             inputMap, InputMap::ActionState::JUST_PRESSED);
                     }
                     if (event.key.key == SDLK_ESCAPE) {

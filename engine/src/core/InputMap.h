@@ -13,14 +13,16 @@ namespace Engine {
         using ActionId = uint16_t;
 
         enum class ActionState : uint8_t {
-            JUST_PRESSED,
-            JUST_RELEASED,
+            RELEASED,
             PRESSED,
-            RELEASED
+            JUST_RELEASED,
+            JUST_PRESSED
         };
 
         static constexpr ActionId s_noAction{0};
-        static constexpr const char* s_noActionName = "No Action";
+        static constexpr auto s_noActionName = "No Action";
+
+#define ASSERT_ACTION_INIT() ASSERT_MSG(isActionInitialized(action), "Action of id: " << action << " is not initialized!\n")
 
         class KeyBind {
         public:
@@ -67,7 +69,7 @@ namespace Engine {
         }
 
         [[nodiscard]] ActionState getActionState(const ActionId action) const {
-            ASSERT_MSG(isActionInitialized(action), "Action of id: " << action << " is not initialized!\n");
+            ASSERT_ACTION_INIT();
 
             return m_actions[action];
         }
@@ -77,17 +79,37 @@ namespace Engine {
         }
 
         bool bind(const KeyCode code, const ActionId action) {
-            ASSERT_MSG(isActionInitialized(action), "Action of id: " << action << " is not initialized!\n");
+            ASSERT_ACTION_INIT();
             return m_keyMap[code].bindAction(action);
         }
 
         void updateActionState() {
             // Wow, very readable
             for (auto& action: m_actions) {
-                if (action < ActionState::PRESSED) {
-                    action = static_cast<ActionState>(static_cast<int>(action) + 2);
+                if (action > ActionState::PRESSED) {
+                    action = static_cast<ActionState>(static_cast<int>(action) - 2);
                 }
             }
+        }
+
+        [[nodiscard]] bool isActionJustPressed(const ActionId action) const {
+            ASSERT_ACTION_INIT();
+            return m_actions[action] == ActionState::JUST_PRESSED;
+        }
+
+        [[nodiscard]] bool isActionPressed(const ActionId action) const {
+            ASSERT_ACTION_INIT();
+            return m_actions[action] == ActionState::PRESSED || m_actions[action] == ActionState::JUST_PRESSED;
+        }
+
+        [[nodiscard]] bool isActionJustReleased(const ActionId action) const {
+            ASSERT_ACTION_INIT();
+            return m_actions[action] == ActionState::JUST_RELEASED;
+        }
+
+        [[nodiscard]] bool isActionReleased(const ActionId action) const {
+            ASSERT_ACTION_INIT();
+            return m_actions[action] == ActionState::RELEASED || m_actions[action] == ActionState::JUST_RELEASED;
         }
 
     private:

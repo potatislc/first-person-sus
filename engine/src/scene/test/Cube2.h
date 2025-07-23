@@ -190,7 +190,5 @@ namespace Engine::Scene {
         Renderer::Texture m_emission;
         std::unique_ptr<Renderer::VertexArray> m_vertexArray;
         glm::vec3 m_lightColor{1.f, 1.f, 1.f};
-        InputMap::ActionId m_actionJump;
-        InputMap::ActionId m_actionRelease;
     };
 }

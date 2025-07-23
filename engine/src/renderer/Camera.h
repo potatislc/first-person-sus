@@ -40,20 +40,29 @@ namespace Engine::Renderer {
             return m_position;
         }
 
+        void updateViewMatrix() {
+            m_view = glm::lookAt(m_position, m_position + m_direction, Math::Vec3::up);
+        }
+
+
         void setPosition(const glm::vec3& position) {
             m_position = position;
-            m_view = glm::mat4(1.f);
-            m_view = glm::translate(m_view, -m_position);
+            updateViewMatrix();
+        }
+
+        void translate(const glm::vec3& velocity) {
+            m_position += velocity;
+            updateViewMatrix();
         }
 
         void lookAt(const glm::vec3 target) {
             m_direction = glm::normalize(target - m_position);
-            m_view = glm::lookAt(m_position, m_position + m_direction, Math::Vec3::up);
+            updateViewMatrix();
         }
 
         void setDirection(const glm::vec3 direction) {
             m_direction = glm::normalize(direction);
-            m_view = glm::lookAt(m_position, m_position + m_direction, Math::Vec3::up);
+            updateViewMatrix();
         }
 
     private:
