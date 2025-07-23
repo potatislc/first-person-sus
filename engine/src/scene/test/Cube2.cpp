@@ -74,19 +74,19 @@ void Engine::Scene::Cube2::update(const double deltaTime) {
     static const auto actionDown{inputMap.createAction("Down")};
 
     static auto a = [&inputMap]() {
-        inputMap.bind(SDLK_W, actionForward);
+        /*inputMap.bind(SDLK_W, actionForward);
         inputMap.bind(SDLK_S, actionBackward);
         inputMap.bind(SDLK_D, actionRight);
         inputMap.bind(SDLK_A, actionLeft);
         inputMap.bind(SDLK_SPACE, actionUp);
-        inputMap.bind(SDLK_LSHIFT, actionDown);
+        inputMap.bind(SDLK_LSHIFT, actionDown);*/
 
         inputMap.bind(SDL_SCANCODE_W, actionForward);
         inputMap.bind(SDL_SCANCODE_S, actionBackward);
         inputMap.bind(SDL_SCANCODE_D, actionRight);
         inputMap.bind(SDL_SCANCODE_A, actionLeft);
         inputMap.bind(SDL_SCANCODE_SPACE, actionUp);
-        inputMap.bind(SDL_SCANCODE_SPACE, actionDown);
+        inputMap.bind(SDL_SCANCODE_LSHIFT, actionDown);
     };
 
     a();

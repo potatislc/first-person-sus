@@ -84,8 +84,8 @@ void Engine::Application::run() {
             switch (event.type) {
                 case SDL_EVENT_KEY_DOWN: {
                     if (!event.key.repeat) {
-                        LOG("Key press detected\n");
-                        inputMap.getKeyBind(event.key.key /* event.key.scancode */).setActionState(
+                        LOG("Key press: " << SDL_GetScancodeName(event.key.scancode) << '\n');
+                        inputMap.getKeyBind(event.key.scancode).setActionState(
                             inputMap, InputMap::ActionState::JUST_PRESSED);
                     }
                     if (event.key.key == SDLK_ESCAPE) {
@@ -95,8 +95,8 @@ void Engine::Application::run() {
                 break;
 
                 case SDL_EVENT_KEY_UP:
-                    LOG("Key release detected\n");
-                    inputMap.getKeyBind(event.key.key).setActionState(
+                    LOG("Key release: " << SDL_GetScancodeName(event.key.scancode) << '\n');
+                    inputMap.getKeyBind(event.key.scancode).setActionState(
                         inputMap, InputMap::ActionState::JUST_RELEASED);
                     break;
 

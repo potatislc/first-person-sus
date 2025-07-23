@@ -9,7 +9,7 @@
 namespace Engine {
     class InputMap {
     public:
-        using KeyCode = uint8_t;
+        using InputCode = uint8_t;
         using ActionId = uint16_t;
 
         enum class ActionState : uint8_t {
@@ -57,8 +57,7 @@ namespace Engine {
             return instances[0];
         }
 
-        KeyBind& getKeyBind(const KeyCode code) {
-            LOG("ASCII Key: " << SDL_GetKeyName(code) << '\n');
+        KeyBind& getKeyBind(const InputCode code) {
             return m_keyMap[code]; // Check bounds at call site
         }
 
@@ -78,7 +77,7 @@ namespace Engine {
             return m_actions.size();
         }
 
-        bool bind(const KeyCode code, const ActionId action) {
+        bool bind(const InputCode code, const ActionId action) {
             ASSERT_ACTION_INIT();
             return m_keyMap[code].bindAction(action);
         }
@@ -119,6 +118,6 @@ namespace Engine {
 
         std::vector<ActionState> m_actions{1};
         std::vector<std::string> m_actionNames{1};
-        std::array<KeyBind, std::numeric_limits<KeyCode>::max()> m_keyMap{};
+        std::array<KeyBind, std::numeric_limits<InputCode>::max()> m_keyMap{};
     };
 }
