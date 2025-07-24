@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <glm/vec2.hpp>
 
@@ -9,48 +10,49 @@
 namespace Engine::Renderer {
     class Texture {
     public:
-        static Texture createGlTexture(const std::string& path);
+        class GlSource {
+        public:
+            GlSource() = default;
 
-        Texture() = default;
+            GlSource(const GlSource&) = delete;
 
-        Texture(const Texture&) = delete;
+            GlSource& operator=(const GlSource&) = delete;
 
-        Texture& operator=(const Texture&) = delete;
+            GlSource& operator=(GlSource&&) = delete;
 
-        Texture(Texture&& other) noexcept : m_path{std::move(other.m_path)}, m_buffer{other.m_buffer}, m_id{other.m_id},
-                                            m_size{other.m_size}, m_bpp{other.m_bpp} {
-            other.m_id = {};
-            other.m_buffer = {};
-        }
+            GlSource(GlSource&&) = delete;
 
-        Texture& operator=(Texture&& other) noexcept {
-            if (&other == this) {
-                return *this;
+            ~GlSource();
+
+            [[nodiscard]] Id getId() const {
+                return m_id;
             }
 
-            m_path = std::move(other.m_path);
-            m_buffer = other.m_buffer;
-            other.m_buffer = {};
-            m_id = other.m_id;
-            other.m_id = {};
-            return *this;
-        }
+            [[nodiscard]] glm::vec2 getSize() const {
+                return m_size;
+            }
 
-        ~Texture();
+            friend Texture;
+
+        private:
+            Id m_id{};
+            glm::ivec2 m_size{};
+        };
+
+        static Texture createGlTexture(const std::string& path);
 
         void bind(uint32_t slot = 0) const;
 
         static void unbind();
 
-        [[nodiscard]] auto getSize() const {
-            return m_size;
+        [[nodiscard]] const GlSource& getSource() const {
+            return *m_source;
         }
 
     private:
-        std::string m_path;
-        uint8_t* m_buffer{};
-        Id m_id{};
-        glm::ivec2 m_size{};
-        int m_bpp{};
+        explicit Texture(std::shared_ptr<GlSource> source) : m_source(std::move(source)) {
+        }
+
+        std::shared_ptr<GlSource> m_source;
     };
 }
