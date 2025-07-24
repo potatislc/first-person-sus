@@ -16,6 +16,11 @@ struct StringReplace {
 
 static constexpr StringReplace engineResPath{.from = "ENGINE_RES_PATH", .to = ENGINE_RES_PATH};
 
+Shader::Parser::ParseCache::~ParseCache() {
+    includedPaths.clear();
+    shaderStructs.clear();
+}
+
 Shader::Parser::~Parser() {
     m_istream.close();
 }
@@ -102,10 +107,6 @@ static void findAndRemoveTokens(std::string& line, Args&&... tokens) {
 
 Shader::Source Shader::Parser::buildSource(const uint32_t shaderType, const std::string& sourceString,
                                            const std::vector<Uniform>& uniforms) const {
-    if (m_parseCache.use_count() == 1) {
-        m_parseCache->clear();
-    }
-
     return Source{shaderType, sourceString, uniforms};
 }
 

@@ -12,10 +12,17 @@ namespace Engine::Renderer::Shader {
         using ShaderDependencySet = std::unordered_set<std::string>;
 
         struct ParseCache {
-            void clear() {
-                includedPaths.clear();
-                shaderStructs.clear();
-            }
+            ParseCache() = default;
+
+            ParseCache(const ParseCache&) = delete;
+
+            ParseCache& operator=(const ParseCache&) = delete;
+
+            ParseCache(ParseCache&&) noexcept = default;
+
+            ParseCache& operator=(ParseCache&&) = default;
+
+            ~ParseCache();
 
             ShaderDependencySet includedPaths;
             ShaderStructsMap shaderStructs;
