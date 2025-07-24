@@ -1,12 +1,17 @@
 #pragma once
 
 #include <string>
+#include <glm/vec2.hpp>
 #include <SDL3/SDL.h>
 
 namespace Engine {
     class Window {
     public:
         Window(std::string name, SDL_Window* window) : m_name{std::move(name)}, m_window{window} {
+            if (window != nullptr) {
+                SDL_GetWindowSize(window, &m_size.x, &m_size.y);
+                SDL_GetWindowSizeInPixels(window, &m_pixelSize.x, &m_pixelSize.y);
+            }
         }
 
         Window() = default;
@@ -46,12 +51,22 @@ namespace Engine {
             return m_window != nullptr;
         }
 
-        [[nodiscard]] SDL_Window* get() const {
+        [[nodiscard]] SDL_Window* getSdlWindow() const {
             return m_window;
+        }
+
+        [[nodiscard]] glm::ivec2 getSize() const {
+            return m_size;
+        }
+
+        [[nodiscard]] glm::ivec2 getPixelSize() const {
+            return m_pixelSize;
         }
 
     private:
         std::string m_name;
         SDL_Window* m_window{};
+        glm::ivec2 m_size{};
+        glm::ivec2 m_pixelSize{};
     };
 }

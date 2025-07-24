@@ -180,6 +180,8 @@ namespace Engine::Scene {
             glm::vec3(-1.3f, 1.0f, -1.5f)
         };*/
 
+        static inline std::array<glm::vec3, 64> s_cubes;
+
         static constexpr float s_camRadius{3.f};
 
         Renderer::Camera m_camera;

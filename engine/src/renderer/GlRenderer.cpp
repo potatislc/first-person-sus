@@ -35,7 +35,8 @@ Engine::Window Engine::Renderer::GlRenderer::createWindow(const std::string& nam
     return Window{name, window};
 }
 
-Engine::Renderer::GlRenderer::GlRenderer(const Window& window) : m_context(SDL_GL_CreateContext(window.get())) {
+Engine::Renderer::GlRenderer::GlRenderer(const Window& window) : m_context(
+    SDL_GL_CreateContext(window.getSdlWindow())) {
     if (m_context == nullptr) {
         LOG_ERR("Failed to create OpenGL context: " << SDL_GetError() << '\n');
         return;
@@ -83,7 +84,7 @@ void* Engine::Renderer::GlRenderer::getContext() const {
 }
 
 void Engine::Renderer::GlRenderer::swapWindow(const Window& window) const {
-    SDL_GL_SwapWindow(window.get());
+    SDL_GL_SwapWindow(window.getSdlWindow());
 }
 
 void Engine::Renderer::GlRenderer::clear(const glm::vec4 color) const {

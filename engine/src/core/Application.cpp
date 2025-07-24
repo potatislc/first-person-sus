@@ -34,7 +34,7 @@ Engine::Application::Application(const std::string& name, const unsigned int wid
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplSDL3_InitForOpenGL(m_window.get(), m_renderer->getContext());
+    ImGui_ImplSDL3_InitForOpenGL(m_window.getSdlWindow(), m_renderer->getContext());
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
@@ -58,6 +58,61 @@ Engine::Application::~Application() {
     SDL_Quit();
 }
 
+bool Engine::Application::processEvent(SDL_Event& event) const {
+    auto& inputMap{InputMap::getInstance()};
+    inputMap.updateState();
+
+    while (SDL_PollEvent(&event)) {
+        ImGui_ImplSDL3_ProcessEvent(&event);
+        switch (event.type) {
+            case SDL_EVENT_KEY_DOWN: {
+                if (!event.key.repeat) {
+                    LOG("Key press: " << SDL_GetScancodeName(event.key.scancode) << '\n');
+                    inputMap.getKeyBinding(event.key.scancode).setActionState(
+                        inputMap, InputMap::ActionState::JUST_PRESSED);
+                }
+
+                if (event.key.key == SDLK_ESCAPE) {
+                    return false;
+                }
+            }
+            break;
+
+            case SDL_EVENT_KEY_UP:
+                LOG("Key release: " << SDL_GetScancodeName(event.key.scancode) << '\n');
+                inputMap.getKeyBinding(event.key.scancode).setActionState(
+                    inputMap, InputMap::ActionState::JUST_RELEASED);
+                break;
+
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                LOG("Mouse button press: " << Engine::InputMap::getMouseButtonName(event.button.button) << '\n');
+                inputMap.getMouseBinding(event.button.button).setActionState(
+                    inputMap, InputMap::ActionState::JUST_PRESSED);
+                break;
+
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+                LOG("Mouse button release: " << Engine::InputMap::getMouseButtonName(event.button.button) << '\n');
+                inputMap.getMouseBinding(event.button.button).setActionState(
+                    inputMap, InputMap::ActionState::JUST_RELEASED);
+                break;
+
+            case SDL_EVENT_MOUSE_MOTION: {
+                glm::vec2 mousePos{event.motion.xrel, event.motion.yrel};
+                inputMap.updateMouseVelocity(mousePos);
+            }
+            break;
+
+            case SDL_EVENT_QUIT:
+                return false;
+
+            default:
+                break;
+        }
+    }
+
+    return true;
+}
+
 void Engine::Application::run() {
     if (m_baseScene == nullptr) {
         LOG_ERR("Application is performing default behaviour. No base scene is assigned!");
@@ -76,38 +131,7 @@ void Engine::Application::run() {
         const Duration deltaTime{frameStart - lastFrameStart};
         m_timeSinceInit += deltaTime.count();
         lastFrameStart = frameStart;
-        auto& inputMap{InputMap::getInstance()};
-        inputMap.updateActionState();
-
-        while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL3_ProcessEvent(&event);
-            switch (event.type) {
-                case SDL_EVENT_KEY_DOWN: {
-                    if (!event.key.repeat) {
-                        LOG("Key press: " << SDL_GetScancodeName(event.key.scancode) << '\n');
-                        inputMap.getKeyBind(event.key.scancode).setActionState(
-                            inputMap, InputMap::ActionState::JUST_PRESSED);
-                    }
-                    if (event.key.key == SDLK_ESCAPE) {
-                        running = false;
-                    }
-                }
-                break;
-
-                case SDL_EVENT_KEY_UP:
-                    LOG("Key release: " << SDL_GetScancodeName(event.key.scancode) << '\n');
-                    inputMap.getKeyBind(event.key.scancode).setActionState(
-                        inputMap, InputMap::ActionState::JUST_RELEASED);
-                    break;
-
-                case SDL_EVENT_QUIT:
-                    running = false;
-                    break;
-
-                default:
-                    break;
-            }
-        }
+        running = processEvent(event);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();

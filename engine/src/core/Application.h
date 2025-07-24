@@ -28,6 +28,8 @@ namespace Engine {
 
         ~Application();
 
+        bool processEvent(SDL_Event& event) const;
+
         void run();
 
         [[nodiscard]] uint64_t getFrameCount() const {
@@ -46,6 +48,10 @@ namespace Engine {
         void setBaseScene(std::unique_ptr<Scene::Scene> baseScene);
 
         [[nodiscard]] const Window& getWindow() const {
+            return m_window;
+        }
+
+        [[nodiscard]] Window& getWindow() {
             return m_window;
         }
 

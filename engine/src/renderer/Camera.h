@@ -18,6 +18,8 @@ namespace Engine::Renderer {
               m_view{view},
               m_position{position}, m_halfFov{fov / 2} {
             setDirection(direction);
+            m_yaw = glm::degrees(atan2(m_direction.z, m_direction.x));
+            m_pitch = glm::degrees(asin(m_direction.y));
         }
 
         [[nodiscard]] glm::vec3 basisRight() const {
@@ -44,7 +46,6 @@ namespace Engine::Renderer {
             m_view = glm::lookAt(m_position, m_position + m_direction, Math::Vec3::up);
         }
 
-
         void setPosition(const glm::vec3& position) {
             m_position = position;
             updateViewMatrix();
@@ -60,9 +61,32 @@ namespace Engine::Renderer {
             updateViewMatrix();
         }
 
+        [[nodiscard]] glm::vec3 getDirection() const {
+            return m_direction;
+        }
+
         void setDirection(const glm::vec3 direction) {
             m_direction = glm::normalize(direction);
             updateViewMatrix();
+        }
+
+        void rotateFromMouseDelta(const glm::vec2& mouseVelocity, const float sensitivity = 0.1f) {
+            m_yaw += mouseVelocity.x * sensitivity;
+            m_pitch -= mouseVelocity.y * sensitivity;
+
+            // Clamp pitch to prevent flipping
+            m_pitch = glm::clamp(m_pitch, -89.0f, 89.0f);
+
+            // Convert to radians
+            const float yawRad = glm::radians(m_yaw);
+            const float pitchRad = glm::radians(m_pitch);
+
+            glm::vec3 direction;
+            direction.x = cos(pitchRad) * cos(yawRad);
+            direction.y = sin(pitchRad);
+            direction.z = cos(pitchRad) * sin(yawRad);
+
+            setDirection(glm::normalize(direction));
         }
 
     private:
@@ -71,5 +95,7 @@ namespace Engine::Renderer {
         glm::vec3 m_position{};
         glm::vec3 m_direction{};
         float m_halfFov{};
+        float m_pitch{};
+        float m_yaw{};
     };
 }
