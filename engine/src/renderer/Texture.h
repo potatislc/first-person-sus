@@ -5,6 +5,7 @@
 #include <string>
 #include <glm/vec2.hpp>
 
+#include "core/Rect.h"
 #include "core/Typedef.h"
 
 namespace Engine::Renderer {
@@ -39,7 +40,7 @@ namespace Engine::Renderer {
             glm::ivec2 m_size{};
         };
 
-        static Texture createGlTexture(const std::string& path);
+        static Texture loadGlTexture(const std::string& path);
 
         void bind(uint32_t slot = 0) const;
 
@@ -50,9 +51,11 @@ namespace Engine::Renderer {
         }
 
     private:
-        explicit Texture(std::shared_ptr<GlSource> source) : m_source(std::move(source)) {
+        explicit Texture(std::shared_ptr<GlSource> source) : m_source(std::move(source)),
+                                                             m_subRect{glm::vec2{}, m_source->getSize()} {
         }
 
         std::shared_ptr<GlSource> m_source;
+        Rect m_subRect{};
     };
 }

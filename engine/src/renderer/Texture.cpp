@@ -9,7 +9,7 @@ Engine::Renderer::Texture::GlSource::~GlSource() {
     RENDERER_API_CALL(glDeleteTextures(1, &m_id));
 }
 
-Engine::Renderer::Texture Engine::Renderer::Texture::createGlTexture(const std::string& path) {
+Engine::Renderer::Texture Engine::Renderer::Texture::loadGlTexture(const std::string& path) {
     stbi_set_flip_vertically_on_load(1);
     auto source = std::make_shared<GlSource>();
     int bpp{};

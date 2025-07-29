@@ -7,7 +7,7 @@
 
 Engine::Scene::Test::Test() : m_shaderProgram{Renderer::Shader::Parser{"../engine/res/shader/test/Basic.glsl"}},
                               m_texture{
-                                  Renderer::Texture::createGlTexture("../engine/res/texture/Melon.png")
+                                  Renderer::Texture::loadGlTexture("../engine/res/texture/Melon.png")
                               } {
     const Renderer::Buffer::Vertex::Layout vertexLayout{
         glm::vec2{},

@@ -29,14 +29,14 @@ std::array<glm::vec3, 64> generateRandomPositions() {
 
 Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES_PATH"/shader/test/CubeTest2.glsl"}},
                                 m_color{
-                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall.png")
+                                    Renderer::Texture::loadGlTexture(ENGINE_RES_PATH"/texture/Wall.png")
                                 },
                                 m_diffuse{
-                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall-diffuse.png")
+                                    Renderer::Texture::loadGlTexture(ENGINE_RES_PATH"/texture/Wall-diffuse.png")
                                 }, m_specular{
-                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall-border.png")
+                                    Renderer::Texture::loadGlTexture(ENGINE_RES_PATH"/texture/Wall-border.png")
                                 }, m_emission{
-                                    Renderer::Texture::createGlTexture(ENGINE_RES_PATH"/texture/Wall-graffiti.png")
+                                    Renderer::Texture::loadGlTexture(ENGINE_RES_PATH"/texture/Wall-graffiti.png")
                                 } {
     const Renderer::Buffer::Vertex::Layout layout{
         *s_cubePositions.data(), *s_cubeColors.data(), *s_cubeUVs.data(), *s_cubeNormals.data()
@@ -116,8 +116,7 @@ void Engine::Scene::Cube2::update(const double deltaTime) {
 
     glm::vec3 const right = glm::normalize(glm::cross(forward, Math::Vec3::up));
 
-    glm::vec3 velocity = glm::vec3{0.0f};
-
+    auto velocity = glm::vec3{0.0f};
     if (inputMap.isActionPressed(actionForward)) {
         velocity += forward;
     }
@@ -130,9 +129,11 @@ void Engine::Scene::Cube2::update(const double deltaTime) {
     if (inputMap.isActionPressed(actionLeft)) {
         velocity -= right;
     }
+
     if (inputMap.isActionPressed(actionUp)) {
         velocity += Math::Vec3::up;
     }
+
     if (inputMap.isActionPressed(actionDown)) {
         velocity -= Math::Vec3::up;
     }
