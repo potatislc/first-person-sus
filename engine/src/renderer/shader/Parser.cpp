@@ -5,9 +5,9 @@
 
 #include "Parser.h"
 #include "core/Assert.h"
+#include "core/StringUtils.h"
 
 namespace Shader = Engine::Renderer::Shader;
-using size_type = std::string::size_type;
 
 struct StringReplace {
     const char* from;
@@ -38,43 +38,12 @@ Shader::Parser::Parser(const std::string& filePath, const std::shared_ptr<ParseC
     m_parseCache->includedPaths.emplace(filePath);
 }
 
-static void removeLineComment(std::string& line) {
-    static constexpr auto commentChar{"//"};
-
-    if (const auto commentStart = line.find(commentChar); commentStart != std::string::npos) {
-        line.resize(commentStart);
-    }
-}
-
-static void ltrim(std::string_view& s, const std::string& predicate = " \t\n\r\f\v;") {
-    s.remove_prefix(std::min(s.find_first_not_of(predicate), s.size()));
-}
-
 struct Token {
     std::string_view name;
     size_t lineIndex;
 };
 
 using Statement = std::vector<Token>;
-
-static std::vector<std::string_view> tokenize(std::string_view line, const std::string& predicate = " \t\n\r\f\v;") {
-    std::vector<std::string_view> tokens;
-    ltrim(line);
-
-    while (!line.empty()) {
-        if (const size_type tokenEnd = line.find_first_of(predicate); tokenEnd != std::string::npos) {
-            tokens.emplace_back(line.substr(0, tokenEnd));
-            line.remove_prefix(tokenEnd);
-        } else {
-            tokens.emplace_back(line);
-            break;
-        }
-
-        ltrim(line);
-    }
-
-    return tokens;
-}
 
 uint32_t toGlShaderType(const std::string_view& type) {
     if (type == "vertex") {
@@ -89,8 +58,10 @@ uint32_t toGlShaderType(const std::string_view& type) {
 }
 
 static void findAndReplace(std::string& str, const std::string& toFind, const std::string& toReplace) {
-    if (const size_type pos = str.find(toFind); pos != std::string::npos) {
+    Engine::size_type pos = str.find(toFind);
+    while (pos != std::string::npos) {
         str.replace(pos, toFind.size(), toReplace);
+        pos = str.find(toFind);
     }
 }
 
@@ -139,7 +110,7 @@ Shader::Source Shader::Parser::operator()() {
     std::string shaderStructTypeName;
 
     while (std::getline(m_istream, line)) {
-        removeLineComment(line);
+        removeLineComment(line, "//");
         if (line.empty()) {
             continue;
         }

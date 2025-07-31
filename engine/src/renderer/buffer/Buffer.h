@@ -18,6 +18,11 @@ namespace Engine::Renderer::Buffer {
         return BufferData{bufferData};
     }
 
+    template<typename T>
+    BufferData copyBufferData(const std::vector<T>& data) {
+        static_assert(std::is_trivially_copyable_v<T>, "T must be trivially copyable");
+        return copyBufferData(data.data(), data.size() * sizeof(T));
+    }
 
     inline BufferData batchBufferData(const std::vector<BufferData>& bufferDatas) {
         size_t totalSize{};
