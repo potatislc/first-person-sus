@@ -13,7 +13,7 @@ namespace Engine::Renderer {
     public:
         VertexArray() = delete;
 
-        VertexArray(Buffer::Vertex vertexBuffer, uint32_t indexCount);
+        static VertexArray withGeneratedDefaultIndices(Buffer::Vertex vertexBuffer, uint32_t indexCount);
 
         VertexArray(Buffer::Vertex vertexBuffer, const Buffer::IndexData& indexData);
 

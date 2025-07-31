@@ -6,16 +6,11 @@
 #include "Renderer.h"
 #include "buffer/Vertex.h"
 
-Engine::Renderer::VertexArray::VertexArray(Buffer::Vertex vertexBuffer, const uint32_t indexCount): m_vertexBuffer{
-        std::move(vertexBuffer)
-    },
-    m_indexBuffer{indexCount} {
-    glGenVertexArrays(1, &m_id);
+Engine::Renderer::VertexArray Engine::Renderer::VertexArray::withGeneratedDefaultIndices(Buffer::Vertex vertexBuffer,
+    const uint32_t indexCount) {
     Buffer::IndexData defaultIndexData(indexCount);
     std::ranges::iota(defaultIndexData, 0);
-    // std::ranges::reverse(defaultIndexData);
-    attachVertexBuffer();
-    attachIndexBuffer(defaultIndexData);
+    return VertexArray{std::move(vertexBuffer), defaultIndexData};
 }
 
 Engine::Renderer::VertexArray::VertexArray(Buffer::Vertex vertexBuffer,
