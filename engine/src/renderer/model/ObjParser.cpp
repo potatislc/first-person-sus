@@ -61,7 +61,7 @@ static void appendIndices(MeshData& mesh, std::string_view faceStr) {
     auto faceIt = faceData.begin();
     size_t endPos = faceStr.find('/');
 
-    auto advance = [&]() {
+    auto advanceFaceIt = [&] {
         ++faceIt;
         if (endPos == std::string::npos) {
             faceStr = {};
@@ -71,23 +71,28 @@ static void appendIndices(MeshData& mesh, std::string_view faceStr) {
         }
     };
 
+    // Face data is one-indexed inside the .obj-format, while opengl needs a zero-indexed index buffer
+    auto toZeroIndexed = [](const auto val) {
+        return val - 1;
+    };
+
     while (faceIt != faceData.end()) {
         uint32_t val{};
         const std::string_view parseStr = (endPos == std::string::npos) ? faceStr : faceStr.substr(0, endPos);
         if (parseStr.empty()) {
-            advance();
+            advanceFaceIt();
             continue;
         }
 
         if (const auto [ptr, ec] = std::from_chars(parseStr.data(), parseStr.data() + parseStr.size(), val);
             ec != std::errc()) {
             LOG_ERR("Malformed uint32_t: " << std::quoted(parseStr));
-            advance();
+            advanceFaceIt();
             continue;
         }
 
-        (*faceIt)->emplace_back(val);
-        advance();
+        (*faceIt)->emplace_back(toZeroIndexed(val));
+        advanceFaceIt();
     }
 }
 
