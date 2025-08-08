@@ -8,7 +8,7 @@
 namespace Engine::Renderer {
     class ObjParser {
     public:
-        ObjParser(const std::string& path);
+        explicit ObjParser(const std::string& path);
 
         MeshData operator()();
 

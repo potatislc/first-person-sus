@@ -28,8 +28,6 @@ namespace Engine::Renderer {
         std::vector<glm::vec3> positions;
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> textureCoords;
-        std::vector<uint32_t> positionIndices;
-        std::vector<uint32_t> textureCoordIndices;
-        std::vector<uint32_t> normalIndices;
+        std::vector<uint32_t> indices;
     };
 }

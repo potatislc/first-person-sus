@@ -13,7 +13,7 @@ Engine::Renderer::Model Engine::Renderer::Model::generate(const MeshData& meshDa
     Buffer::Vertex vertexBuffer{layout, interleavedData};
 
     return Model{
-        VertexArray{std::move(vertexBuffer), meshData.positionIndices},
+        VertexArray{std::move(vertexBuffer), meshData.indices},
         std::move(textures)
     };
 }

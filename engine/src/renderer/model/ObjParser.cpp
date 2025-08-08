@@ -51,11 +51,25 @@ static bool matchAndAdvance(auto& it, const auto& end, const std::string& token)
     return false;
 }
 
-static void appendIndices(MeshData& mesh, std::string_view faceStr) {
+template<typename T>
+static std::vector<T> reorderedAttributeDataFromIndices(const std::vector<T>& attributeData,
+                                                        const std::vector<uint32_t>& indices) {
+    std::vector<T> reordered;
+
+    for (const auto& index: indices) {
+        ASSERT_MSG(index < attributeData.size(), "Index is higher than size of vertex data of specified attribute.");
+        reordered.emplace_back(attributeData[index]);
+    }
+
+    return reordered;
+}
+
+static void appendIndices(MeshData& mesh, std::vector<uint32_t>& textureCoordIndices,
+                          std::vector<uint32_t>& normalIndices, std::string_view faceStr) {
     std::array faceData{
-        &mesh.positionIndices,
-        &mesh.textureCoordIndices,
-        &mesh.normalIndices
+        &mesh.indices,
+        &textureCoordIndices,
+        &normalIndices
     };
 
     auto faceIt = faceData.begin();
@@ -96,8 +110,20 @@ static void appendIndices(MeshData& mesh, std::string_view faceStr) {
     }
 }
 
+static MeshData flattenedIndices(MeshData meshData, const std::vector<uint32_t>& textureCoordIndices,
+                                 const std::vector<uint32_t>& normalIndices) {
+    MeshData flattened{std::move(meshData)};
+    reorderedAttributeDataFromIndices(flattened.textureCoords, textureCoordIndices);
+    reorderedAttributeDataFromIndices(flattened.normals, normalIndices);
+    return flattened;
+}
+
 MeshData ObjParser::operator()() {
-    MeshData mesh;
+    MeshData meshData;
+    // Temporary index data for textureCoords and normals. Flatten the indices into the MeshData afterward.
+    std::vector<uint32_t> textureCoordIndices;
+    std::vector<uint32_t> normalIndices;
+
     std::string line;
 
     while (std::getline(m_filePath, line)) {
@@ -111,31 +137,32 @@ MeshData ObjParser::operator()() {
         auto tokenIt = tokens.begin();
 
         if (matchAndAdvance(tokenIt, tokens.end(), "v")) {
-            mesh.positions.emplace_back(parseVec<decltype(mesh.positions)::value_type>(tokenIt, tokens.end()));
+            meshData.positions.emplace_back(parseVec<decltype(meshData.positions)::value_type>(tokenIt, tokens.end()));
             continue;
         }
 
         if (matchAndAdvance(tokenIt, tokens.end(), "vn")) {
-            mesh.normals.emplace_back(parseVec<decltype(mesh.normals)::value_type>(tokenIt, tokens.end()));
+            meshData.normals.emplace_back(parseVec<decltype(meshData.normals)::value_type>(tokenIt, tokens.end()));
             continue;
         }
 
         if (matchAndAdvance(tokenIt, tokens.end(), "vt")) {
-            mesh.textureCoords.emplace_back(parseVec<decltype(mesh.textureCoords)::value_type>(tokenIt, tokens.end()));
+            meshData.textureCoords.emplace_back(
+                parseVec<decltype(meshData.textureCoords)::value_type>(tokenIt, tokens.end()));
             continue;
         }
 
         if (matchAndAdvance(tokenIt, tokens.end(), "f")) {
-            appendIndices(mesh, *tokenIt);
+            appendIndices(meshData, textureCoordIndices, normalIndices, *tokenIt);
             continue;
         }
 
         if (matchAndAdvance(tokenIt, tokens.end(), "o")) {
-            if (!mesh.isEmpty()) {
-                return mesh;
+            if (!meshData.isEmpty()) {
+                return flattenedIndices(std::move(meshData), textureCoordIndices, normalIndices);
             }
         }
     }
 
-    return mesh;
+    return flattenedIndices(std::move(meshData), textureCoordIndices, normalIndices);
 }

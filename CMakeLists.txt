@@ -54,7 +54,6 @@ target_link_libraries(imgui_backend PRIVATE SDL3::SDL3)
 
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
-find_package(assimp CONFIG REQUIRED)
 
 add_executable(${EXE_NAME} engine/src/example/main.cpp
         engine/src/renderer/GlRenderer.cpp
@@ -78,7 +77,7 @@ add_executable(${EXE_NAME} engine/src/example/main.cpp
         engine/src/renderer/model/Model.cpp
         engine/src/renderer/model/ObjParser.cpp)
 
-target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend assimp::assimp)
+target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE ENGINE_RES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/engine/res")
 
@@ -117,14 +116,21 @@ set(WARNING_FLAGS
 
 target_compile_options(${EXE_NAME} PRIVATE ${WARNING_FLAGS})
 
-
 if (MSVC)
-    target_compile_options(${EXE_NAME} PRIVATE /GR- /EHs-c- /we4530 /we4577)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(${EXE_NAME} PRIVATE /GR- /EHs-c- /we4530 /we4577)
+    else ()
+        target_compile_options(${EXE_NAME} PRIVATE /EHsc /we4530 /we4577)
+    endif ()
 else ()
-    target_compile_options(${EXE_NAME} PRIVATE -fno-exceptions -fno-rtti -Werror=non-virtual-dtor -Werror=rtti -Werror=exceptions)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(${EXE_NAME} PRIVATE -fno-exceptions -fno-rtti -Werror=non-virtual-dtor -Werror=rtti -Werror=exceptions)
+    else ()
+        target_compile_options(${EXE_NAME} PRIVATE -frtti -Werror=non-virtual-dtor)
+    endif ()
 endif ()
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+#[[if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     target_compile_options(${EXE_NAME} PRIVATE -O0 -g -fsanitize=address,undefined)
     target_link_options(${EXE_NAME} PRIVATE -fsanitize=address,undefined /INCREMENTAL:NO)
 
@@ -137,7 +143,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebIn
                 /wholearchive:clang_rt.asan_dynamic_runtime_thunk-x86_64.lib
         )
     endif ()
-endif ()
+endif ()]]
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(${EXE_NAME} PRIVATE -O3 -DNDEBUG)
