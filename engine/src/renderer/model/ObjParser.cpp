@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <optional>
 #include <array>
+#include <unordered_map>
 
 #include "core/Assert.h"
 #include "core/StringUtils.h"
@@ -50,119 +51,108 @@ static bool matchAndAdvance(auto& it, const auto& end, const std::string& token)
     return false;
 }
 
-template<typename T>
-static std::vector<T> reorderedAttributeDataFromIndices(const std::vector<T>& attributeData,
-                                                        const std::vector<uint32_t>& indices) {
-    std::vector<T> reordered{indices.size()};
-
-    for (const auto& index: indices) {
-        ASSERT_MSG(index < attributeData.size(), "Index is higher than size of vertex data of specified attribute.");
-        reordered.emplace_back(attributeData[index]);
+struct VertexKey {
+    bool operator==(const VertexKey& other) const noexcept {
+        return posIdx == other.posIdx &&
+               texIdx == other.texIdx &&
+               normIdx == other.normIdx;
     }
 
-    return reordered;
-}
+    struct Hash {
+        std::size_t operator()(const VertexKey& k) const noexcept {
+            auto h = std::hash<uint32_t>{}(k.posIdx);
+            if (k.texIdx) {
+                h ^= std::hash<uint32_t>{}(*k.texIdx + 1);
+            }
 
-static void appendIndices(MeshData& mesh, std::vector<uint32_t>& textureCoordIndices,
-                          std::vector<uint32_t>& normalIndices, std::string_view faceStr) {
-    std::array faceData{
-        &mesh.indices,
-        &textureCoordIndices,
-        &normalIndices
-    };
-
-    auto faceIt = faceData.begin();
-    size_t endPos = faceStr.find('/');
-
-    auto advanceFaceIt = [&] {
-        ++faceIt;
-        if (endPos == std::string::npos) {
-            faceStr = {};
-        } else {
-            faceStr = faceStr.substr(endPos + 1);
-            endPos = faceStr.find('/');
+            if (k.normIdx) {
+                h ^= std::hash<uint32_t>{}(*k.normIdx + 2);
+            }
+            return h;
         }
     };
 
-    // Face data is one-indexed inside the .obj-format, while opengl needs a zero-indexed index buffer
-    auto toZeroIndexed = [](const auto val) {
-        return val - 1;
-    };
+    uint32_t posIdx;
+    std::optional<uint32_t> texIdx;
+    std::optional<uint32_t> normIdx;
+};
 
-    while (faceIt != faceData.end()) {
-        uint32_t val{};
-        const std::string_view parseStr = (endPos == std::string::npos) ? faceStr : faceStr.substr(0, endPos);
-        if (parseStr.empty()) {
-            advanceFaceIt();
-            continue;
-        }
+static VertexKey parseFaceElement(const std::string_view elem) {
+    VertexKey key{};
+    const auto firstSlash = elem.find('/');
+    const auto secondSlash = elem.find('/', firstSlash + 1);
 
-        if (const auto [ptr, ec] = std::from_chars(parseStr.data(), parseStr.data() + parseStr.size(), val);
-            ec != std::errc()) {
-            LOG_ERR("Malformed uint32_t: " << std::quoted(parseStr));
-            advanceFaceIt();
-            continue;
-        }
+    // A position index must be provided otherwise parsing won't work
+    key.posIdx = std::stoul(std::string(elem.substr(0, firstSlash))) - 1;
 
-        (*faceIt)->emplace_back(toZeroIndexed(val));
-        advanceFaceIt();
+    if (firstSlash != std::string::npos && secondSlash > firstSlash + 1) {
+        key.texIdx = std::stoul(std::string(elem.substr(firstSlash + 1, secondSlash - firstSlash - 1))) - 1;
     }
+
+    if (secondSlash != std::string::npos && secondSlash + 1 < elem.size()) {
+        key.normIdx = std::stoul(std::string(elem.substr(secondSlash + 1))) - 1;
+    }
+
+    return key;
 }
 
-static MeshData flattenedIndices(MeshData meshData, const std::vector<uint32_t>& textureCoordIndices,
-                                 const std::vector<uint32_t>& normalIndices) {
-    MeshData flattened{std::move(meshData)};
-    flattened.textureCoords =
-            std::move(reorderedAttributeDataFromIndices(flattened.textureCoords, textureCoordIndices));
-    flattened.normals = std::move(reorderedAttributeDataFromIndices(flattened.normals, normalIndices));
-    return flattened;
+uint32_t getOrCreateVertex(const VertexKey& key,
+                           MeshData& mesh,
+                           std::unordered_map<VertexKey, uint32_t, VertexKey::Hash>& vertexMap,
+                           const std::vector<glm::vec3>& rawPositions,
+                           const std::vector<glm::vec2>& rawTexCoords,
+                           const std::vector<glm::vec3>& rawNormals) {
+    auto [it, inserted] = vertexMap.try_emplace(key, static_cast<uint32_t>(mesh.positions.size()));
+    if (inserted) {
+        // Create vertex
+        mesh.positions.emplace_back(rawPositions[key.posIdx]);
+
+        if (key.texIdx) {
+            mesh.textureCoords.emplace_back(rawTexCoords[*key.texIdx]);
+        }
+
+        if (key.normIdx) {
+            mesh.normals.emplace_back(rawNormals[*key.normIdx]);
+        }
+
+        return it->second;
+    }
+
+    // Return already existing vertex
+    return it->second;
 }
 
 MeshData ObjParser::operator()() {
+    std::vector<glm::vec3> rawPositions;
+    std::vector<glm::vec2> rawTexCoords;
+    std::vector<glm::vec3> rawNormals;
+
     MeshData meshData;
-    // Temporary index data for textureCoords and normals. Flatten the indices into the MeshData afterward.
-    std::vector<uint32_t> textureCoordIndices;
-    std::vector<uint32_t> normalIndices;
+    std::unordered_map<VertexKey, uint32_t, VertexKey::Hash> vertexMap;
 
     std::string line;
-
     while (std::getline(m_filePath, line)) {
         removeLineComment(line, "#");
-        const auto tokens = tokenize(line);
+        auto tokens = tokenize(line);
 
-        if (tokens.size() < 2) {
+        if (tokens.empty()) {
             continue;
         }
 
-        auto tokenIt = tokens.begin();
-
-        if (matchAndAdvance(tokenIt, tokens.end(), "v")) {
-            meshData.positions.emplace_back(parseVec<decltype(meshData.positions)::value_type>(tokenIt, tokens.end()));
-            continue;
-        }
-
-        if (matchAndAdvance(tokenIt, tokens.end(), "vn")) {
-            meshData.normals.emplace_back(parseVec<decltype(meshData.normals)::value_type>(tokenIt, tokens.end()));
-            continue;
-        }
-
-        if (matchAndAdvance(tokenIt, tokens.end(), "vt")) {
-            meshData.textureCoords.emplace_back(
-                parseVec<decltype(meshData.textureCoords)::value_type>(tokenIt, tokens.end()));
-            continue;
-        }
-
-        if (matchAndAdvance(tokenIt, tokens.end(), "f")) {
-            appendIndices(meshData, textureCoordIndices, normalIndices, *tokenIt);
-            continue;
-        }
-
-        if (matchAndAdvance(tokenIt, tokens.end(), "o")) {
-            if (!meshData.isEmpty()) {
-                return flattenedIndices(std::move(meshData), textureCoordIndices, normalIndices);
+        if (auto it = tokens.begin(); matchAndAdvance(it, tokens.end(), "v")) {
+            rawPositions.emplace_back(parseVec<glm::vec3>(it, tokens.end()));
+        } else if (matchAndAdvance(it, tokens.end(), "vt")) {
+            rawTexCoords.emplace_back(parseVec<glm::vec2>(it, tokens.end()));
+        } else if (matchAndAdvance(it, tokens.end(), "vn")) {
+            rawNormals.emplace_back(parseVec<glm::vec3>(it, tokens.end()));
+        } else if (matchAndAdvance(it, tokens.end(), "f")) {
+            for (; it != tokens.end(); ++it) {
+                const auto key = parseFaceElement(*it);
+                const auto idx = getOrCreateVertex(key, meshData, vertexMap, rawPositions, rawTexCoords, rawNormals);
+                meshData.indices.push_back(idx);
             }
         }
     }
 
-    return flattenedIndices(std::move(meshData), textureCoordIndices, normalIndices);
+    return meshData;
 }

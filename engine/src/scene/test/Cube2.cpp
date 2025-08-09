@@ -54,8 +54,8 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
         Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors))
     };*/
 
-    std::vector vertexData{objParser.next().getVertexData()};
-    vertexData.push_back(std::move(Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors))));
+    auto vertexData{objParser.next().getVertexData()};
+    vertexData.push_back(Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors)));
 
     const auto interleavedVertexData = Renderer::Buffer::Vertex::layoutInterleave(
         layout, vertexData);
