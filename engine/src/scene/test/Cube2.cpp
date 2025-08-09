@@ -11,6 +11,7 @@
 #include "../../renderer/buffer/Vertex.h"
 #include "../../renderer/shader/Parser.h"
 #include "core/InputMap.h"
+#include "renderer/model/ObjParser.h"
 
 
 std::array<glm::vec3, 64> generateRandomPositions() {
@@ -38,18 +39,26 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
                                 }, m_emission{
                                     Renderer::Texture::loadGlTexture(ENGINE_RES_PATH"/texture/Wall-graffiti.png")
                                 } {
-    const Renderer::Buffer::Vertex::Layout layout{
-        *s_cubePositions.data(), *s_cubeColors.data(), *s_cubeUVs.data(), *s_cubeNormals.data()
+    Renderer::ObjParser objParser{ENGINE_RES_PATH"/model/Cube.obj"};
+
+    Renderer::Buffer::Vertex::Layout layout{
+        Renderer::MeshData::baseLayout()
     };
 
-    const std::vector vertexData{
+    layout.push(*s_cubeColors.data());
+
+    /*const std::vector vertexData{
         Renderer::Buffer::copyBufferData(s_cubePositions.data(), sizeof(s_cubePositions)),
-        Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors)),
         Renderer::Buffer::copyBufferData(s_cubeUVs.data(), sizeof(s_cubeUVs)),
-        Renderer::Buffer::copyBufferData(s_cubeNormals.data(), sizeof(s_cubeNormals))
-    };
+        Renderer::Buffer::copyBufferData(s_cubeNormals.data(), sizeof(s_cubeNormals)),
+        Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors))
+    };*/
 
-    const auto interleavedVertexData = Renderer::Buffer::Vertex::layoutInterleave(layout, vertexData);
+    std::vector vertexData{objParser.next().getVertexData()};
+    vertexData.emplace_back(Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors)));
+
+    const auto interleavedVertexData = Renderer::Buffer::Vertex::layoutInterleave(
+        layout, vertexData);
 
     Renderer::Buffer::Vertex vertexBuffer{layout, interleavedVertexData};
 
@@ -77,7 +86,6 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     m_cubeShader.setUniform("u_light.quadratic", 0.032f);
 
     m_camera.setPosition(glm::vec3{0.f, 0.f, s_camRadius});
-    const auto& window{Application::getInstance().getWindow()};
     SDL_SetWindowRelativeMouseMode(Application::getInstance().getWindow().getSdlWindow(), true);
 
     s_cubes = generateRandomPositions();

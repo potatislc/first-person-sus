@@ -11,7 +11,6 @@
 using MeshData = Engine::Renderer::MeshData;
 using ObjParser = Engine::Renderer::ObjParser;
 
-
 Engine::Renderer::ObjParser::ObjParser(const std::string& path) : m_filePath(path) {
     ASSERT_MSG(path.ends_with(".obj"),
                "In Engine::Renderer::Model::loadObjModel(): File is not of supported type '.obj': " << path);
@@ -54,7 +53,7 @@ static bool matchAndAdvance(auto& it, const auto& end, const std::string& token)
 template<typename T>
 static std::vector<T> reorderedAttributeDataFromIndices(const std::vector<T>& attributeData,
                                                         const std::vector<uint32_t>& indices) {
-    std::vector<T> reordered;
+    std::vector<T> reordered{indices.size()};
 
     for (const auto& index: indices) {
         ASSERT_MSG(index < attributeData.size(), "Index is higher than size of vertex data of specified attribute.");
@@ -113,8 +112,9 @@ static void appendIndices(MeshData& mesh, std::vector<uint32_t>& textureCoordInd
 static MeshData flattenedIndices(MeshData meshData, const std::vector<uint32_t>& textureCoordIndices,
                                  const std::vector<uint32_t>& normalIndices) {
     MeshData flattened{std::move(meshData)};
-    reorderedAttributeDataFromIndices(flattened.textureCoords, textureCoordIndices);
-    reorderedAttributeDataFromIndices(flattened.normals, normalIndices);
+    flattened.textureCoords =
+            std::move(reorderedAttributeDataFromIndices(flattened.textureCoords, textureCoordIndices));
+    flattened.normals = std::move(reorderedAttributeDataFromIndices(flattened.normals, normalIndices));
     return flattened;
 }
 

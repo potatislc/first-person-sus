@@ -9,8 +9,8 @@ namespace Engine::Renderer {
     struct MeshData {
         static Buffer::Vertex::Layout baseLayout() {
             return Buffer::Vertex::Layout{
-                decltype(positions)::value_type{}, decltype(normals)::value_type{},
-                decltype(textureCoords)::value_type{}
+                decltype(positions)::value_type{},
+                decltype(textureCoords)::value_type{}, decltype(normals)::value_type{}
             };
         }
 
@@ -26,8 +26,8 @@ namespace Engine::Renderer {
         }
 
         std::vector<glm::vec3> positions;
-        std::vector<glm::vec3> normals;
         std::vector<glm::vec2> textureCoords;
+        std::vector<glm::vec3> normals;
         std::vector<uint32_t> indices;
     };
 }

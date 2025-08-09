@@ -3,9 +3,9 @@
 #include ENGINE_RES_PATH/shader/Mvp.glsl
 
 layout (location = 0) in vec3 a_pos;
-layout (location = 1) in vec3 a_color;
-layout (location = 2) in vec2 a_uv;
-layout (location = 3) in vec3 a_normal;
+layout (location = 1) in vec2 a_uv;
+layout (location = 2) in vec3 a_normal;
+layout (location = 3) in vec3 a_color;
 
 out vec3 v_vertexColor;
 out vec2 v_texCoord;
