@@ -92,71 +92,7 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
 }
 
 void Engine::Scene::Cube2::update(const double deltaTime) {
-    auto& inputMap = InputMap::getInstance();
-
-    static const auto actionForward = inputMap.createAction("Forward");
-    static const auto actionBackward = inputMap.createAction("Backward");
-    static const auto actionRight = inputMap.createAction("Right");
-    static const auto actionLeft = inputMap.createAction("Left");
-    static const auto actionUp = inputMap.createAction("Up");
-    static const auto actionDown = inputMap.createAction("Down");
-    static const auto actionShoot = inputMap.createAction("Shoot");
-
-    static bool inputsBound = false;
-    if (!inputsBound) {
-        inputMap.bindToKey(SDL_SCANCODE_W, actionForward);
-        inputMap.bindToKey(SDL_SCANCODE_S, actionBackward);
-        inputMap.bindToKey(SDL_SCANCODE_D, actionRight);
-        inputMap.bindToKey(SDL_SCANCODE_A, actionLeft);
-        inputMap.bindToKey(SDL_SCANCODE_SPACE, actionUp);
-        inputMap.bindToKey(SDL_SCANCODE_LSHIFT, actionDown);
-        inputMap.bindToMouseButton(SDL_BUTTON_LEFT, actionShoot);
-        inputsBound = true;
-    }
-
-    if (inputMap.isActionJustPressed(actionShoot)) {
-        LOG("Shoot!\n");
-    }
-
-    glm::vec3 forward = m_camera.getDirection();
-    forward.y = 0.0f;
-    forward = glm::normalize(forward);
-
-    glm::vec3 const right = glm::normalize(glm::cross(forward, Math::Vec3::up));
-
-    auto velocity = glm::vec3{0.0f};
-    if (inputMap.isActionPressed(actionForward)) {
-        velocity += forward;
-    }
-    if (inputMap.isActionPressed(actionBackward)) {
-        velocity -= forward;
-    }
-    if (inputMap.isActionPressed(actionRight)) {
-        velocity += right;
-    }
-    if (inputMap.isActionPressed(actionLeft)) {
-        velocity -= right;
-    }
-
-    if (inputMap.isActionPressed(actionUp)) {
-        velocity += Math::Vec3::up;
-    }
-
-    if (inputMap.isActionPressed(actionDown)) {
-        velocity -= Math::Vec3::up;
-    }
-
-    if (glm::length(velocity) > 0.0f) {
-        velocity = glm::normalize(velocity);
-    }
-
-    constexpr float moveSpeed = 5.0f;
-    m_camera.translate(velocity * moveSpeed * static_cast<float>(deltaTime));
-
-    // Camera rotation
-    const glm::vec2 mouseDelta = inputMap.getMouseVelocity();
-    constexpr float mouseSensitivity = 10.0f;
-    m_camera.rotateFromMouseDelta(mouseDelta * static_cast<float>(deltaTime), mouseSensitivity);
+    m_camera.debugMove(deltaTime, 5.f, 10.f);
 }
 
 

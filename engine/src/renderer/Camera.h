@@ -89,6 +89,8 @@ namespace Engine::Renderer {
             setDirection(glm::normalize(direction));
         }
 
+        void debugMove(const double deltaTime, const float moveSpeed, const float mouseSensitivity);
+
     private:
         glm::mat4 m_projection{};
         glm::mat4 m_view{};
