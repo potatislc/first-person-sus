@@ -44,27 +44,16 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
     Renderer::Buffer::Vertex::Layout layout{
         Renderer::MeshData::baseLayout()
     };
-
     layout.push(*s_cubeColors.data());
 
-    /*const std::vector vertexData{
-        Renderer::Buffer::copyBufferData(s_cubePositions.data(), sizeof(s_cubePositions)),
-        Renderer::Buffer::copyBufferData(s_cubeUVs.data(), sizeof(s_cubeUVs)),
-        Renderer::Buffer::copyBufferData(s_cubeNormals.data(), sizeof(s_cubeNormals)),
-        Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors))
-    };*/
-
-    auto vertexData{objParser.next().getVertexData()};
+    const auto meshData{objParser.next()};
+    auto vertexData{meshData.getVertexData()};
     vertexData.push_back(Renderer::Buffer::copyBufferData(s_cubeColors.data(), sizeof(s_cubeColors)));
-
     const auto interleavedVertexData = Renderer::Buffer::Vertex::layoutInterleave(
         layout, vertexData);
-
     Renderer::Buffer::Vertex vertexBuffer{layout, interleavedVertexData};
+    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), meshData.indices);
 
-    auto indexData =
-            Renderer::Buffer::copyIndexData(s_cubeIndices.data(), s_cubeIndices.size());
-    m_vertexArray = std::make_unique<Renderer::VertexArray>(std::move(vertexBuffer), indexData);
     m_color.bind(0);
     m_diffuse.bind(1);
     m_specular.bind(2);

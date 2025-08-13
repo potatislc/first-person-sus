@@ -7,6 +7,7 @@
 #include "renderer/shader/Program.h"
 #include "renderer/Camera.h"
 #include "renderer/Texture.h"
+#include "renderer/model/Model.h"
 
 namespace Engine::Renderer {
     class VertexArray;
@@ -34,7 +35,7 @@ namespace Engine::Scene {
         void renderImGui() override;
 
     private:
-        // Positions (24 unique)
+        /*// Positions (24 unique)
         static constexpr std::array<glm::vec3, 24> s_cubePositions = {
             {
                 // Front face
@@ -96,7 +97,7 @@ namespace Engine::Scene {
                 // Top face
                 {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}
             }
-        };
+        };*/
 
         // Colors (one color per face × 4 vertices)
         static constexpr std::array<glm::vec3, 24> s_cubeColors = {
@@ -121,7 +122,7 @@ namespace Engine::Scene {
             }
         };
 
-        static constexpr std::array<uint32_t, 36> s_cubeIndices = {
+        /*static constexpr std::array<uint32_t, 36> s_cubeIndices = {
             {
                 // Front face
                 0, 1, 2, 2, 3, 0,
@@ -164,20 +165,6 @@ namespace Engine::Scene {
                 // Top (+Y)
                 {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}
             }
-        };
-
-
-        /*std::array<glm::vec3, 10> s_cubeOrigins{
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(2.0f, 5.0f, -15.0f),
-            glm::vec3(-1.5f, -2.2f, -2.5f),
-            glm::vec3(-3.8f, -2.0f, -12.3f),
-            glm::vec3(2.4f, -0.4f, -3.5f),
-            glm::vec3(-1.7f, 3.0f, -7.5f),
-            glm::vec3(1.3f, -2.0f, -2.5f),
-            glm::vec3(1.5f, 2.0f, -2.5f),
-            glm::vec3(1.5f, 0.2f, -1.5f),
-            glm::vec3(-1.3f, 1.0f, -1.5f)
         };*/
 
         static inline std::array<glm::vec3, 64> s_cubes;
@@ -191,6 +178,7 @@ namespace Engine::Scene {
         Renderer::Texture m_specular;
         Renderer::Texture m_emission;
         std::unique_ptr<Renderer::VertexArray> m_vertexArray;
+        std::optional<Renderer::Model> m_model;
         glm::vec3 m_lightColor{1.f, 1.f, 1.f};
     };
 }
