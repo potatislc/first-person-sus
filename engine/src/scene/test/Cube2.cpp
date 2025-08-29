@@ -15,11 +15,11 @@
 
 
 std::array<glm::vec3, 64> generateRandomPositions() {
-    std::array<glm::vec3, 64> positions;
+    std::array<glm::vec3, 64> positions{};
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    std::uniform_real_distribution dist(-1.0f, 1.0f);
 
     for (auto& pos: positions) {
         pos = glm::vec3(dist(gen), dist(gen), dist(gen));
@@ -83,7 +83,6 @@ Engine::Scene::Cube2::Cube2() : m_cubeShader{Renderer::Shader::Parser{ENGINE_RES
 void Engine::Scene::Cube2::update(const double deltaTime) {
     m_camera.debugMove(deltaTime, 5.f, 10.f);
 }
-
 
 void Engine::Scene::Cube2::render(const Renderer::Renderer& renderer) {
     glm::mat4 model{1.0f};

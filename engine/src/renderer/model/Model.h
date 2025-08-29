@@ -10,13 +10,17 @@ namespace Engine::Renderer {
 
     class Model {
     public:
-        static Model generate(const MeshData& meshData, std::vector<Texture> textures);
+        static Model generate(const MeshData& meshData, std::vector<Texture> textures = {});
 
         void draw(const Shader::Program& shaderProgram) const;
 
+        const auto& getTextures() const {
+            return m_textures;
+        }
+
     private:
-        Model::Model(VertexArray vao, std::vector<Texture> textures): m_vao(std::move(vao)),
-                                                                      m_textures(std::move(textures)) {
+        explicit Model::Model(VertexArray vao, std::vector<Texture> textures = {}): m_vao(std::move(vao)),
+            m_textures(std::move(textures)) {
         }
 
         VertexArray m_vao;

@@ -75,7 +75,8 @@ add_executable(${EXE_NAME} engine/src/example/main.cpp
         engine/src/scene/test/Cube2.cpp
         engine/src/core/InputMap.cpp
         engine/src/renderer/model/Model.cpp
-        engine/src/renderer/model/ObjParser.cpp)
+        engine/src/renderer/model/ObjParser.cpp
+        engine/src/scene/test/ModelTest.cpp)
 
 target_link_libraries(${EXE_NAME} PRIVATE SDL3::SDL3 glad::glad glm::glm imgui_backend)
 

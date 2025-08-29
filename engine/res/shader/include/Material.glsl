@@ -1,4 +1,4 @@
-#include ENGINE_RES_PATH/shader/Light.glsl
+#include ENGINE_RES_PATH/shader/include/Light.glsl
 
 struct Material {
     vec3 ambient;
@@ -49,5 +49,14 @@ vec3 phongLighting(Material material, PointLight light, vec3 normal, vec3 viewDi
     return calcAmbient(material.ambient, light.ambient * attenuation) +
     calcPhongDiffuse(material.diffuse, direction, light.diffuse * attenuation, normal) +
     calcPhongSpecular(material.specular, material.shine, direction, light.specular * attenuation, normal, viewDir) +
+    material.emission;
+}
+
+vec3 phongLighting(Material material, DirectionalLight light, vec3 normal, vec3 viewDir, vec3 fragPos) {
+    vec3 direction = normalize(-light.direction);
+
+    return calcAmbient(material.ambient, light.ambient) +
+    calcPhongDiffuse(material.diffuse, direction, light.diffuse, normal) +
+    calcPhongSpecular(material.specular, material.shine, direction, light.specular, normal, viewDir) +
     material.emission;
 }
