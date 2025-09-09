@@ -17,6 +17,6 @@ namespace Engine::Renderer {
         }
 
     private:
-        std::ifstream m_filePath;
+        std::ifstream m_file;
     };
 }

@@ -12,26 +12,23 @@
 using MeshData = Engine::Renderer::MeshData;
 using ObjParser = Engine::Renderer::ObjParser;
 
-Engine::Renderer::ObjParser::ObjParser(const std::string& path) : m_filePath(path) {
+Engine::Renderer::ObjParser::ObjParser(const std::string& path) : m_file(path) {
     ASSERT_MSG(path.ends_with(".obj"),
                "In Engine::Renderer::Model::loadObjModel(): File is not of supported type '.obj': " << path);
-    ASSERT_MSG(m_filePath.is_open(),
+    ASSERT_MSG(m_file.is_open(),
                "In Engine::Renderer::Model::loadObjModel(): Could not open file with path: " << path);
 }
 
-template<typename T>
+template<typename T, typename = std::enable_if_t<std::is_same_v<T, glm::vec2> || std::is_same_v<T, glm::vec3>> >
 static T parseVec(auto& it, const auto& end) {
     T vec{};
 
-    for (int i{}; i < glm::vec3::length(); i++) {
+    for (size_t i{}; i < T::length(); i++) {
         float val{};
         auto res = std::from_chars(it->data(), it->data() + it->size(), val);
         vec[i] = val;
 
-        if (res.ec != std::errc()) {
-            LOG_ERR("Malformed float: ptr -> " << std::quoted(res.ptr));
-            break;
-        }
+        ASSERT_MSG(res.ec == std::errc(), "Malformed float: ptr -> " << std::quoted(res.ptr));
 
         ++it;
         if (it >= end) {
@@ -77,24 +74,47 @@ struct VertexKey {
     std::optional<uint32_t> normIdx;
 };
 
-static VertexKey parseFaceElement(const std::string_view elem) {
+// Apparently you may need to account for negative indices which mean an index previous to the latest
+static uint32_t rebase_index(const int i, const size_t n) {
+    // OBJ is 1-based.
+    const int idx = (i > 0) ? (i - 1) : (static_cast<int>(n) + i);
+    ASSERT_MSG(idx >= 0 && std::cmp_less(idx , n), "Index out of range");
+    return static_cast<uint32_t>(idx);
+}
+
+static VertexKey parseFaceElement(std::string_view elem,
+                                  const size_t nPos, const size_t nTex, const size_t nNorm) {
     VertexKey key{};
     const auto firstSlash = elem.find('/');
-    const auto secondSlash = elem.find('/', firstSlash + 1);
+    const auto secondSlash = (firstSlash == std::string::npos)
+                                 ? std::string::npos
+                                 : elem.find('/', firstSlash + 1);
 
-    // A position index must be provided otherwise parsing won't work
-    key.posIdx = std::stoul(std::string(elem.substr(0, firstSlash))) - 1;
+    auto to_int = [](const std::string_view s) -> int {
+        int v{};
+        auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), v);
+        ASSERT_MSG(ec == std::errc(), "Malformed integer in face element");
+        return v;
+    };
 
+
+    // v
+    key.posIdx = rebase_index(to_int(elem.substr(0, firstSlash)), nPos);
+
+    // vt
     if (firstSlash != std::string::npos && secondSlash > firstSlash + 1) {
-        key.texIdx = std::stoul(std::string(elem.substr(firstSlash + 1, secondSlash - firstSlash - 1))) - 1;
+        key.texIdx = rebase_index(to_int(elem.substr(firstSlash + 1,
+                                                     secondSlash - firstSlash - 1)), nTex);
     }
 
+    // vn
     if (secondSlash != std::string::npos && secondSlash + 1 < elem.size()) {
-        key.normIdx = std::stoul(std::string(elem.substr(secondSlash + 1))) - 1;
+        key.normIdx = rebase_index(to_int(elem.substr(secondSlash + 1)), nNorm);
     }
 
     return key;
 }
+
 
 uint32_t getOrCreateVertex(const VertexKey& key,
                            MeshData& mesh,
@@ -104,23 +124,14 @@ uint32_t getOrCreateVertex(const VertexKey& key,
                            const std::vector<glm::vec3>& rawNormals) {
     auto [it, inserted] = vertexMap.try_emplace(key, static_cast<uint32_t>(mesh.positions.size()));
     if (inserted) {
-        // Create vertex
         mesh.positions.emplace_back(rawPositions[key.posIdx]);
-
-        if (key.texIdx) {
-            mesh.textureCoords.emplace_back(rawTexCoords[*key.texIdx]);
-        }
-
-        if (key.normIdx) {
-            mesh.normals.emplace_back(rawNormals[*key.normIdx]);
-        }
-
-        return it->second;
+        // Keep arrays aligned
+        mesh.textureCoords.emplace_back(key.texIdx ? rawTexCoords[*key.texIdx] : glm::vec2(0.0f));
+        mesh.normals.emplace_back(key.normIdx ? rawNormals[*key.normIdx] : glm::vec3(0.0f));
     }
-
-    // Return already existing vertex
     return it->second;
 }
+
 
 MeshData ObjParser::operator()() {
     std::vector<glm::vec3> rawPositions;
@@ -131,7 +142,7 @@ MeshData ObjParser::operator()() {
     std::unordered_map<VertexKey, uint32_t, VertexKey::Hash> vertexMap;
 
     std::string line;
-    while (std::getline(m_filePath, line)) {
+    while (std::getline(m_file, line)) {
         removeLineComment(line, "#");
         auto tokens = tokenize(line);
 
@@ -146,10 +157,17 @@ MeshData ObjParser::operator()() {
         } else if (matchAndAdvance(it, tokens.end(), "vn")) {
             rawNormals.emplace_back(parseVec<glm::vec3>(it, tokens.end()));
         } else if (matchAndAdvance(it, tokens.end(), "f")) {
+            std::vector<uint32_t> face;
             for (; it != tokens.end(); ++it) {
-                const auto key = parseFaceElement(*it);
-                const auto idx = getOrCreateVertex(key, meshData, vertexMap, rawPositions, rawTexCoords, rawNormals);
-                meshData.indices.push_back(idx);
+                const auto key = parseFaceElement(*it, rawPositions.size(), rawTexCoords.size(), rawNormals.size());
+                face.push_back(getOrCreateVertex(key, meshData, vertexMap, rawPositions, rawTexCoords, rawNormals));
+            }
+
+            // triangulate: (0, i-1, i)
+            for (size_t i = 2; i < face.size(); ++i) {
+                meshData.indices.push_back(face[0]);
+                meshData.indices.push_back(face[i - 1]);
+                meshData.indices.push_back(face[i]);
             }
         }
     }

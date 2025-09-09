@@ -17,9 +17,9 @@ Engine::ModelTest::ModelTest() : m_shader{Renderer::Shader::Parser{ENGINE_RES_PA
     m_model->getTextures().front().bind(0);
     m_shader.bind();
     m_shader.setUniform("u_texture1", 0);
-    m_shader.setUniform("u_material.diffuse", glm::vec3{1.f});
-    m_shader.setUniform("u_material.specular", glm::vec3{2});
-    m_shader.setUniform("u_material.emission", glm::vec3{3});
+    m_shader.setUniform("u_material.diffuse", glm::vec3{.5f});
+    m_shader.setUniform("u_material.specular", glm::vec3{.5f});
+    m_shader.setUniform("u_material.emission", glm::vec3{.5f});
     m_shader.setUniform("u_material.shine", 32.f);
 
     m_shader.setUniform("u_light.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
