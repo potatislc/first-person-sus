@@ -109,6 +109,36 @@ Engine::Renderer::Shader::Program::Program(Parser sourceParser) {
     }
 }
 
+Engine::Renderer::Shader::Program::Program(const std::initializer_list<std::string> paths) {
+    if (!createProgram()) {
+        return;
+    }
+
+    for (const auto& path: paths) {
+        Parser parser{path};
+
+        while (auto shader{parser.next()}) {
+            shader.compile();
+            if (!shader.isCompiled()) {
+                LOG_ERR(&s_CreationFailStr << '\n');
+                return;
+            }
+
+            attachShader(shader);
+        }
+    }
+
+    if (!linkProgram()) {
+        return;
+    }
+
+    bind();
+
+    if (!locateUniforms()) {
+        return;
+    }
+}
+
 void Engine::Renderer::Shader::Program::bind() const {
     static Id s_bound{};
 

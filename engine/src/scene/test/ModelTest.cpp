@@ -6,7 +6,9 @@
 #include "renderer/model/ObjParser.h"
 #include "renderer/shader/Parser.h"
 
-Engine::ModelTest::ModelTest() : m_shader{Renderer::Shader::Parser{ENGINE_RES_PATH"/shader/source/Base.glsl"}} {
+Engine::ModelTest::ModelTest() : m_shader{
+    ENGINE_RES_PATH"/shader/source/Base.vert", ENGINE_RES_PATH"/shader/source/Base.frag"
+} {
     Renderer::ObjParser parser{ENGINE_RES_PATH"/model/Eye.obj"};
     const auto layout{Renderer::MeshData::baseLayout()};
 

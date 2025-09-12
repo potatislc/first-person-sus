@@ -24,6 +24,8 @@ namespace Engine::Renderer::Shader {
 
         explicit Program(Parser sourceParser);
 
+        explicit Program(std::initializer_list<std::string> paths);
+
         Program(const Program&) = delete;
 
         Program& operator=(const Program&) = delete;

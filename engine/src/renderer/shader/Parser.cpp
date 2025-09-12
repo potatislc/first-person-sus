@@ -36,6 +36,12 @@ Shader::Parser::Parser(const std::string& filePath, const std::shared_ptr<ParseC
     ASSERT(m_istream.is_open());
 
     m_parseCache->includedPaths.emplace(filePath);
+
+    if (filePath.ends_with(".vert")) {
+        m_nextShaderType = GL_VERTEX_SHADER;
+    } else if (filePath.ends_with(".frag")) {
+        m_nextShaderType = GL_FRAGMENT_SHADER;
+    }
 }
 
 struct Token {
