@@ -12,9 +12,8 @@ out vec3 v_fragPos;
 void main() {
     gl_Position = getMvp() * vec4(a_pos, 1.0);
     v_texCoord = a_uv;
-
-    mat3 normalMat = mat3(transpose(inverse(u_model)));
-    v_normal = normalize(normalMat * a_normal);
-
+    // If you need this then do it on the cpu before renderng the instance: mat3(transpose(inverse(u_model))
+    // v_normal = normalize(mat3(transpose(inverse(u_model))) * a_normal);
+    v_normal = mat3(u_model) * a_normal;
     v_fragPos = vec3(u_model * vec4(a_pos, 1.0));
 }

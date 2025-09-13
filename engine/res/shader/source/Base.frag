@@ -14,10 +14,9 @@ out vec4 fragColor;
 
 void main() {
     vec4 texColor = texture(u_texture1, v_texCoord);
-
     vec3 normal = normalize(v_normal);
     vec3 viewDir = normalize(u_viewPos - v_fragPos);
-
+    // vec4 normalColor = vec4(normalize(v_normal) * 0.5 + 0.5, 1.0);
     vec4 result = texColor * vec4(phongLighting(u_material, u_light, normal, viewDir, v_fragPos), 1.0);
     fragColor = result;
 }
