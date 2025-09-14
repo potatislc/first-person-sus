@@ -84,6 +84,8 @@ namespace Engine::Renderer::Buffer {
             return m_layout;
         }
 
+        void update(const void* vertexData, uint32_t vertexCount) const;
+
     private:
         Layout m_layout;
         Id m_id{};

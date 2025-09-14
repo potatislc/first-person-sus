@@ -8,15 +8,15 @@
 
 Engine::Renderer::Buffer::BufferData Engine::Renderer::Buffer::Vertex::layoutInterleave(
     const Layout& layout, const std::vector<BufferData>& dataBatch) {
-    assert(layout.getAttributes().size() == dataBatch.size());
+    ASSERT(layout.getAttributes().size() == dataBatch.size());
 
     BufferData combinedBuffer;
 
     size_t minElements{std::numeric_limits<size_t>::max()};
     for (size_t i = 0; i < dataBatch.size(); i++) {
         const size_t attrSize = Shader::dataTypeSize(layout.getAttributes()[i].dataType);
-        assert(attrSize > 0);
-        assert(dataBatch[i].size() % attrSize == 0); // Do they share the same alignment?
+        ASSERT(attrSize > 0);
+        ASSERT(dataBatch[i].size() % attrSize == 0); // Do they share the same alignment?
         minElements = std::min(minElements, dataBatch[i].size() / attrSize);
     }
 
@@ -42,7 +42,7 @@ Engine::Renderer::Buffer::Vertex::Vertex(Layout layout, const void* data, const 
 } {
     RENDERER_API_CALL(glGenBuffers(1, &m_id));
     bind();
-    RENDERER_API_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+    RENDERER_API_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 }
 
 Engine::Renderer::Buffer::Vertex::Vertex(Layout layout, const BufferData& bufferData) : m_layout{std::move(layout)} {
@@ -61,4 +61,9 @@ void Engine::Renderer::Buffer::Vertex::bind() const {
 
 void Engine::Renderer::Buffer::Vertex::unbind() {
     RENDERER_API_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+}
+
+void Engine::Renderer::Buffer::Vertex::update(const void* vertexData, const uint32_t vertexCount) const {
+    bind();
+    RENDERER_API_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vertexCount * m_layout.getStride(), vertexData));
 }

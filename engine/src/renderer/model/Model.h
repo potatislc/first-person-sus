@@ -14,16 +14,21 @@ namespace Engine::Renderer {
 
         void draw(const Shader::Program& shaderProgram) const;
 
+        void drawInstanced(const Shader::Program& shaderProgram, const void* instanceData,
+                           uint32_t instanceCount) const;
+
+        void setInstanceBuffer(Buffer::Vertex instanceBuffer);
+
         const auto& getTextures() const {
             return m_textures;
         }
 
     private:
-        explicit Model::Model(VertexArray vao, std::vector<Texture> textures = {}): m_vao(std::move(vao)),
+        explicit Model::Model(VertexArray vao, std::vector<Texture> textures = {}) : m_vertexArray(std::move(vao)),
             m_textures(std::move(textures)) {
         }
 
-        VertexArray m_vao;
+        VertexArray m_vertexArray;
         std::vector<Texture> m_textures;
     };
 }

@@ -50,6 +50,8 @@ namespace Engine::Renderer {
 
         void setInstanceBuffer(Buffer::Vertex instanceBuffer);
 
+        void updateInstanceBuffer(const void* data, uint32_t count) const;
+
         [[nodiscard]] bool isInstantiable() const {
             return m_instanceBuffer.has_value();
         }

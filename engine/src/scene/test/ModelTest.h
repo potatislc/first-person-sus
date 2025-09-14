@@ -20,6 +20,7 @@ namespace Engine {
     private:
         Renderer::Camera m_camera;
         std::optional<Renderer::Model> m_model;
-        Renderer::Shader::Program m_shader{};
+        std::vector<glm::vec3> m_instancePositions;
+        Renderer::Shader::Program m_shader;
     };
 }

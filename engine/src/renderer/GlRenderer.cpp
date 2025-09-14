@@ -58,7 +58,6 @@ Engine::Renderer::GlRenderer::GlRenderer(const Window& window) : m_context(
     RENDERER_API_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     RENDERER_API_CALL(glEnable(GL_CULL_FACE));
     RENDERER_API_CALL(glCullFace(GL_BACK));
-    RENDERER_API_CALL(glFrontFace(GL_CCW));
     RENDERER_API_CALL(glEnable(GL_DEPTH_TEST));
 }
 

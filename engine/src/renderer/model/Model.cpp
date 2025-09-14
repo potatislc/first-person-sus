@@ -19,7 +19,24 @@ Engine::Renderer::Model Engine::Renderer::Model::generate(const MeshData& meshDa
 }
 
 void Engine::Renderer::Model::draw(const Shader::Program& shaderProgram) const {
-    m_vao.bind();
+    m_vertexArray.bind();
     shaderProgram.bind();
-    RENDERER_API_CALL(glDrawElements(GL_TRIANGLES, m_vao.getIndexBuffer().getCount(), GL_UNSIGNED_INT, nullptr));
+    RENDERER_API_CALL(
+        glDrawElements(GL_TRIANGLES, m_vertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void Engine::Renderer::Model::drawInstanced(const Shader::Program& shaderProgram, const void* instanceData,
+                                            const uint32_t instanceCount) const {
+    ASSERT_MSG(m_vertexArray.isInstantiable(), "Model cannot be drawn instanced. No instance buffer is set.");
+
+    m_vertexArray.bind();
+    m_vertexArray.updateInstanceBuffer(instanceData, instanceCount);
+    shaderProgram.bind();
+    RENDERER_API_CALL(
+        glDrawElementsInstanced(GL_TRIANGLES, m_vertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT,
+            nullptr, instanceCount));
+}
+
+void Engine::Renderer::Model::setInstanceBuffer(Buffer::Vertex instanceBuffer) {
+    m_vertexArray.setInstanceBuffer(std::move(instanceBuffer));
 }

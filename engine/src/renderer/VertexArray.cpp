@@ -37,6 +37,10 @@ void Engine::Renderer::VertexArray::setInstanceBuffer(Buffer::Vertex instanceBuf
     attachInstanceBuffer(attributeStart);
 }
 
+void Engine::Renderer::VertexArray::updateInstanceBuffer(const void* data, uint32_t const count) const {
+    m_instanceBuffer->update(data, count);
+}
+
 void Engine::Renderer::VertexArray::attachIndexBuffer(const Buffer::IndexData& indexData) const {
     bind();
     RENDERER_API_CALL(
@@ -88,16 +92,11 @@ void Engine::Renderer::VertexArray::attachInstanceBuffer(const uint32_t attribut
 }
 
 void Engine::Renderer::VertexArray::bind() const {
-    // Unnecessary to rebind if it is the same
-    static Id boundId{};
-    if (boundId == m_id) {
-        return;
-    }
-
-    boundId = m_id;
-
     RENDERER_API_CALL(glBindVertexArray(m_id));
     m_indexBuffer.bind();
+    if (m_instanceBuffer.has_value()) {
+        m_instanceBuffer->bind();
+    }
 }
 
 void Engine::Renderer::VertexArray::unbind() {
