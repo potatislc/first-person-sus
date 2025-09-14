@@ -48,12 +48,21 @@ namespace Engine::Renderer {
             return m_indexBuffer;
         }
 
-    private:
-        void attachVertexBuffer() const;
+        void setInstanceBuffer(Buffer::Vertex instanceBuffer);
 
+        [[nodiscard]] bool isInstantiable() const {
+            return m_instanceBuffer.has_value();
+        }
+
+    private:
         void attachIndexBuffer(const Buffer::IndexData& indexData) const;
 
+        void attachVertexBuffer(uint32_t attributeStart = 0) const;
+
+        void attachInstanceBuffer(uint32_t attributeStart) const;
+
         Buffer::Vertex m_vertexBuffer;
+        std::optional<Buffer::Vertex> m_instanceBuffer; // Specifies per-instance attributes
         Buffer::Index m_indexBuffer;
         Id m_id{};
     };
